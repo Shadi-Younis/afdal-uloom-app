@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'app/router.dart';
 import 'app/theme.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Cairo is bundled in assets/google_fonts/; never fetch fonts at runtime.
+  GoogleFonts.config.allowRuntimeFetching = false;
   runApp(const ProviderScope(child: AfdalUloomApp()));
 }
 

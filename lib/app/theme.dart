@@ -11,17 +11,30 @@ ThemeData buildAppTheme() {
     colorScheme: ColorScheme.fromSeed(seedColor: kSeedColor),
   );
 
-  final textTheme = GoogleFonts.cairoTextTheme(base.textTheme).copyWith(
-    headlineMedium: GoogleFonts.cairo(
+  // Adjust the base styles (which carry colorScheme.onSurface) before applying
+  // Cairo. Styles built from scratch with GoogleFonts.cairo() have no color,
+  // which renders text white on the light background.
+  final t = base.textTheme;
+  final sized = t.copyWith(
+    headlineMedium: t.headlineMedium!.copyWith(
       fontSize: 28,
       fontWeight: FontWeight.w700,
     ),
-    titleLarge: GoogleFonts.cairo(fontSize: 22, fontWeight: FontWeight.w600),
-    titleMedium: GoogleFonts.cairo(fontSize: 18, fontWeight: FontWeight.w600),
-    bodyLarge: GoogleFonts.cairo(fontSize: 18),
-    bodyMedium: GoogleFonts.cairo(fontSize: 16),
-    labelLarge: GoogleFonts.cairo(fontSize: 16, fontWeight: FontWeight.w600),
+    titleLarge: t.titleLarge!.copyWith(
+      fontSize: 22,
+      fontWeight: FontWeight.w600,
+    ),
+    titleMedium: t.titleMedium!.copyWith(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    ),
+    bodyLarge: t.bodyLarge!.copyWith(fontSize: 18),
+    bodyMedium: t.bodyMedium!.copyWith(fontSize: 16),
+    labelLarge: t.labelLarge!.copyWith(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+    ),
   );
 
-  return base.copyWith(textTheme: textTheme);
+  return base.copyWith(textTheme: GoogleFonts.cairoTextTheme(sized));
 }

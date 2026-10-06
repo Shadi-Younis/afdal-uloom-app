@@ -1,11 +1,11 @@
 {
-    "name": "afdal_uloom_tilawat",
-    "short_name": "afdal_uloom_tilawat",
+    "name": "أفضل العلوم",
+    "short_name": "أفضل العلوم",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "تطبيق لحفظ تلاوات طلاب مدرسة أفضل العلوم ومتابعتها مع ملاحظات المعلمين",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

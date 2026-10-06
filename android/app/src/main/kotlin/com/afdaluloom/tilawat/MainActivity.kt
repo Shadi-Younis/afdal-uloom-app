@@ -1,4 +1,4 @@
-package com.afdaluloom.afdal_uloom_tilawat
+package com.afdaluloom.tilawat
 
 import io.flutter.embedding.android.FlutterActivity
 
