@@ -1,17 +1,14 @@
-# afdal_uloom_tilawat
+# تطبيق تلاوات مدرسة أفضل العلوم
 
-A new Flutter project.
+تطبيق (`afdal_uloom_tilawat`) يحفظ لكل طالب تلاواته المسجّلة في استوديو المدرسة مع ملاحظات معلمه عليها، ويسمح للطالب بتسجيل تلاوات تدريبية وإرسالها للمعلم.
 
-## Getting Started
+## التشغيل
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run -d chrome
+```
 
-A few resources to get you started if this is your first Flutter project:
+## التوثيق
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+الخطة الكاملة للمشروع (الفكرة، التقنيات، نموذج البيانات، تقسيم العمل، طريقة العمل على Git): [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)
