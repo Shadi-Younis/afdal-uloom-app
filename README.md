@@ -21,13 +21,14 @@ flutter run -d chrome
 
 يحتاج Node و Firebase CLI و Java 11 أو أحدث.
 
-1. تشغيل الـ Emulators (من جذر الريبو):
+1. تشغيل الـ Emulators (الطريقة الافتراضية):
 
-   ```bash
-   npm --prefix functions install
-   npm --prefix functions run build
-   firebase emulators:start
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File tool/emulators.ps1
    ```
+
+   السكربت يبني الـ Functions ثم يشغّل الـ Emulators مع حفظ البيانات في مجلد `.emulator-data` (غير مرفوع على Git).
+   للإيقاف اضغط **Ctrl+C** مرة واحدة وانتظر حتى تظهر `Export complete`، فتُحفظ البيانات وتعود في التشغيل التالي.
 
    واجهة الـ Emulator على http://localhost:4001
 
