@@ -1,0 +1,23 @@
+# App icons. Regenerate with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/branding/app_icon.png"
+
+  android: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/branding/app_icon_foreground.png"
+  # The foreground image is already padded for the safe zone; no extra inset.
+  adaptive_icon_foreground_inset: 0
+
+  ios: true
+  remove_alpha_ios: true
+
+  web:
+    generate: true
+    image_path: "assets/branding/app_icon.png"
+    background_color: "#FFFFFF"
+    theme_color: "#0B4019"
+
+  windows:
+    generate: false
+  macos:
+    generate: false
