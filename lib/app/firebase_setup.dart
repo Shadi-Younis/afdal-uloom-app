@@ -21,6 +21,10 @@ const kFunctionsEmulatorPort = 5001;
 /// release build can never talk to the emulators.
 const useEmulators = kDebugMode && bool.fromEnvironment('USE_EMULATORS');
 
+/// A debug build talking to the real project shows a red "PROD" banner.
+/// Release builds and emulator runs show nothing.
+const showProdBanner = kDebugMode && !useEmulators;
+
 /// `--dart-define=EMULATOR_HOST=<host>`, e.g. the PC's LAN IP for a real phone.
 const _emulatorHostOverride = String.fromEnvironment('EMULATOR_HOST');
 

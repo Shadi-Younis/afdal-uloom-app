@@ -22,6 +22,18 @@ void main() {
     expect(find.text('تسجيل الدخول'), findsOneWidget);
   });
 
+  testWidgets('debug build without emulators shows the red PROD banner', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: AfdalUloomApp()));
+    await tester.pumpAndSettle();
+
+    final banner = tester.widget<Banner>(find.byType(Banner));
+    expect(banner.message, 'PROD');
+    expect(banner.location, BannerLocation.topStart);
+    expect(banner.color, Colors.red);
+  });
+
   const roles = {
     'دخول كمدير': 'لوحة المدير',
     'دخول كمعلم': 'لوحة المعلم',

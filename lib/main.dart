@@ -34,6 +34,14 @@ class AfdalUloomApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => showProdBanner
+          ? Banner(
+              message: 'PROD',
+              location: BannerLocation.topStart,
+              color: Colors.red,
+              child: child!,
+            )
+          : child!,
     );
   }
 }
