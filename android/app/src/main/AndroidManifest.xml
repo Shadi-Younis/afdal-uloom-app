@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Firebase needs the network in every build type; declare it here
+         instead of relying on plugin manifests being merged in. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="أفضل العلوم"
         android:name="${applicationName}"
