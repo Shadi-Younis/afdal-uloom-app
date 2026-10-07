@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "650399473840",
+    "project_id": "afdal-al-uloom",
+    "storage_bucket": "afdal-al-uloom.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650399473840:android:f1ff92985d91ad5bdc5b75",
+        "android_client_info": {
+          "package_name": "com.afdaluloom.tilawat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsluma0PP9fszA9Bju9Gs2j5bHzmHqBS4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

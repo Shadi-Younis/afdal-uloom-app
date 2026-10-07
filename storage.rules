@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// DENY ALL for now. The real rules for recordings come in the data-layer
+// task, together with their emulator tests.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
