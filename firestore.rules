@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// DENY ALL for now. The real rules (per role: admin / teacher / student)
+// come in the data-layer task, together with their emulator tests.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
