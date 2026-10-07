@@ -29,7 +29,7 @@ flutter run -d chrome
    firebase emulators:start
    ```
 
-   واجهة الـ Emulator على http://localhost:4000
+   واجهة الـ Emulator على http://localhost:4001
 
 2. تشغيل التطبيق على Edge مع الـ Emulators:
 
