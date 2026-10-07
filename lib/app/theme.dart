@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Seed color for the Material 3 color scheme.
-/// TODO: replace with the school's brand color.
-const Color kSeedColor = Color(0xFF1B6B4A);
+/// The school's green: primary color and seed of the color scheme.
+const Color kBrandGreen = Color(0xFF0B4019);
+
+/// The school's gold. Decorative accents only (dividers, ornaments, icons
+/// next to text): never use it for text on white, the contrast is too low.
+const Color kBrandGold = Color(0xFFC59C38);
 
 ThemeData buildAppTheme() {
-  final base = ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(seedColor: kSeedColor),
-  );
+  final colorScheme = ColorScheme.fromSeed(
+    seedColor: kBrandGreen,
+    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+  ).copyWith(primary: kBrandGreen, onPrimary: Colors.white);
+
+  final base = ThemeData(useMaterial3: true, colorScheme: colorScheme);
 
   // Adjust the base styles (which carry colorScheme.onSurface) before applying
   // Cairo. Styles built from scratch with GoogleFonts.cairo() have no color,

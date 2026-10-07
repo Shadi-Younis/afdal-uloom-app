@@ -36,6 +36,13 @@ void main() {
     _ => throw ArgumentError(name),
   };
 
+  test('primary is the brand green with white on top', () {
+    final scheme = buildAppTheme().colorScheme;
+
+    expect(scheme.primary, kBrandGreen);
+    expect(scheme.onPrimary, Colors.white);
+  });
+
   for (final MapEntry(key: name, value: (size, weight)) in expected.entries) {
     test('$name keeps onSurface color and uses Cairo', () {
       final theme = buildAppTheme();

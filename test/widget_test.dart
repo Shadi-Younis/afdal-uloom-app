@@ -1,4 +1,5 @@
 import 'package:afdal_uloom_tilawat/app/theme.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/common/school_logo.dart';
 import 'package:afdal_uloom_tilawat/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,10 +17,32 @@ void main() {
   });
 
   testWidgets('app starts on the Arabic login placeholder', (tester) async {
+    final semantics = tester.ensureSemantics();
     await tester.pumpWidget(const ProviderScope(child: AfdalUloomApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('تسجيل الدخول'), findsOneWidget);
+    final title = find.text('تسجيل الدخول');
+    final logo = find.bySemanticsLabel(SchoolLogo.semanticLabel);
+    expect(title, findsOneWidget);
+    expect(logo, findsOneWidget);
+    expect(tester.getRect(logo).bottom, lessThan(tester.getRect(title).top));
+    semantics.dispose();
+  });
+
+  testWidgets('login screen fits a 360x640 phone without overflow', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(1080, 1920)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const ProviderScope(child: AfdalUloomApp()));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    // Everything is on screen without scrolling.
+    expect(tester.getRect(find.text('دخول كطالب')).bottom, lessThan(640));
   });
 
   testWidgets('debug build without emulators shows the red PROD banner', (
