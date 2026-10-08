@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/widgets/common/current_user_name.dart';
+import '../../../core/widgets/common/logout_button.dart';
 
+/// The admin's home: their name for now, and sign-out.
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
@@ -12,21 +13,9 @@ class AdminHomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.adminHomeTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: AppStrings.logout,
-            // TODO: replace with real signOut (phase 2.4)
-            onPressed: () => context.go(AppRoutes.login),
-          ),
-        ],
+        actions: const [LogoutButton()],
       ),
-      body: Center(
-        child: Text(
-          AppStrings.adminHomeTitle,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
+      body: const Center(child: CurrentUserName()),
     );
   }
 }

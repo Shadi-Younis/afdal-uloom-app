@@ -11,12 +11,18 @@ abstract final class AppStrings {
   /// developers read it, so it is not translated.
   static const prodBanner = 'PROD';
 
+  static const retry = 'إعادة المحاولة';
+  static const loading = 'جارٍ التحميل';
+
   // Login
   static const loginTitle = 'تسجيل الدخول';
-  // TODO: remove the role shortcuts after auth (phase 2.4).
-  static const loginAsAdmin = 'دخول كمدير';
-  static const loginAsTeacher = 'دخول كمعلم';
-  static const loginAsStudent = 'دخول كطالب';
+  static const usernameLabel = 'اسم المستخدم';
+  static const passwordLabel = 'كلمة السر';
+  static const signIn = 'دخول';
+  static const showPassword = 'إظهار كلمة السر';
+  static const hidePassword = 'إخفاء كلمة السر';
+  static const usernameRequired = 'أدخل اسم المستخدم';
+  static const passwordRequired = 'أدخل كلمة السر';
 
   // Role home screens
   static const adminHomeTitle = 'لوحة المدير';
