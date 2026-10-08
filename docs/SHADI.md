@@ -29,8 +29,8 @@ flutterfire configure            # اختيار android, ios, web
 firebase init                    # firestore, storage, functions (TypeScript), hosting, emulators
 ```
 
-- إنشاء الريبو `afdal-uloom-tilawat` (Private) على GitHub، وإنشاء فرع `develop`.
-- **حماية الفروع** في إعدادات GitHub: `main` و`develop` لا يُكتب عليهما إلا عبر PR مع مراجعة واحدة على الأقل.
+- إنشاء الريبو `afdal-uloom-tilawat` (Private) على GitHub. الفرع الدائم الوحيد هو `main`.
+- **حماية الفرع** في إعدادات GitHub: `main` لا يُكتب عليه إلا عبر PR مع مراجعة واحدة على الأقل.
 - إضافة لـ `.gitignore`:
 
 ```
@@ -112,7 +112,7 @@ abstract class AudioStorageService {
 
 **النسخ الوهمية (Fakes)**: لكل Interface كلاس مثل `FakeRecordingsRepository` يرجع بيانات تجريبية ثابتة (3 حلقات، 10 طلاب، 20 تسجيلاً، ملاحظات متنوعة، ورابط ملف صوتي تجريبي). ثم **Riverpod Providers** في ملف واحد، بحيث يتم التبديل من Fake إلى Real بتغيير سطر واحد.
 
-**التسليم**: PR إلى `develop` مع رسالة للفريق تشرح كيف يستخدمون الـ Providers.
+**التسليم**: PR إلى `main` مع رسالة للفريق تشرح كيف يستخدمون الـ Providers.
 
 ---
 

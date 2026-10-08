@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../constants/app_assets.dart';
+import '../../constants/app_sizes.dart';
+import '../../constants/app_strings.dart';
+
 /// The school's round logo, [size] logical pixels wide and high.
 class SchoolLogo extends StatelessWidget {
-  const SchoolLogo({super.key, this.size = 160});
+  const SchoolLogo({super.key, this.size = AppSizes.logoLarge});
 
-  static const semanticLabel = 'شعار دار أفضل العلوم';
+  static const semanticLabel = AppStrings.schoolLogoLabel;
 
   final double size;
 
@@ -14,7 +18,7 @@ class SchoolLogo extends StatelessWidget {
     // of keeping the full image in memory.
     final cacheWidth = (size * MediaQuery.devicePixelRatioOf(context)).round();
     return Image.asset(
-      'assets/branding/logo_600.png',
+      AppAssets.logo,
       width: size,
       height: size,
       cacheWidth: cacheWidth,

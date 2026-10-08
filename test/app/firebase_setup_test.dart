@@ -1,10 +1,11 @@
 import 'package:afdal_uloom_tilawat/app/firebase_setup.dart';
+import 'package:afdal_uloom_tilawat/core/constants/firebase_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('functions run in me-west1', () {
-    expect(kFunctionsRegion, 'me-west1');
+    expect(FirebaseConstants.functionsRegion, 'me-west1');
   });
 
   test('emulators are off unless USE_EMULATORS=true is passed', () {

@@ -9,12 +9,23 @@ const Color kBrandGreen = Color(0xFF0B4019);
 const Color kBrandGold = Color(0xFFC59C38);
 
 ThemeData buildAppTheme() {
-  final colorScheme = ColorScheme.fromSeed(
-    seedColor: kBrandGreen,
-    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-  ).copyWith(primary: kBrandGreen, onPrimary: Colors.white);
+  // Pure white surfaces match the white logo background, splash and app icon
+  // (the seeded surface is slightly tinted).
+  final colorScheme =
+      ColorScheme.fromSeed(
+        seedColor: kBrandGreen,
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+      ).copyWith(
+        primary: kBrandGreen,
+        onPrimary: Colors.white,
+        surface: Colors.white,
+      );
 
-  final base = ThemeData(useMaterial3: true, colorScheme: colorScheme);
+  final base = ThemeData(
+    useMaterial3: true,
+    colorScheme: colorScheme,
+    scaffoldBackgroundColor: Colors.white,
+  );
 
   // Adjust the base styles (which carry colorScheme.onSurface) before applying
   // Cairo. Styles built from scratch with GoogleFonts.cairo() have no color,

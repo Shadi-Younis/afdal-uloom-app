@@ -52,6 +52,17 @@ flutter run -d chrome
 flutter test integration_test/emulator_smoke_test.dart -d <device-id> --dart-define=USE_EMULATORS=true --dart-define=EMULATOR_HOST=<LAN IP>
 ```
 
+## طريقة العمل على Git
+
+- `main` هو الفرع الوحيد الدائم (فرع `develop` لم يعد مستخدماً).
+- كل مهمة في فرع جديد من `main`: `git checkout main && git pull` ثم `git checkout -b feature/<اسمك>-<الموضوع>`.
+- Pull Request إلى `main` فقط، ولا أحد يكتب على `main` مباشرة.
+- الإصدارات علامات (tags) على `main`: `v0.1.0`، `v0.2.0`، ...
+
+التفاصيل في القسم 6 من [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md).
+
 ## التوثيق
 
 الخطة الكاملة للمشروع (الفكرة، التقنيات، نموذج البيانات، تقسيم العمل، طريقة العمل على Git): [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)
+
+قواعد الكود والبنية: [CLAUDE.md](CLAUDE.md)

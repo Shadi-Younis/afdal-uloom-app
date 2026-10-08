@@ -9,6 +9,8 @@
 import 'dart:convert';
 
 import 'package:afdal_uloom_tilawat/app/firebase_setup.dart';
+import 'package:afdal_uloom_tilawat/core/constants/app_durations.dart';
+import 'package:afdal_uloom_tilawat/core/constants/firebase_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -17,8 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:integration_test/integration_test.dart';
 
-const _projectId = 'afdal-al-uloom';
-const _timeout = Duration(seconds: 20);
+const _timeout = AppDurations.firebaseCallTimeout;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -39,8 +40,9 @@ void main() {
     // admin rights. "Bearer owner" is the Auth emulator's admin credential.
     final response = await http.post(
       Uri.http(
-        '$emulatorHost:$kAuthEmulatorPort',
-        '/identitytoolkit.googleapis.com/v1/projects/$_projectId/accounts',
+        '$emulatorHost:${FirebaseConstants.authEmulatorPort}',
+        '/identitytoolkit.googleapis.com/v1/projects/'
+            '${FirebaseConstants.projectId}/accounts',
       ),
       headers: {
         'Authorization': 'Bearer owner',
@@ -84,7 +86,7 @@ void main() {
 
   test('ping in me-west1 answers with the signed-in uid', () async {
     final result = await regionalFunctions
-        .httpsCallable('ping')
+        .httpsCallable(FirebaseConstants.pingFunction)
         .call<Map<String, dynamic>>()
         .timeout(_timeout);
     expect(result.data, {'ok': true, 'uid': uid});
