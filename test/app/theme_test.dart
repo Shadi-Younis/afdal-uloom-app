@@ -43,6 +43,13 @@ void main() {
     expect(scheme.onPrimary, Colors.white);
   });
 
+  test('screens and surfaces are pure white', () {
+    final theme = buildAppTheme();
+
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFFFFFFF));
+    expect(theme.colorScheme.surface, const Color(0xFFFFFFFF));
+  });
+
   for (final MapEntry(key: name, value: (size, weight)) in expected.entries) {
     test('$name keeps onSurface color and uses Cairo', () {
       final theme = buildAppTheme();
