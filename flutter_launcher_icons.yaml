@@ -1,4 +1,4 @@
-# App icons. Regenerate with: dart run flutter_launcher_icons
+# Android and iOS app icons. Regenerate with: dart run flutter_launcher_icons
 flutter_launcher_icons:
   image_path: "assets/branding/app_icon.png"
 
@@ -11,11 +11,10 @@ flutter_launcher_icons:
   ios: true
   remove_alpha_ios: true
 
+  # Web icons come from tool/generate_web_icons.dart: this tool would make
+  # the maskable icons from image_path, and the mask would crop the logo.
   web:
-    generate: true
-    image_path: "assets/branding/app_icon.png"
-    background_color: "#FFFFFF"
-    theme_color: "#0B4019"
+    generate: false
 
   windows:
     generate: false
