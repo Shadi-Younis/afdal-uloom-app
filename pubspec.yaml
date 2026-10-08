@@ -75,7 +75,7 @@ flutter:
 
   assets:
     - assets/google_fonts/
-    - assets/branding/
+    - assets/branding/logo_600.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
