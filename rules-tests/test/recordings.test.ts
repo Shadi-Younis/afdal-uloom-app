@@ -201,6 +201,26 @@ describe("teacher t1", () => {
   });
 });
 
+describe("demoted teacher (t1 whose role claim is now student)", () => {
+  test("loses read, review and delete on t1's recordings", async () => {
+    const db = as(env, "t1", "student");
+    await assertFails(getDoc(doc(db, "recordings/r-s1")));
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, "recordings"),
+          where("teacherId", "==", "t1"),
+          where("type", "==", "practice"),
+          where("reviewed", "==", false),
+          orderBy("createdAt"),
+        ),
+      ),
+    );
+    await assertFails(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
+    await assertFails(deleteDoc(doc(db, "recordings/r-s2")));
+  });
+});
+
 describe("admin", () => {
   test("reads and lists every recording", async () => {
     const db = as(env, "admin", "admin");

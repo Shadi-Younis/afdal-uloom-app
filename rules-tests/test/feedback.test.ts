@@ -97,6 +97,13 @@ describe("writing feedback", () => {
     await assertSucceeds(deleteDoc(doc(as(env, "t1", "teacher"), "recordings/r-s1/feedback/f1")));
   });
 
+  test("a demoted teacher can no longer read, add or delete notes", async () => {
+    const db = as(env, "t1", "student");
+    await assertFails(getDoc(doc(db, "recordings/r-s1/feedback/f1")));
+    await assertFails(addNote(db, "r-s1", note()));
+    await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/f1")));
+  });
+
   test("admin deletes any note", async () => {
     await assertSucceeds(deleteDoc(doc(as(env, "admin", "admin"), "recordings/r-s1/feedback/f1")));
   });
