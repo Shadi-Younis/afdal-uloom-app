@@ -1,0 +1,18 @@
+{
+  "name": "seed",
+  "private": true,
+  "description": "Fills the Auth and Firestore EMULATORS with test data. Run through tool/seed_emulator.ps1.",
+  "type": "module",
+  "scripts": {
+    "seed": "tsx src/seed.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
