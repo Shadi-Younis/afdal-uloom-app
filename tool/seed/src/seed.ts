@@ -14,6 +14,21 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+// A host on another machine could be a tunnel to anything; only accept this
+// machine's emulators.
+const localHosts = ["localhost", "127.0.0.1", "0.0.0.0"];
+const remote = required.filter((name) => {
+  const host = process.env[name]!.replace(/:\d+$/, "");
+  return !localHosts.includes(host);
+});
+if (remote.length > 0) {
+  console.error(
+    `Refusing to seed: ${remote.map((name) => `${name}=${process.env[name]}`).join(", ")}. ` +
+      `Hosts must be ${localHosts.join(", ")}.`,
+  );
+  process.exit(1);
+}
+
 const { initializeApp } = await import("firebase-admin/app");
 const { getAuth } = await import("firebase-admin/auth");
 const { getFirestore, Timestamp } = await import("firebase-admin/firestore");
