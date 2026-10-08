@@ -14,6 +14,28 @@ enum AppErrorCode {
   /// values sent.
   invalidData,
 
+  /// Wrong username or password.
+  invalidCredentials,
+
+  /// The account was disabled by an admin.
+  accountDisabled,
+
+  /// Too many failed sign-ins; Firebase blocks for a while.
+  tooManyAttempts,
+
+  /// Signed in, but the account has no valid role claim.
+  noRole,
+
+  /// The username is already taken.
+  usernameTaken,
+
+  /// The student code is already taken.
+  studentCodeTaken,
+
+  /// The operation does not fit the current data, e.g. moving a user who is
+  /// not a student.
+  failedPrecondition,
+
   /// Anything else.
   unknown,
 }

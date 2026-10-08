@@ -2,13 +2,23 @@
 abstract final class FirebaseConstants {
   static const projectId = 'afdal-al-uloom';
 
-  /// Region of every Cloud Function. Must match `setGlobalOptions` in
-  /// functions/src/index.ts.
+  /// Region of every Cloud Function. Must match REGION in
+  /// functions/src/lib/constants.ts.
   static const functionsRegion = 'me-west1';
 
-  // Callable function names.
-  // TODO: remove once real functions exist; only proves the wiring.
-  static const pingFunction = 'ping';
+  /// Usernames sign in as `<username>@<emailDomain>`. Must match
+  /// EMAIL_DOMAIN in functions/src/lib/constants.ts.
+  static const emailDomain = 'afdal-uloom.app';
+
+  /// The `role` custom claim on the ID token; set only by server code.
+  static const roleClaim = 'role';
+
+  // Callable function names (functions/src/index.ts).
+  static const createUserFunction = 'createUser';
+  static const resetPasswordFunction = 'resetPassword';
+  static const moveStudentFunction = 'moveStudent';
+  static const changeHalaqaTeacherFunction = 'changeHalaqaTeacher';
+  static const setUserDisabledFunction = 'setUserDisabled';
 
   // Emulator ports, as configured in firebase.json.
   static const authEmulatorPort = 9099;
