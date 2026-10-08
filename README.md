@@ -54,7 +54,21 @@ flutter run -d chrome
 powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1
 ```
 
-ينشئ مديراً ومعلمَين و3 حلقات و12 طالباً مع تسجيلات وملاحظات، ويمكن تشغيله أكثر من مرة بأمان. البيانات تبقى محفوظة في `.emulator-data`. بعد إضافة شاشة الدخول: سجّل الدخول بـ `shadi` / `test1234` (المدير)، أو `t01` (معلم)، أو `s001` (طالب)، وكلمة السر نفسها للجميع.
+ينشئ مديراً ومعلمَين و3 حلقات و12 طالباً مع تسجيلات وملاحظات، ويمكن تشغيله أكثر من مرة بأمان. البيانات تبقى محفوظة في `.emulator-data`.
+
+حسابات التجربة (**على الـ Emulator فقط**، كلمة السر `test1234` للجميع):
+
+| اسم المستخدم | الدور |
+|---|---|
+| `shadi` | مدير |
+| `t01` | معلم (حلقة الفجر وحلقة المغرب) |
+| `s001` | طالب |
+
+اختبار دوال السيرفر (Cloud Functions) على الـ Emulators (أوقف `tool/emulators.ps1` أولاً):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool/test_functions.ps1
+```
 
 اختبار قواعد الحماية (أوقف الـ Emulators أولاً لأن الاختبار يستخدم المنفذ 8080):
 
@@ -84,3 +98,7 @@ flutter test integration_test/emulator_smoke_test.dart -d <device-id> --dart-def
 قواعد الكود والبنية: [CLAUDE.md](CLAUDE.md)
 
 طبقة البيانات (من يستدعي ماذا، رفع التسجيلات، الـ Seed، اختبار القواعد): [docs/DATA_LAYER.md](docs/DATA_LAYER.md)
+
+الحسابات والأدوار (من ينشئ ويغيّر ويوقف من، قواعد اسم المستخدم، نسيان كلمة السر): [docs/ACCOUNTS.md](docs/ACCOUNTS.md)
+
+إنشاء أول مدير في المشروع الحقيقي: [docs/BOOTSTRAP_ADMIN.md](docs/BOOTSTRAP_ADMIN.md)

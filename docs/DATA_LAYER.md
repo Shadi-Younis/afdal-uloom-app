@@ -24,13 +24,13 @@
 |---|---|---|---|
 | `UserRepository` | كل شيء للقراءة | `watchUser` و`watchStudentsInHalaqa` لطلاب حلقاته | `watchUser` لنفسه |
 | | | `addFcmToken` / `removeFcmToken` لنفسه | `addFcmToken` / `removeFcmToken` لنفسه |
-| `HalaqaRepository` | كل الدوال | `watchForTeacher(uid)`، `watch` لحلقاته | `watch` لحلقته |
+| `HalaqaRepository` | كل الدوال (`create`، `rename`) | `watchForTeacher(uid)`، `watch` لحلقاته | `watch` لحلقته |
 | `RecordingRepository` | كل الدوال | `watchForStudent(studentId, teacherId: uid)`، `watchPendingPractice(uid)`، `create` (رسمي)، `markReviewed`، `delete` | `watchForStudent(uid)`، `create` (تدريب)، `markFeedbackRead` |
 | `FeedbackRepository` | `watch`، `delete` | `watch`، `add` و`delete` لملاحظاته | `watch` على تسجيلاته |
 
 > **مهم للمعلم:** `watchForStudent` يجب أن يُستدعى مع `teacherId: uid`، وإلا ترفض قواعد الحماية الاستعلام كله.
 
-إنشاء الحسابات وتغيير الأدوار ونقل الطالب بين الحلقات تتم من السيرفر (Cloud Functions) في مهمة لاحقة، وليست في الـ Repositories.
+إنشاء الحسابات وتغيير كلمات السر ونقل الطالب بين الحلقات وتغيير معلم الحلقة وإيقاف الحسابات تتم من السيرفر (Cloud Functions) عبر `AccountsService`، وليست في الـ Repositories. التفاصيل في [ACCOUNTS.md](ACCOUNTS.md).
 
 ## رفع تسجيل
 
