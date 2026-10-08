@@ -10,4 +10,12 @@ abstract final class AppSizes {
 
   /// The school logo on the login screen.
   static const logoLarge = 160.0;
+
+  /// The school logo on the start-up screen.
+  static const logoMedium = 120.0;
+
+  /// Height of full-width buttons, and the progress indicator inside them.
+  static const buttonHeight = 52.0;
+  static const buttonProgressSize = 22.0;
+  static const progressStrokeWidth = 2.5;
 }

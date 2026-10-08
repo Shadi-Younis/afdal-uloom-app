@@ -22,6 +22,10 @@ if (Get-Command java -ErrorAction SilentlyContinue) {
     if ($javaHome) { $env:PATH = "$javaHome\bin;$env:PATH" }
 }
 
+# Loading the functions (firebase-admin) can take over the emulator's 10 s
+# discovery limit while the Java emulators start on a cold machine.
+if (-not $env:FUNCTIONS_DISCOVERY_TIMEOUT) { $env:FUNCTIONS_DISCOVERY_TIMEOUT = '60' }
+
 Push-Location $root
 try {
     if (-not (Test-Path $dataDir)) {

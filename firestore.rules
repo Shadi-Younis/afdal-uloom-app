@@ -56,6 +56,21 @@ service cloud.firestore {
       return value is int && value >= min && value <= max;
     }
 
+    // A list of at most [max] strings (max <= 10: rules cannot loop, so
+    // each position is checked explicitly).
+    function isStringList(value, max) {
+      return value is list && value.size() <= max
+        && isStringOrAbsent(value, 0) && isStringOrAbsent(value, 1)
+        && isStringOrAbsent(value, 2) && isStringOrAbsent(value, 3)
+        && isStringOrAbsent(value, 4) && isStringOrAbsent(value, 5)
+        && isStringOrAbsent(value, 6) && isStringOrAbsent(value, 7)
+        && isStringOrAbsent(value, 8) && isStringOrAbsent(value, 9);
+    }
+
+    function isStringOrAbsent(list, index) {
+      return list.size() <= index || list[index] is string;
+    }
+
     // Only the listed keys changed between the stored and the new document.
     function onlyChanged(keys) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
@@ -80,7 +95,7 @@ service cloud.firestore {
 
       allow update: if isSelf(userId)
         && onlyChanged(['fcmTokens'])
-        && request.resource.data.fcmTokens is list;
+        && isStringList(request.resource.data.fcmTokens, 10);
 
       // Memorization progress comes in a later phase.
       match /progress/{surahNumber} {
@@ -105,9 +120,12 @@ service cloud.firestore {
             && get(userPath(request.auth.uid)).data.get('halaqaId', null) == halaqaId);
 
       allow create: if isAdmin() && isValidHalaqa(request.resource.data);
+
+      // Rename only. A new teacher goes through the changeHalaqaTeacher
+      // function, which also updates the teacherId copied into recordings.
       allow update: if isAdmin()
-        && onlyChanged(['name', 'teacherId'])
-        && isValidHalaqa(request.resource.data);
+        && onlyChanged(['name'])
+        && isStringOfLength(request.resource.data.name, 1, 60);
       allow delete: if isAdmin();
     }
 
@@ -163,8 +181,9 @@ service cloud.firestore {
           && data.reviewed == false;
       }
 
+      // isTeacher(): a demoted teacher loses access at once.
       function isOwningTeacher() {
-        return signedIn() && resource.data.teacherId == request.auth.uid;
+        return isTeacher() && resource.data.teacherId == request.auth.uid;
       }
 
       function isOwningStudent() {
@@ -208,18 +227,17 @@ service cloud.firestore {
         }
 
         allow read: if isAdmin()
-          || (signedIn()
-              && (recording().teacherId == request.auth.uid
-                  || recording().studentId == request.auth.uid));
+          || (isTeacher() && recording().teacherId == request.auth.uid)
+          || (signedIn() && recording().studentId == request.auth.uid);
 
-        allow create: if signedIn()
+        allow create: if isTeacher()
           && recording().teacherId == request.auth.uid
           && isValidNote(request.resource.data);
 
         allow update: if false;
 
         allow delete: if isAdmin()
-          || (signedIn() && resource.data.teacherId == request.auth.uid);
+          || (isTeacher() && resource.data.teacherId == request.auth.uid);
       }
     }
   }

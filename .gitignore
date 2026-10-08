@@ -48,11 +48,14 @@ app.*.map.json
 .widget_preview/
 
 serviceAccountKey.json
+# The name the Firebase Console gives a downloaded service account key.
+*-firebase-adminsdk-*.json
 *.env
 functions/lib/
 functions/node_modules/
 rules-tests/node_modules/
 tool/seed/node_modules/
+tool/bootstrap_admin/node_modules/
 tool/seed/lib/
 
 # Firebase

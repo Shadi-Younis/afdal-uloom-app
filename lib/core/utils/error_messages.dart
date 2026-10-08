@@ -7,5 +7,12 @@ String errorMessageFor(AppErrorCode code) => switch (code) {
   AppErrorCode.notFound => AppStrings.errorNotFound,
   AppErrorCode.network => AppStrings.errorNetwork,
   AppErrorCode.invalidData => AppStrings.errorInvalidData,
+  AppErrorCode.invalidCredentials => AppStrings.errorInvalidCredentials,
+  AppErrorCode.accountDisabled => AppStrings.errorAccountDisabled,
+  AppErrorCode.tooManyAttempts => AppStrings.errorTooManyAttempts,
+  AppErrorCode.noRole => AppStrings.errorNoRole,
+  AppErrorCode.usernameTaken => AppStrings.errorUsernameTaken,
+  AppErrorCode.studentCodeTaken => AppStrings.errorStudentCodeTaken,
+  AppErrorCode.failedPrecondition => AppStrings.errorFailedPrecondition,
   AppErrorCode.unknown => AppStrings.errorUnknown,
 };

@@ -64,6 +64,8 @@ dev_dependencies:
   # Only for tool/generate_web_icons.dart.
   image: ^4.10.1
   fake_cloud_firestore: ^4.3.0
+  firebase_auth_mocks: ^0.15.2
+  mock_exceptions: ^0.8.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

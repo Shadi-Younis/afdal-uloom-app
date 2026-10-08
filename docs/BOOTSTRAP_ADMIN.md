@@ -1,0 +1,49 @@
+# إنشاء أول مدير في المشروع الحقيقي
+
+كل الحسابات تُنشأ من داخل التطبيق عبر الدالة `createUser`، وهذه تحتاج مديراً مسجّلاً. أول مدير فقط يُنشأ بهذا السكربت، **مرة واحدة**، على المشروع الحقيقي `afdal-al-uloom`. يقوم به شادي فقط.
+
+> للتجربة على الـ Emulator لا تستخدم هذا السكربت. استخدم `tool/seed_emulator.ps1`.
+
+## قبل البدء
+
+- Node مثبّت.
+- المشروع على Firebase جاهز (Authentication بالإيميل وكلمة السر، وFirestore).
+
+## الخطوات
+
+1. **تنزيل مفتاح الخدمة (Service Account Key):**
+   Firebase Console ← Project settings ← Service accounts ← **Generate new private key**.
+   احفظ الملف **خارج مجلد المشروع**، مثلاً `C:\keys\afdal-admin.json`. لا ترسله لأحد ولا ترفعه على Git.
+
+2. **افتح نافذة PowerShell جديدة** في مجلد المشروع. لا تشغّل فيها الـ Emulators. السكربت يرفض العمل إذا وجد أي متغير ينتهي بـ `_EMULATOR_HOST`.
+
+3. **ثبّت السكربت:**
+
+   ```powershell
+   npm --prefix tool/bootstrap_admin ci
+   ```
+
+4. **شغّله** مع مسار المفتاح وتأكيد اسم المشروع:
+
+   ```powershell
+   npm --prefix tool/bootstrap_admin run bootstrap -- C:\keys\afdal-admin.json --confirm afdal-al-uloom
+   ```
+
+5. **أجب عن الأسئلة:**
+   - اسم المستخدم: 3 إلى 20 حرفاً من `a-z` و`0-9` و`.` و`_` و`-` (مثلاً `shadi`).
+   - الاسم الكامل بالعربي.
+   - كلمة السر مرتين (6 إلى 64 حرفاً). لا تظهر على الشاشة ولا تُحفظ في سجل الأوامر.
+
+   السكربت يرفض إذا كان اسم المستخدم موجوداً، أو إذا كان المفتاح لمشروع آخر.
+
+6. **بعد النجاح:**
+   - احذف ملف المفتاح من جهازك.
+   - ألغِ المفتاح: Google Cloud Console ← IAM & Admin ← Service Accounts ← حساب `firebase-adminsdk` ← Keys ← احذف المفتاح الذي استخدمته.
+   - سجّل الدخول في التطبيق باسم المستخدم وكلمة السر.
+
+## ماذا يفعل السكربت بالضبط
+
+- ينشئ مستخدماً في Authentication بالإيميل `<username>@afdal-uloom.app` (الـ uid يولّده Firebase).
+- يضع له الـ Custom Claim `role: admin`.
+- ينشئ مستند `users/{uid}` حسب نموذج البيانات (القسم 3 من `PROJECT_PLAN.md`).
+- إذا فشلت أي خطوة بعد إنشاء المستخدم، يحذفه حتى لا يبقى حساب ناقص.

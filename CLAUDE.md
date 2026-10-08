@@ -71,6 +71,8 @@ lib/
     services/                   service interfaces (auth, audio storage, ...)
     data/                       Firebase implementations
     providers/                  dependency-injection providers
+    application/                state shared by several features (session,
+                                current user, sign-out)
     errors/                     AppException + mapping of Firebase errors
     utils/                      small pure helpers
     widgets/common/             shared widgets (SchoolLogo, buttons,
@@ -80,6 +82,9 @@ lib/
     application/                <name>_controller.dart
 test/                           mirrors lib/ (test/features/auth/..., test/app/...)
 integration_test/               emulator-only tests
+functions/src/                  Cloud Functions: index.ts only exports,
+                                <area>/*.ts one callable per file, lib/ helpers
+functions/test/                 functions tests (emulators)
 ```
 
 A feature never imports another feature's files. If two features need the
@@ -155,7 +160,11 @@ Tests may use literal values when they assert behavior (e.g. "the region is
   `tool/test_rules.ps1` run. Storage rules: same, when they are added.
 - Never hit the real Firebase project from a test. Integration tests that
   need Firebase must fail fast unless `USE_EMULATORS=true`.
+- Cloud Functions: tests in `functions/test/` call the real callables over
+  HTTP on the emulators; every change needs a green `tool/test_functions.ps1`.
 - `flutter test` runs without network and without Firebase initialized.
+  Widget tests that pump the app override `authServiceProvider` and the
+  repository providers (see test/helpers/).
 
 ## Firebase rules of work
 
@@ -165,12 +174,22 @@ Tests may use literal values when they assert behavior (e.g. "the region is
 - Never run `firebase deploy`, never change console settings, never write to
   the real project, unless the task explicitly says so.
 - Roles live in the `role` custom claim and are set only by server code.
+  The app reads the role from the ID token, never from the users doc.
+- Account changes (create, role, password, halaqa move, halaqa teacher,
+  disable) happen ONLY in Cloud Functions, called through AccountsService.
+  Never write them from the client; security rules deny it.
+- Callables: check `request.auth` and the role claim first, validate every
+  input, throw `HttpsError` with a standard code and an English message
+  (the app maps codes to Arabic). Writes to several documents use batches
+  of at most 500. Auth generates uids (never username-as-uid outside the
+  seed).
 - Test data: `tool/seed_emulator.ps1` (emulators running). Keep the seed
   valid under `firestore.rules`.
 - A data model change (agreed with Shadi) updates, in one PR: PROJECT_PLAN.md
   section 3, the model, `Fields`, `firestore.rules` and its tests,
   `firestore.indexes.json` and the seed. See docs/DATA_LAYER.md.
-- Keep `functions/src` region in sync with `FirebaseConstants.functionsRegion`.
+- Keep `functions/src/lib/constants.ts` (region, email domain) in sync with
+  `FirebaseConstants`.
 
 ## Branding assets
 

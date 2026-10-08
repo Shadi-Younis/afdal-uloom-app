@@ -55,6 +55,15 @@ describe("users", () => {
     await assertFails(updateDoc(doc(db, "users/s1"), { fcmTokens: "tok" }));
   });
 
+  test("fcmTokens must be at most 10 strings", async () => {
+    const db = as(env, "s1", "student");
+    const tokens = (n: number) => Array.from({ length: n }, (_, i) => `tok-${i}`);
+    await assertSucceeds(updateDoc(doc(db, "users/s1"), { fcmTokens: tokens(10) }));
+    await assertFails(updateDoc(doc(db, "users/s1"), { fcmTokens: tokens(11) }));
+    await assertFails(updateDoc(doc(db, "users/s1"), { fcmTokens: ["ok", 7] }));
+    await assertFails(updateDoc(doc(db, "users/s1"), { fcmTokens: [...tokens(9), null] }));
+  });
+
   test("teacher t1 reads s1 (their student), not s3 or t2", async () => {
     const db = as(env, "t1", "teacher");
     await assertSucceeds(getDoc(doc(db, "users/s1")));
@@ -125,8 +134,14 @@ describe("halaqat", () => {
     await assertSucceeds(getDocs(query(collection(db, "halaqat"), orderBy("name"))));
     await assertSucceeds(addDoc(collection(db, "halaqat"), { name: "حلقة المغرب", teacherId: "t2" }));
     await assertSucceeds(updateDoc(doc(db, "halaqat/h1"), { name: "حلقة الضحى" }));
-    await assertSucceeds(updateDoc(doc(db, "halaqat/h1"), { teacherId: "t2" }));
     await assertSucceeds(deleteDoc(doc(db, "halaqat/h2")));
+  });
+
+  test("the client cannot change a halaqa's teacher (changeHalaqaTeacher function only)", async () => {
+    const db = as(env, "admin", "admin");
+    await assertFails(updateDoc(doc(db, "halaqat/h1"), { teacherId: "t2" }));
+    await assertFails(updateDoc(doc(db, "halaqat/h1"), { name: "حلقة الضحى", teacherId: "t2" }));
+    await assertFails(updateDoc(doc(db, "halaqat/h1"), { name: "" }));
   });
 
   test("admin cannot create an invalid halaqa", async () => {

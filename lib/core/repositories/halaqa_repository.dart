@@ -29,12 +29,8 @@ abstract class HalaqaRepository {
 
   /// Renames [halaqaId]. Same limits on [name] as [create].
   ///
-  /// Allowed for: admins only.
+  /// Allowed for: admins only. To give a halaqa another teacher use
+  /// AccountsService.changeHalaqaTeacher: it also updates the teacherId
+  /// copied into the halaqa's recordings, so security rules deny it here.
   Future<void> rename(String halaqaId, String name);
-
-  /// Gives [halaqaId] to another teacher. Existing recordings keep the
-  /// teacherId they were created with.
-  ///
-  /// Allowed for: admins only. [teacherId] must be a teacher.
-  Future<void> setTeacher(String halaqaId, String teacherId);
 }

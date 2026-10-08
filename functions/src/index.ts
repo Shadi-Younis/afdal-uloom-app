@@ -1,12 +1,9 @@
-import {setGlobalOptions} from "firebase-functions/v2";
-import {onCall} from "firebase-functions/v2/https";
+// Exports only. Global options (region me-west1) must load before any
+// function is defined.
+import "./lib/global_options.js";
 
-// Every function runs next to Firestore and Storage in Tel Aviv. The app uses
-// the same region through FirebaseConstants.functionsRegion in
-// lib/core/constants/firebase_constants.dart.
-setGlobalOptions({region: "me-west1", maxInstances: 10});
-
-// TODO: remove once real functions exist; only proves the app <-> Functions wiring.
-export const ping = onCall((request) => {
-  return {ok: true, uid: request.auth?.uid ?? null};
-});
+export {createUser} from "./accounts/create_user.js";
+export {resetPassword} from "./accounts/reset_password.js";
+export {moveStudent} from "./accounts/move_student.js";
+export {changeHalaqaTeacher} from "./accounts/change_halaqa_teacher.js";
+export {setUserDisabled} from "./accounts/set_user_disabled.js";
