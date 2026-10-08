@@ -55,3 +55,5 @@ flutter test integration_test/emulator_smoke_test.dart -d <device-id> --dart-def
 ## التوثيق
 
 الخطة الكاملة للمشروع (الفكرة، التقنيات، نموذج البيانات، تقسيم العمل، طريقة العمل على Git): [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)
+
+قواعد الكود والبنية: [CLAUDE.md](CLAUDE.md)
