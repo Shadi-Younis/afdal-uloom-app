@@ -24,6 +24,7 @@ void main() {
       'halaqaId': 'h1',
       'fcmTokens': ['token-a'],
       'createdAt': createdAt,
+      'disabled': false,
     });
   });
 
@@ -41,6 +42,22 @@ void main() {
     expect(teacher.studentCode, isNull);
     expect(teacher.halaqaId, isNull);
     expect(teacher.fcmTokens, isEmpty);
+  });
+
+  test('disabled defaults to false, also when the field is missing', () {
+    expect(student.disabled, isFalse);
+    final map = student.toMap()..remove('disabled');
+    expect(AppUser.fromMap('u1', map).disabled, isFalse);
+  });
+
+  test('disabled round trips, and must be a bool', () {
+    final disabled = student.copyWith(disabled: true);
+    expect(disabled.toMap()['disabled'], isTrue);
+    expect(AppUser.fromMap('u1', disabled.toMap()), disabled);
+    expect(
+      () => AppUser.fromMap('u1', {...student.toMap(), 'disabled': 'yes'}),
+      throwsFormatException,
+    );
   });
 
   test('fcmTokens from fromMap cannot be modified', () {
@@ -81,6 +98,7 @@ void main() {
     expect(renamed, isNot(student));
     expect(student.copyWith(), student);
     expect(student.copyWith().hashCode, student.hashCode);
+    expect(student.copyWith(disabled: true), isNot(student));
     expect(student.toString(), contains('s023'));
   });
 }

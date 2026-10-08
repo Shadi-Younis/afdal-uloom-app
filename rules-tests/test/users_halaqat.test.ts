@@ -48,6 +48,20 @@ describe("users", () => {
     await assertFails(updateDoc(doc(db, "users/s1"), { username: "x" }));
   });
 
+  test("nobody changes disabled from the client, not even an admin", async () => {
+    await assertFails(updateDoc(doc(as(env, "s1", "student"), "users/s1"), { disabled: true }));
+    await assertFails(
+      updateDoc(doc(as(env, "s1", "student"), "users/s1"), {
+        fcmTokens: arrayUnion("tok"),
+        disabled: true,
+      }),
+    );
+    await assertFails(updateDoc(doc(as(env, "t1", "teacher"), "users/t1"), { disabled: true }));
+    await assertFails(updateDoc(doc(as(env, "t1", "teacher"), "users/s1"), { disabled: true }));
+    await assertFails(updateDoc(doc(as(env, "admin", "admin"), "users/s1"), { disabled: true }));
+    await assertFails(updateDoc(doc(as(env, "admin", "admin"), "users/admin"), { disabled: true }));
+  });
+
   test("user adds an fcm token to own doc only", async () => {
     const db = as(env, "s1", "student");
     await assertSucceeds(updateDoc(doc(db, "users/s1"), { fcmTokens: arrayUnion("tok") }));
