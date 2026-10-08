@@ -63,6 +63,7 @@ dev_dependencies:
   flutter_native_splash: ^2.4.8
   # Only for tool/generate_web_icons.dart.
   image: ^4.10.1
+  fake_cloud_firestore: ^4.3.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

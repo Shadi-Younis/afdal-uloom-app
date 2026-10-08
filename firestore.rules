@@ -1,11 +1,226 @@
 rules_version = '2';
 
-// DENY ALL for now. The real rules (per role: admin / teacher / student)
-// come in the data-layer task, together with their emulator tests.
+// Data model: docs/PROJECT_PLAN.md section 3. Roles come ONLY from the
+// `role` custom claim, which only server code sets. Anything not allowed
+// below is denied. After changing this file run tool/test_rules.ps1.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    // ---- Who is asking --------------------------------------------------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function hasRole(role) {
+      return signedIn() && request.auth.token.get('role', '') == role;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isTeacher() {
+      return hasRole('teacher');
+    }
+
+    function isStudent() {
+      return hasRole('student');
+    }
+
+    // ---- Lookups --------------------------------------------------------
+
+    function userPath(userId) {
+      return /databases/$(database)/documents/users/$(userId);
+    }
+
+    function halaqaPath(halaqaId) {
+      return /databases/$(database)/documents/halaqat/$(halaqaId);
+    }
+
+    function isUserWithRole(userId, role) {
+      return exists(userPath(userId)) && get(userPath(userId)).data.role == role;
+    }
+
+    // ---- Value checks ---------------------------------------------------
+
+    function isStringOfLength(value, min, max) {
+      return value is string && value.size() >= min && value.size() <= max;
+    }
+
+    function isIntInRange(value, min, max) {
+      return value is int && value >= min && value <= max;
+    }
+
+    // Only the listed keys changed between the stored and the new document.
+    function onlyChanged(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // ---- users ----------------------------------------------------------
+
+    match /users/{userId} {
+      // A teacher may read a student of a halaqa they teach. In a list
+      // query the halaqaId and role filters make this provable.
+      function isTeacherOf(user) {
+        return isTeacher()
+          && user.role == 'student'
+          && user.get('halaqaId', null) is string
+          && get(halaqaPath(user.halaqaId)).data.teacherId == request.auth.uid;
+      }
+
+      allow read: if isSelf(userId) || isAdmin() || isTeacherOf(resource.data);
+
+      // Accounts, roles and halaqa moves are server-side only.
+      allow create, delete: if false;
+
+      allow update: if isSelf(userId)
+        && onlyChanged(['fcmTokens'])
+        && request.resource.data.fcmTokens is list;
+
+      // Memorization progress comes in a later phase.
+      match /progress/{surahNumber} {
+        allow read, write: if false;
+      }
+    }
+
+    // ---- halaqat --------------------------------------------------------
+
+    match /halaqat/{halaqaId} {
+      function isValidHalaqa(data) {
+        return data.keys().hasAll(['name', 'teacherId'])
+          && data.keys().hasOnly(['name', 'teacherId'])
+          && isStringOfLength(data.name, 1, 60)
+          && data.teacherId is string
+          && isUserWithRole(data.teacherId, 'teacher');
+      }
+
+      allow read: if isAdmin()
+        || (isTeacher() && resource.data.teacherId == request.auth.uid)
+        || (isStudent()
+            && get(userPath(request.auth.uid)).data.get('halaqaId', null) == halaqaId);
+
+      allow create: if isAdmin() && isValidHalaqa(request.resource.data);
+      allow update: if isAdmin()
+        && onlyChanged(['name', 'teacherId'])
+        && isValidHalaqa(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // ---- recordings -----------------------------------------------------
+
+    match /recordings/{recordingId} {
+      // Checks for every create, whoever the caller: shape, ranges, path,
+      // and that studentId / halaqaId / teacherId agree with each other.
+      function isValidNewRecording(data) {
+        let required = ['studentId', 'halaqaId', 'teacherId', 'uploadedBy',
+          'type', 'surahNumber', 'ayahFrom', 'ayahTo', 'storagePath',
+          'recordedAt', 'createdAt', 'unreadFeedback', 'reviewed'];
+        let prefix = 'recordings/' + data.studentId + '/' + recordingId + '.';
+        let student = get(userPath(data.studentId)).data;
+        return data.keys().hasAll(required)
+          && data.keys().hasOnly(required.concat(['durationSec']))
+          && data.studentId is string
+          && data.halaqaId is string
+          && data.teacherId is string
+          && data.type in ['official', 'practice']
+          && isIntInRange(data.surahNumber, 1, 114)
+          && data.ayahFrom is int
+          && data.ayahTo is int
+          && data.ayahFrom >= 1
+          && data.ayahFrom <= data.ayahTo
+          && (data.get('durationSec', null) == null
+              || (data.durationSec is int && data.durationSec >= 0))
+          && data.storagePath in [prefix + 'mp3', prefix + 'm4a', prefix + 'aac',
+                                  prefix + 'wav', prefix + 'ogg', prefix + 'webm']
+          && data.uploadedBy == request.auth.uid
+          && data.recordedAt is timestamp
+          && data.createdAt == request.time
+          && data.unreadFeedback is bool
+          && data.reviewed is bool
+          && isUserWithRole(data.studentId, 'student')
+          && student.get('halaqaId', null) == data.halaqaId
+          && get(halaqaPath(data.halaqaId)).data.teacherId == data.teacherId;
+      }
+
+      function isTeacherUpload(data) {
+        return isTeacher()
+          && data.teacherId == request.auth.uid
+          && data.type == 'official'
+          && data.unreadFeedback == false
+          && data.reviewed == true;
+      }
+
+      function isStudentPractice(data) {
+        return isStudent()
+          && data.studentId == request.auth.uid
+          && data.type == 'practice'
+          && data.unreadFeedback == false
+          && data.reviewed == false;
+      }
+
+      function isOwningTeacher() {
+        return signedIn() && resource.data.teacherId == request.auth.uid;
+      }
+
+      function isOwningStudent() {
+        return signedIn() && resource.data.studentId == request.auth.uid;
+      }
+
+      allow read: if isAdmin() || isOwningTeacher() || isOwningStudent();
+
+      allow create: if signedIn()
+        && isValidNewRecording(request.resource.data)
+        && (isAdmin()
+            || isTeacherUpload(request.resource.data)
+            || isStudentPractice(request.resource.data));
+
+      allow update: if
+        (isOwningStudent()
+          && onlyChanged(['unreadFeedback'])
+          && request.resource.data.unreadFeedback == false)
+        || ((isOwningTeacher() || isAdmin())
+          && onlyChanged(['reviewed', 'unreadFeedback'])
+          && request.resource.data.reviewed is bool
+          && request.resource.data.unreadFeedback is bool);
+
+      allow delete: if isOwningTeacher() || isAdmin();
+
+      // ---- recordings/{id}/feedback -------------------------------------
+
+      match /feedback/{feedbackId} {
+        function recording() {
+          return get(/databases/$(database)/documents/recordings/$(recordingId)).data;
+        }
+
+        function isValidNote(data) {
+          return data.keys().hasAll(['teacherId', 'note', 'createdAt'])
+            && data.keys().hasOnly(['teacherId', 'note', 'atSecond', 'rating', 'createdAt'])
+            && data.teacherId == request.auth.uid
+            && isStringOfLength(data.note, 1, 2000)
+            && (data.get('atSecond', null) == null || isIntInRange(data.atSecond, 0, 36000))
+            && (data.get('rating', null) == null || isIntInRange(data.rating, 1, 5))
+            && data.createdAt == request.time;
+        }
+
+        allow read: if isAdmin()
+          || (signedIn()
+              && (recording().teacherId == request.auth.uid
+                  || recording().studentId == request.auth.uid));
+
+        allow create: if signedIn()
+          && recording().teacherId == request.auth.uid
+          && isValidNote(request.resource.data);
+
+        allow update: if false;
+
+        allow delete: if isAdmin()
+          || (signedIn() && resource.data.teacherId == request.auth.uid);
+      }
     }
   }
 }

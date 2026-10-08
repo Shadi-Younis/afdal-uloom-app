@@ -29,10 +29,12 @@ Four layers. Dependencies point downward only.
    services. Pure Dart where possible so they are unit-testable.
 3. **domain** — models (immutable, `fromMap` / `toMap`, no Firebase types such
    as `Timestamp` or `DocumentSnapshot`) and repository / service interfaces
-   (abstract classes).
+   (abstract classes). Models are `const` unless their constructor validates
+   (then it throws `ArgumentError`; asserts alone vanish in release builds).
 4. **data** — Firebase implementations of those interfaces (Firestore,
    Storage, Functions, Auth). The ONLY place that imports Firebase packages,
-   apart from `lib/app/firebase_setup.dart`.
+   apart from `lib/app/firebase_setup.dart`, `lib/core/providers/` (wiring)
+   and `lib/core/errors/firebase_error_mapper.dart`.
 
 Wiring: providers in `lib/core/providers/` bind each interface to its
 implementation. Tests override those providers with fakes.
@@ -127,8 +129,9 @@ Tests may use literal values when they assert behavior (e.g. "the region is
 - Every async screen handles loading, error and empty states with the shared
   widgets in `core/widgets/common/` — never a blank screen.
 - Errors: the data layer catches Firebase exceptions and throws `AppException`
-  (a `code` plus a message key). Controllers expose it as state; presentation
-  maps it to Arabic text from `AppStrings`. Never show raw exception text.
+  (an `AppErrorCode` plus the original error for logs). Controllers expose it
+  as state; presentation shows `errorMessageFor(code)` (core/utils). Never
+  show raw exception text.
 - Naming: `XxxScreen`, `XxxController`, `XxxRepository` (interface),
   `FirestoreXxxRepository` (implementation), `xxxProvider`.
 - Comments explain WHY, not what. Dartdoc (`///`) on every public interface
@@ -146,7 +149,10 @@ Tests may use literal values when they assert behavior (e.g. "the region is
   overrides (`ProviderContainer(overrides: [...])`).
 - Screens: widget tests for the main states (loading, data, empty, error) and
   for navigation. Check Arabic text and a 360x640 phone without overflow.
-- Firestore / Storage rules: emulator tests (added with the real rules).
+- Repositories: unit tests on `FakeFirebaseFirestore` (fake_cloud_firestore).
+- Firestore rules: every change to `firestore.rules` needs tests in
+  `rules-tests/` (allowed AND denied) and a green
+  `tool/test_rules.ps1` run. Storage rules: same, when they are added.
 - Never hit the real Firebase project from a test. Integration tests that
   need Firebase must fail fast unless `USE_EMULATORS=true`.
 - `flutter test` runs without network and without Firebase initialized.
@@ -159,6 +165,11 @@ Tests may use literal values when they assert behavior (e.g. "the region is
 - Never run `firebase deploy`, never change console settings, never write to
   the real project, unless the task explicitly says so.
 - Roles live in the `role` custom claim and are set only by server code.
+- Test data: `tool/seed_emulator.ps1` (emulators running). Keep the seed
+  valid under `firestore.rules`.
+- A data model change (agreed with Shadi) updates, in one PR: PROJECT_PLAN.md
+  section 3, the model, `Fields`, `firestore.rules` and its tests,
+  `firestore.indexes.json` and the seed. See docs/DATA_LAYER.md.
 - Keep `functions/src` region in sync with `FirebaseConstants.functionsRegion`.
 
 ## Branding assets

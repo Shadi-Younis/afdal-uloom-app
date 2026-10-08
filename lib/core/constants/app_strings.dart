@@ -22,4 +22,12 @@ abstract final class AppStrings {
   static const adminHomeTitle = 'لوحة المدير';
   static const teacherHomeTitle = 'لوحة المعلم';
   static const studentHomeTitle = 'لوحة الطالب';
+
+  // Errors, one per AppErrorCode
+  static const errorPermissionDenied = 'ليست لديك صلاحية لهذا الإجراء.';
+  static const errorNotFound = 'العنصر المطلوب غير موجود.';
+  static const errorNetwork =
+      'تعذّر الاتصال. تحقّق من الإنترنت وحاول مرة أخرى.';
+  static const errorInvalidData = 'البيانات غير صحيحة.';
+  static const errorUnknown = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
 }

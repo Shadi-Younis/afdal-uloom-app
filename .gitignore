@@ -51,6 +51,9 @@ serviceAccountKey.json
 *.env
 functions/lib/
 functions/node_modules/
+rules-tests/node_modules/
+tool/seed/node_modules/
+tool/seed/lib/
 
 # Firebase
 .firebase/
