@@ -1,6 +1,6 @@
+import 'package:afdal_uloom_tilawat/app/app.dart';
 import 'package:afdal_uloom_tilawat/app/theme.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/common/school_logo.dart';
-import 'package:afdal_uloom_tilawat/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
