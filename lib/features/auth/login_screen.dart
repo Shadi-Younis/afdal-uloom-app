@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/constants/app_routes.dart';
+import '../../core/constants/app_sizes.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/widgets/common/school_logo.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -13,33 +16,33 @@ class LoginScreen extends StatelessWidget {
         child: Center(
           // Scrolls instead of overflowing on short screens or large text.
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSizes.screenPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SchoolLogo(size: 160),
-                const SizedBox(height: 24),
+                const SchoolLogo(size: AppSizes.logoLarge),
+                const SizedBox(height: AppSizes.spaceL),
                 Text(
-                  'تسجيل الدخول',
+                  AppStrings.loginTitle,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSizes.spaceXL),
                 // TODO: remove after auth
                 FilledButton(
-                  onPressed: () => context.go('/admin'),
-                  child: const Text('دخول كمدير'),
+                  onPressed: () => context.go(AppRoutes.admin),
+                  child: const Text(AppStrings.loginAsAdmin),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSizes.spaceS),
                 // TODO: remove after auth
                 FilledButton(
-                  onPressed: () => context.go('/teacher'),
-                  child: const Text('دخول كمعلم'),
+                  onPressed: () => context.go(AppRoutes.teacher),
+                  child: const Text(AppStrings.loginAsTeacher),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSizes.spaceS),
                 // TODO: remove after auth
                 FilledButton(
-                  onPressed: () => context.go('/student'),
-                  child: const Text('دخول كطالب'),
+                  onPressed: () => context.go(AppRoutes.student),
+                  child: const Text(AppStrings.loginAsStudent),
                 ),
               ],
             ),

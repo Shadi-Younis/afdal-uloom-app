@@ -5,33 +5,28 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
+import '../core/constants/firebase_constants.dart';
 import '../firebase_options.dart';
-
-/// Region of every Cloud Function. Must match `setGlobalOptions` in
-/// functions/src/index.ts.
-const kFunctionsRegion = 'me-west1';
-
-/// Emulator ports, as configured in firebase.json.
-const kAuthEmulatorPort = 9099;
-const kFirestoreEmulatorPort = 8080;
-const kStorageEmulatorPort = 9199;
-const kFunctionsEmulatorPort = 5001;
 
 /// `--dart-define=USE_EMULATORS=true`. Only honoured in debug builds, so a
 /// release build can never talk to the emulators.
-const useEmulators = kDebugMode && bool.fromEnvironment('USE_EMULATORS');
+const useEmulators =
+    kDebugMode && bool.fromEnvironment(FirebaseConstants.useEmulatorsDefine);
 
 /// A debug build talking to the real project shows a red "PROD" banner.
 /// Release builds and emulator runs show nothing.
 const showProdBanner = kDebugMode && !useEmulators;
 
 /// `--dart-define=EMULATOR_HOST=<host>`, e.g. the PC's LAN IP for a real phone.
-const _emulatorHostOverride = String.fromEnvironment('EMULATOR_HOST');
+const _emulatorHostOverride = String.fromEnvironment(
+  FirebaseConstants.emulatorHostDefine,
+);
 
-/// The functions instance for [kFunctionsRegion]. Always call functions
-/// through this, never through `FirebaseFunctions.instance` (us-central1).
+/// The functions instance for [FirebaseConstants.functionsRegion]. Always call
+/// functions through this, never through `FirebaseFunctions.instance`
+/// (us-central1).
 FirebaseFunctions get regionalFunctions =>
-    FirebaseFunctions.instanceFor(region: kFunctionsRegion);
+    FirebaseFunctions.instanceFor(region: FirebaseConstants.functionsRegion);
 
 /// Host the emulators are reached on: [override] if given, otherwise
 /// `10.0.2.2` on Android (the emulator's alias for the PC) and `localhost`
@@ -42,8 +37,10 @@ String resolveEmulatorHost({
   String override = '',
 }) {
   if (override.isNotEmpty) return override;
-  if (!isWeb && platform == TargetPlatform.android) return '10.0.2.2';
-  return 'localhost';
+  if (!isWeb && platform == TargetPlatform.android) {
+    return FirebaseConstants.androidEmulatorHost;
+  }
+  return FirebaseConstants.defaultEmulatorHost;
 }
 
 String get emulatorHost => resolveEmulatorHost(
@@ -58,14 +55,17 @@ Future<void> initFirebase() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (!useEmulators) return;
 
+  const auth = FirebaseConstants.authEmulatorPort;
+  const firestore = FirebaseConstants.firestoreEmulatorPort;
+  const storage = FirebaseConstants.storageEmulatorPort;
+  const functions = FirebaseConstants.functionsEmulatorPort;
   final host = emulatorHost;
-  await FirebaseAuth.instance.useAuthEmulator(host, kAuthEmulatorPort);
-  FirebaseFirestore.instance.useFirestoreEmulator(host, kFirestoreEmulatorPort);
-  await FirebaseStorage.instance.useStorageEmulator(host, kStorageEmulatorPort);
-  regionalFunctions.useFunctionsEmulator(host, kFunctionsEmulatorPort);
+  await FirebaseAuth.instance.useAuthEmulator(host, auth);
+  FirebaseFirestore.instance.useFirestoreEmulator(host, firestore);
+  await FirebaseStorage.instance.useStorageEmulator(host, storage);
+  regionalFunctions.useFunctionsEmulator(host, functions);
   debugPrint(
     '[firebase] USING EMULATORS at $host '
-    '(auth $kAuthEmulatorPort, firestore $kFirestoreEmulatorPort, '
-    'storage $kStorageEmulatorPort, functions $kFunctionsEmulatorPort)',
+    '(auth $auth, firestore $firestore, storage $storage, functions $functions)',
   );
 }

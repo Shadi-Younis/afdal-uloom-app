@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/constants/app_routes.dart';
+import '../../core/constants/app_strings.dart';
+
 class TeacherHomeScreen extends StatelessWidget {
   const TeacherHomeScreen({super.key});
 
@@ -8,19 +11,19 @@ class TeacherHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('لوحة المعلم'),
+        title: const Text(AppStrings.teacherHomeTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'تسجيل الخروج',
+            tooltip: AppStrings.logout,
             // TODO: replace with real signOut (phase 2.4)
-            onPressed: () => context.go('/login'),
+            onPressed: () => context.go(AppRoutes.login),
           ),
         ],
       ),
       body: Center(
         child: Text(
-          'لوحة المعلم',
+          AppStrings.teacherHomeTitle,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),

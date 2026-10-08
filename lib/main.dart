@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app/firebase_setup.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'core/constants/app_strings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,11 +24,11 @@ class AfdalUloomApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'أفضل العلوم',
+      title: AppStrings.appTitle,
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      locale: const Locale('ar'),
-      supportedLocales: const [Locale('ar')],
+      locale: const Locale(AppStrings.languageCode),
+      supportedLocales: const [Locale(AppStrings.languageCode)],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -36,7 +37,7 @@ class AfdalUloomApp extends ConsumerWidget {
       routerConfig: ref.watch(routerProvider),
       builder: (context, child) => showProdBanner
           ? Banner(
-              message: 'PROD',
+              message: AppStrings.prodBanner,
               location: BannerLocation.topStart,
               color: Colors.red,
               child: child!,
