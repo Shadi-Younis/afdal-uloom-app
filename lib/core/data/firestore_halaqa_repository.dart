@@ -48,13 +48,6 @@ class FirestoreHalaqaRepository implements HalaqaRepository {
     () => _db.doc(FirestorePaths.halaqa(halaqaId)).update({Fields.name: name}),
   );
 
-  @override
-  Future<void> setTeacher(String halaqaId, String teacherId) => guard(
-    () => _db.doc(FirestorePaths.halaqa(halaqaId)).update({
-      Fields.teacherId: teacherId,
-    }),
-  );
-
   Stream<List<Halaqa>> _watchList(Query<Map<String, dynamic>> query) =>
       guardStream(
         query.snapshots().map(

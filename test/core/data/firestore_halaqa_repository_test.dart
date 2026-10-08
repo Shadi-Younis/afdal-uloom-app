@@ -39,13 +39,12 @@ void main() {
     expect(mine.map((h) => h.name), ['حلقة الضحى', 'حلقة العصر']);
   });
 
-  test('rename and setTeacher update one field each', () async {
+  test('rename changes the name only', () async {
     final id = await repository.create(name: 'حلقة', teacherId: 't1');
     await repository.rename(id, 'حلقة المغرب');
-    await repository.setTeacher(id, 't2');
     expect(
       await repository.watch(id).first,
-      Halaqa(id: id, name: 'حلقة المغرب', teacherId: 't2'),
+      Halaqa(id: id, name: 'حلقة المغرب', teacherId: 't1'),
     );
   });
 }
