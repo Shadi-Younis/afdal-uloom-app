@@ -46,6 +46,22 @@ flutter run -d chrome
 
 على محاكي أندرويد لا حاجة لـ `EMULATOR_HOST` (القيمة الافتراضية `10.0.2.2`). بدون `USE_EMULATORS=true` يتصل التطبيق بالمشروع الحقيقي، ونسخة release لا تتصل بالـ Emulator أبداً.
 
+### بيانات تجريبية
+
+بعد تشغيل الـ Emulators، في نافذة أخرى:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1
+```
+
+ينشئ مديراً ومعلمَين و3 حلقات و12 طالباً مع تسجيلات وملاحظات، ويمكن تشغيله أكثر من مرة بأمان. البيانات تبقى محفوظة في `.emulator-data`. بعد إضافة شاشة الدخول: سجّل الدخول بـ `shadi` / `test1234` (المدير)، أو `t01` (معلم)، أو `s001` (طالب)، وكلمة السر نفسها للجميع.
+
+اختبار قواعد الحماية (أوقف الـ Emulators أولاً لأن الاختبار يستخدم المنفذ 8080):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool/test_rules.ps1
+```
+
 اختبار سريع للربط مع الـ Emulators (يعمل فقط مع `USE_EMULATORS=true`):
 
 ```bash
@@ -66,3 +82,5 @@ flutter test integration_test/emulator_smoke_test.dart -d <device-id> --dart-def
 الخطة الكاملة للمشروع (الفكرة، التقنيات، نموذج البيانات، تقسيم العمل، طريقة العمل على Git): [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)
 
 قواعد الكود والبنية: [CLAUDE.md](CLAUDE.md)
+
+طبقة البيانات (من يستدعي ماذا، رفع التسجيلات، الـ Seed، اختبار القواعد): [docs/DATA_LAYER.md](docs/DATA_LAYER.md)
