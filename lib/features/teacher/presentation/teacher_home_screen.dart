@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_routes.dart';
-import '../../core/constants/app_strings.dart';
+import '../../../core/constants/app_routes.dart';
+import '../../../core/constants/app_strings.dart';
 
 class TeacherHomeScreen extends StatelessWidget {
   const TeacherHomeScreen({super.key});

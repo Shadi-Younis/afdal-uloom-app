@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_routes.dart';
-import '../../core/constants/app_sizes.dart';
-import '../../core/constants/app_strings.dart';
-import '../../core/widgets/common/school_logo.dart';
+import '../../../core/constants/app_routes.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../../core/widgets/common/school_logo.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

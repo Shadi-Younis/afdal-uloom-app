@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_routes.dart';
-import '../features/admin/admin_home_screen.dart';
-import '../features/auth/login_screen.dart';
-import '../features/student/student_home_screen.dart';
-import '../features/teacher/teacher_home_screen.dart';
+import '../features/admin/presentation/admin_home_screen.dart';
+import '../features/auth/presentation/login_screen.dart';
+import '../features/student/presentation/student_home_screen.dart';
+import '../features/teacher/presentation/teacher_home_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_routes.dart';
-import '../../core/constants/app_strings.dart';
+import '../../../core/constants/app_routes.dart';
+import '../../../core/constants/app_strings.dart';
 
-class StudentHomeScreen extends StatelessWidget {
-  const StudentHomeScreen({super.key});
+class AdminHomeScreen extends StatelessWidget {
+  const AdminHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.studentHomeTitle),
+        title: const Text(AppStrings.adminHomeTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -23,7 +23,7 @@ class StudentHomeScreen extends StatelessWidget {
       ),
       body: Center(
         child: Text(
-          AppStrings.studentHomeTitle,
+          AppStrings.adminHomeTitle,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
