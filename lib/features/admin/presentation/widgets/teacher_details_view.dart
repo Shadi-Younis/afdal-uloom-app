@@ -27,6 +27,7 @@ class TeacherDetailsView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AccountInfo(
+              title: AppStrings.teacherInfo,
               user: teacher,
               actions: [
                 ResetPasswordButton(user: teacher),

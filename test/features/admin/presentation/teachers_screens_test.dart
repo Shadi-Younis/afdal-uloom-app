@@ -73,6 +73,8 @@ void main() {
 
   testWidgets('details: halaqat, reset password and disable', (tester) async {
     await pumpAdminApp(tester, school, location: '/admin/teachers/t01');
+    expect(find.text('الشيخ محمود'), findsOneWidget);
+    expect(find.text('بيانات المعلم'), findsOneWidget);
     expect(find.text('حلقة الفجر'), findsOneWidget);
     expect(find.text('تغيير كلمة السر'), findsOneWidget);
 

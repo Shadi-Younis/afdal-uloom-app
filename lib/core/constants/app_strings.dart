@@ -166,6 +166,8 @@ abstract final class AppStrings {
   static const statusLabel = 'الحالة';
   static const statusActive = 'مفعّل';
   static const recordingsTitle = 'التسجيلات';
+  static const studentInfo = 'بيانات الطالب';
+  static const teacherInfo = 'بيانات المعلم';
   static const noRecordings = 'لا توجد تسجيلات بعد';
   static const moveStudent = 'نقل إلى حلقة أخرى';
   static const chooseHalaqaTitle = 'اختر الحلقة الجديدة';

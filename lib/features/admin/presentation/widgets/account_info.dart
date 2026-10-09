@@ -7,16 +7,20 @@ import 'disabled_chip.dart';
 import 'info_row.dart';
 import 'section_card.dart';
 
-/// The account card of a teacher or student: name, username, [extraRows]
-/// (code, halaqa, ...), created date and status, then [actions].
+/// The account section of a teacher or student, under [title]: username,
+/// [extraRows] (code, halaqa, ...), created date and status, then
+/// [actions]. The name is in the page title, so not repeated here.
 class AccountInfo extends StatelessWidget {
   const AccountInfo({
     super.key,
+    required this.title,
     required this.user,
     required this.actions,
     this.extraRows = const [],
   });
 
+  /// The section title, e.g. "بيانات الطالب" (the page title has the name).
+  final String title;
   final AppUser user;
   final List<Widget> extraRows;
   final List<Widget> actions;
@@ -26,7 +30,7 @@ class AccountInfo extends StatelessWidget {
     final created = MaterialLocalizations.of(context)
         .formatMediumDate(user.createdAt);
     return SectionCard(
-      title: user.fullName,
+      title: title,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

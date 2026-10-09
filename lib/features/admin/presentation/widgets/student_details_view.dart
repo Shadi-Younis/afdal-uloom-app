@@ -27,6 +27,7 @@ class StudentDetailsView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AccountInfo(
+              title: AppStrings.studentInfo,
               user: student,
               extraRows: [
                 InfoRow(
