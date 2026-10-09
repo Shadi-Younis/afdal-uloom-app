@@ -27,9 +27,10 @@ void main() {
   test('digits are not always in the same positions', () {
     final firstTwoDigits = {
       for (var seed = 0; seed < 200; seed++)
-        PasswordGenerator(
-          Random(seed),
-        ).generate().substring(0, 2).contains(RegExp(r'^\d\d$')),
+        PasswordGenerator(Random(seed))
+            .generate()
+            .substring(0, 2)
+            .contains(RegExp(r'^\d\d$')),
     };
     expect(firstTwoDigits, {true, false});
   });

@@ -7,9 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'admin_fixture.dart';
+import 'fake_accounts_service.dart';
 import 'fake_auth_service.dart';
+import 'fake_halaqa_repository.dart';
 import 'fake_user_repository.dart';
 
 /// Same as main(): fonts come from assets/google_fonts/. Call in setUpAll.
@@ -29,12 +33,22 @@ void usePhoneSize(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
+/// Makes the test view a wide screen (the studio PC), 1280x800.
+void useWideSize(WidgetTester tester) {
+  tester.view
+    ..physicalSize = const Size(1280, 800)
+    ..devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
 /// Pumps the whole app (router included) on fake services. [settle] false
 /// pumps a few frames instead, for screens with a never-ending spinner.
 Future<void> pumpApp(
   WidgetTester tester, {
   required FakeAuthService auth,
   FakeUserRepository? users,
+  FakeHalaqaRepository? halaqat,
+  FakeAccountsService? accounts,
   bool settle = true,
 }) async {
   await tester.pumpWidget(
@@ -42,6 +56,12 @@ Future<void> pumpApp(
       overrides: [
         authServiceProvider.overrideWithValue(auth),
         userRepositoryProvider.overrideWithValue(users ?? FakeUserRepository()),
+        halaqaRepositoryProvider.overrideWithValue(
+          halaqat ?? FakeHalaqaRepository(),
+        ),
+        accountsServiceProvider.overrideWithValue(
+          accounts ?? FakeAccountsService(),
+        ),
       ],
       child: const AfdalUloomApp(),
     ),
@@ -77,3 +97,28 @@ Future<void> pumpScreen(
   );
   await tester.pump();
 }
+
+/// Pumps the whole app signed in as the fixture's admin, then opens
+/// [location] (an /admin path).
+Future<void> pumpAdminApp(
+  WidgetTester tester,
+  AdminFixture school, {
+  String? location,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(overrides: school.overrides, child: const AfdalUloomApp()),
+  );
+  await tester.pumpAndSettle();
+  if (location != null) {
+    currentRouter(tester).go(location);
+    await tester.pumpAndSettle();
+  }
+}
+
+/// The app's router.
+GoRouter currentRouter(WidgetTester tester) =>
+    GoRouter.of(tester.element(find.byType(Scaffold).first));
+
+/// The path the router shows now.
+String currentPath(WidgetTester tester) =>
+    currentRouter(tester).routerDelegate.currentConfiguration.uri.path;

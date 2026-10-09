@@ -9,6 +9,7 @@ import 'package:afdal_uloom_tilawat/core/repositories/halaqa_repository.dart';
 /// - [watchError]: emitted by every watch instead of data.
 /// - [writeError]: what create / rename throw.
 /// - [gate]: when set, writes wait for it (to test loading states).
+/// - [watchGate]: when set, streams emit nothing until it completes.
 class FakeHalaqaRepository implements HalaqaRepository {
   FakeHalaqaRepository([List<Halaqa> halaqat = const []])
     : halaqat = {for (final h in halaqat) h.id: h};
@@ -17,6 +18,7 @@ class FakeHalaqaRepository implements HalaqaRepository {
   Object? watchError;
   Object? writeError;
   Completer<void>? gate;
+  Completer<void>? watchGate;
 
   final createCalls = <(String name, String teacherId)>[];
   final renameCalls = <(String id, String name)>[];
@@ -65,6 +67,7 @@ class FakeHalaqaRepository implements HalaqaRepository {
         ..sort((a, b) => a.name.compareTo(b.name));
 
   Stream<T> _live<T>(T Function() read) async* {
+    await watchGate?.future;
     if (watchError case final error?) throw error;
     yield read();
     yield* _changed.stream.map((_) => read());
