@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/session_providers.dart';
 import '../../../core/models/app_user.dart';
 import '../../../core/models/halaqa.dart';
 import '../../../core/models/user_role.dart';
@@ -38,4 +39,30 @@ final activeTeachersProvider = Provider.autoDispose<AsyncValue<List<AppUser>>>(
   (ref) => ref
       .watch(adminTeachersProvider)
       .whenData((teachers) => [...teachers.where((t) => !t.disabled)]),
+);
+
+/// The active teachers a halaqa can move to: all but [currentTeacherId].
+final otherActiveTeachersProvider = Provider.autoDispose
+    .family<AsyncValue<List<AppUser>>, String>(
+      (ref, currentTeacherId) => ref
+          .watch(activeTeachersProvider)
+          .whenData(
+            (teachers) => [...teachers.where((t) => t.id != currentTeacherId)],
+          ),
+    );
+
+/// The halaqat a student can move to: all but [currentHalaqaId].
+final otherHalaqatProvider = Provider.autoDispose
+    .family<AsyncValue<List<Halaqa>>, String?>(
+      (ref, currentHalaqaId) => ref
+          .watch(adminHalaqatProvider)
+          .whenData(
+            (halaqat) => [...halaqat.where((h) => h.id != currentHalaqaId)],
+          ),
+    );
+
+/// Whether the signed-in admin may disable [uid]: never their own account
+/// (setUserDisabled refuses it too).
+final canDisableProvider = Provider.autoDispose.family<bool, String>(
+  (ref, uid) => ref.watch(sessionProvider.select((s) => s.value?.uid)) != uid,
 );

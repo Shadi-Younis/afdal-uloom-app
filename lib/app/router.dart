@@ -5,11 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../core/application/session_providers.dart';
 import '../core/constants/app_routes.dart';
 import '../core/models/auth_session.dart';
-import '../features/admin/presentation/admin_home_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/student/presentation/student_home_screen.dart';
 import '../features/teacher/presentation/teacher_home_screen.dart';
+import 'admin_routes.dart';
 import 'route_guard.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -35,11 +35,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.loginName,
         builder: (context, state) => const LoginScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.admin,
-        name: AppRoutes.adminName,
-        builder: (context, state) => const AdminHomeScreen(),
-      ),
+      buildAdminRoutes(),
       GoRoute(
         path: AppRoutes.teacher,
         name: AppRoutes.teacherName,

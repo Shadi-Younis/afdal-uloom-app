@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/models/halaqa.dart';
 import '../../../core/models/user_role.dart';
 import '../../../core/providers/password_generator_provider.dart';
 import '../../../core/providers/service_providers.dart';
+import '../../../core/utils/async_value_combine.dart';
 import '../../../core/utils/student_code.dart';
 import 'admin_data_providers.dart';
 import 'form_submit_state.dart';
@@ -77,6 +79,19 @@ class AddStudentController extends Notifier<FormSubmitState> {
 final addStudentControllerProvider =
     NotifierProvider.autoDispose<AddStudentController, FormSubmitState>(
       AddStudentController.new,
+    );
+
+/// What the add-student form needs before it can show: the halaqat to
+/// choose from, and the suggested code.
+final addStudentChoicesProvider =
+    Provider.autoDispose<
+      AsyncValue<({List<Halaqa> halaqat, String? suggestedCode})>
+    >(
+      (ref) => combine2(
+        ref.watch(adminHalaqatProvider),
+        ref.watch(suggestedStudentCodeProvider),
+        (halaqat, code) => (halaqat: halaqat, suggestedCode: code),
+      ),
     );
 
 /// The code the form suggests: one above the highest existing code, or

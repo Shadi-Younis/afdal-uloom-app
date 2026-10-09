@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/session_providers.dart';
 import '../../../core/models/app_user.dart';
 import '../../../core/models/halaqa.dart';
 import '../../../core/utils/async_value_combine.dart';
@@ -44,9 +43,3 @@ final teacherSummaryProvider = Provider.autoDispose
             (all) => all.where((s) => s.teacher.id == teacherId).firstOrNull,
           ),
     );
-
-/// Whether the signed-in admin may disable [uid]: never their own account
-/// (setUserDisabled refuses it too).
-final canDisableProvider = Provider.autoDispose.family<bool, String>(
-  (ref, uid) => ref.watch(sessionProvider.select((s) => s.value?.uid)) != uid,
-);
