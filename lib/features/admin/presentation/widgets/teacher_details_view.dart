@@ -10,6 +10,7 @@ import 'content_width.dart';
 import 'danger_section.dart';
 import 'delete_teacher_button.dart';
 import 'disable_account_button.dart';
+import 'edit_profile_button.dart';
 import 'reset_password_button.dart';
 import 'section_card.dart';
 
@@ -32,6 +33,7 @@ class TeacherDetailsView extends StatelessWidget {
               title: AppStrings.teacherInfo,
               user: teacher,
               actions: [
+                EditProfileButton(user: teacher),
                 ResetPasswordButton(user: teacher),
                 DisableAccountButton(user: teacher),
               ],

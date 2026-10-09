@@ -192,6 +192,37 @@ abstract final class AppStrings {
   static const accountDisabled = 'تم إيقاف الحساب';
   static const accountEnabled = 'تمت إعادة تفعيل الحساب';
 
+  // My account
+  static const myAccount = 'حسابي';
+  static const myInfo = 'بياناتي';
+  static const roleLabel = 'الدور';
+  static const roleNameAdmin = 'مدير';
+  static const roleNameTeacher = 'معلم';
+  static const roleNameStudent = 'طالب';
+  static const currentPasswordLabel = 'كلمة السر الحالية';
+  static const newPasswordLabel = 'كلمة السر الجديدة';
+  static const confirmPasswordLabel = 'تأكيد كلمة السر الجديدة';
+  static const currentPasswordRequired = 'أدخل كلمة السر الحالية';
+  static const passwordsDontMatch = 'كلمتا السر غير متطابقتين';
+  static const changePasswordHint =
+      'تبقى مسجّلاً على هذا الجهاز، وتُغلق جلساتك على الأجهزة الأخرى.';
+
+  // Editing accounts
+  static const editProfile = 'تعديل البيانات';
+  static String editProfileTitle(String name) => 'تعديل بيانات $name';
+  static const usernameChangeHint =
+      'تغيير اسم المستخدم يغيّر اسم الدخول. أخبر صاحب الحساب بالاسم الجديد.';
+  static const profileUpdated = 'تم حفظ التعديلات';
+
+  // Admins
+  static const adminsTitle = 'المديرون';
+  static const addAdmin = 'إضافة مدير';
+  static const newAdminTitle = 'مدير جديد';
+  static const adminCreated = 'تمت إضافة المدير';
+  static const adminInfo = 'بيانات المدير';
+  static const adminsHint =
+      'مدير ثانٍ احتياطي يستطيع الدخول إذا تعذّر على المدير الأول.';
+
   // Deleting
   static const ok = 'حسناً';
   static const dangerZone = 'الحذف';

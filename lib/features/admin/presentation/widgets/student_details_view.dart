@@ -8,6 +8,7 @@ import 'content_width.dart';
 import 'danger_section.dart';
 import 'delete_student_button.dart';
 import 'disable_account_button.dart';
+import 'edit_profile_button.dart';
 import 'info_row.dart';
 import 'move_student_button.dart';
 import 'reset_password_button.dart';
@@ -43,6 +44,7 @@ class StudentDetailsView extends StatelessWidget {
                 ),
               ],
               actions: [
+                EditProfileButton(user: student),
                 ResetPasswordButton(user: student),
                 MoveStudentButton(summary: summary),
                 DisableAccountButton(user: student),
