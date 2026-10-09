@@ -32,7 +32,7 @@ void main() {
       expect(currentPath(tester), location);
       expect(tester.takeException(), isNull);
       expect(
-        Directionality.of(tester.element(find.byType(AppBar).last)),
+        Directionality.of(tester.element(find.byType(Scaffold).last)),
         TextDirection.rtl,
       );
       expect(find.byTooltip('تسجيل الخروج'), findsOneWidget);
@@ -45,7 +45,7 @@ void main() {
     usePhoneSize(tester);
     await pumpAdminApp(tester, AdminFixture());
 
-    expect(find.text('أهلاً بك'), findsOneWidget);
+    expect(find.text('السلام عليكم ورحمة الله'), findsOneWidget);
     expect(find.text('شادي'), findsOneWidget);
     // 2 halaqat, 2 active teachers (t03 disabled), 3 active students.
     expect(find.text('٢'), findsNWidgets(2));

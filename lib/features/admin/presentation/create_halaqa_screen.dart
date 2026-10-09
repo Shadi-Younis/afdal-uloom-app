@@ -6,7 +6,7 @@ import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/common/app_snack_bar.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/admin_data_providers.dart';
 import 'widgets/admin_async_view.dart';
 import 'widgets/admin_page.dart';
@@ -24,8 +24,7 @@ class CreateHalaqaScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: ref.watch(activeTeachersProvider),
         builder: (context, teachers) => teachers.isEmpty
-            ? EmptyView(
-                icon: Icons.person_off_outlined,
+            ? EmptyState(
                 message: AppStrings.noActiveTeachers,
                 actionLabel: AppStrings.addTeacher,
                 onAction: () => context.go(AppRoutes.adminNewTeacher),

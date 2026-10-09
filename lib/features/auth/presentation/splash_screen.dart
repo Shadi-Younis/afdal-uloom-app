@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/widgets/common/loading_view.dart';
+import '../../../core/widgets/islamic/loading_state.dart';
 import '../../../core/widgets/common/school_logo.dart';
 
 /// Shown while the session is still unknown at start-up, so a signed-in
@@ -18,7 +18,7 @@ class SplashScreen extends StatelessWidget {
           children: [
             SchoolLogo(size: AppSizes.logoMedium),
             SizedBox(height: AppSizes.spaceL),
-            LoadingView(),
+            LoadingState(),
           ],
         ),
       ),

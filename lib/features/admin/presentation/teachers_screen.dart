@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/teacher_summary.dart';
 import 'widgets/admin_async_view.dart';
 import 'widgets/admin_page.dart';
@@ -28,8 +28,7 @@ class TeachersScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: ref.watch(teacherSummariesProvider),
         builder: (context, teachers) => teachers.isEmpty
-            ? EmptyView(
-                icon: Icons.person_outline,
+            ? EmptyState(
                 message: AppStrings.noTeachers,
                 actionLabel: AppStrings.addTeacher,
                 onAction: add,

@@ -6,7 +6,7 @@ import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/common/app_snack_bar.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/add_student_controller.dart';
 import '../application/issued_credentials.dart';
 import 'widgets/admin_async_view.dart';
@@ -43,8 +43,7 @@ class AddStudentScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: ref.watch(addStudentChoicesProvider),
         builder: (context, choices) => choices.halaqat.isEmpty
-            ? EmptyView(
-                icon: Icons.groups_outlined,
+            ? EmptyState(
                 message: AppStrings.createHalaqaFirst,
                 actionLabel: AppStrings.createHalaqa,
                 onAction: () => context.go(AppRoutes.adminNewHalaqa),

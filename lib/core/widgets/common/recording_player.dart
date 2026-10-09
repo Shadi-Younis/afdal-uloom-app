@@ -6,7 +6,7 @@ import '../../application/recording_player_phase.dart';
 import '../../constants/app_durations.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
-import 'error_view.dart';
+import '../islamic/error_state.dart';
 import 'playback_speed_selector.dart';
 import 'player_controls.dart';
 import 'player_seek_bar.dart';
@@ -33,7 +33,7 @@ class RecordingPlayer extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSizes.spaceM),
         child: switch (state.phase) {
           RecordingPlayerPhase.loading => const _PlayerLoading(),
-          RecordingPlayerPhase.error => ErrorView(
+          RecordingPlayerPhase.error => ErrorState(
             error: state.error!,
             onRetry: controller.retry,
           ),

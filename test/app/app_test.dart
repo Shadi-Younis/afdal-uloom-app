@@ -1,3 +1,7 @@
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/app_back_button.dart';
+import 'package:afdal_uloom_tilawat/features/admin/presentation/admin_home_screen.dart';
+import 'package:afdal_uloom_tilawat/features/student/presentation/student_home_screen.dart';
+import 'package:afdal_uloom_tilawat/features/teacher/presentation/teacher_home_screen.dart';
 import 'package:afdal_uloom_tilawat/app/app_colors.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
 import 'package:afdal_uloom_tilawat/core/models/auth_session.dart';
@@ -71,13 +75,13 @@ void main() {
     expect(banner.color, AppColors.error);
   });
 
-  for (final (uid, role, title, name) in [
-    ('shadi', UserRole.admin, 'لوحة المدير', 'شادي'),
-    ('t01', UserRole.teacher, 'لوحة المعلم', 'الشيخ محمود'),
-    ('s001', UserRole.student, 'لوحة الطالب', 'أحمد الخطيب'),
+  for (final (uid, role, home, name) in [
+    ('shadi', UserRole.admin, AdminHomeScreen, 'شادي'),
+    ('t01', UserRole.teacher, TeacherHomeScreen, 'الشيخ محمود'),
+    ('s001', UserRole.student, StudentHomeScreen, 'أحمد الخطيب'),
   ]) {
-    testWidgets('signing in as $uid opens $title with the Arabic name; '
-        'logout returns to login', (tester) async {
+    testWidgets('signing in as $uid opens $home with the greeting and the '
+        'Arabic name; logout returns to login', (tester) async {
       final auth = FakeAuthService(
         sessionAfterSignIn: AuthSession(uid: uid, role: role),
       );
@@ -94,12 +98,10 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'دخول'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.descendant(of: find.byType(AppBar), matching: find.text(title)),
-        findsOneWidget,
-      );
+      expect(find.byType(home), findsOneWidget);
+      expect(find.text('السلام عليكم ورحمة الله'), findsOneWidget);
       expect(find.text(name), findsOneWidget);
-      expect(find.byType(BackButton), findsNothing);
+      expect(find.byType(AppBackButton), findsNothing);
 
       await tester.tap(find.byTooltip('تسجيل الخروج'));
       await tester.pumpAndSettle();
@@ -118,7 +120,7 @@ void main() {
       ),
       users: users,
     );
-    expect(find.text('لوحة المعلم'), findsOneWidget);
+    expect(find.byType(TeacherHomeScreen), findsOneWidget);
     expect(find.text('الشيخ محمود'), findsOneWidget);
   });
 

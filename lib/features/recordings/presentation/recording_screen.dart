@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/app_exception.dart';
-import '../../../core/widgets/common/error_view.dart';
-import '../../../core/widgets/common/loading_view.dart';
+import '../../../core/widgets/islamic/error_state.dart';
+import '../../../core/widgets/islamic/loading_state.dart';
 import '../application/recording_details_providers.dart';
 import 'widgets/recording_details_view.dart';
 
@@ -39,15 +39,15 @@ class RecordingScreen extends ConsumerWidget {
           AsyncData(value: final recording?) => RecordingDetailsView(
             recording: recording,
           ),
-          AsyncData() => const ErrorView(
+          AsyncData() => const ErrorState(
             error: AppException(AppErrorCode.notFound),
           ),
-          AsyncError(:final error) => ErrorView(
+          AsyncError(:final error) => ErrorState(
             error: error,
             onRetry: () =>
                 ref.invalidate(recordingDetailsProvider(recordingId)),
           ),
-          _ => const LoadingView(),
+          _ => const LoadingState(),
         },
       ),
     );

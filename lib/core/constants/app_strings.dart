@@ -13,6 +13,43 @@ abstract final class AppStrings {
 
   static const retry = 'إعادة المحاولة';
   static const loading = 'جارٍ التحميل';
+  static const back = 'رجوع';
+
+  // Ornamental texts (Amiri).
+  static const basmala = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+  static const hadith = '«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»';
+  static const salam = 'السلام عليكم ورحمة الله';
+
+  /// Android back on a home screen; a second press within 2 s exits.
+  static const pressBackAgainToExit = 'اضغط مرة أخرى للخروج';
+
+  // Hijri date: "٢٧ ربيع الآخر ١٤٤٨ هـ · الجمعة".
+  static const hijriMonths = [
+    'محرم',
+    'صفر',
+    'ربيع الأول',
+    'ربيع الآخر',
+    'جمادى الأولى',
+    'جمادى الآخرة',
+    'رجب',
+    'شعبان',
+    'رمضان',
+    'شوال',
+    'ذو القعدة',
+    'ذو الحجة',
+  ];
+  static const hijriEra = 'هـ';
+
+  /// Monday first, like DateTime.weekday (1 = Monday).
+  static const weekdays = [
+    'الاثنين',
+    'الثلاثاء',
+    'الأربعاء',
+    'الخميس',
+    'الجمعة',
+    'السبت',
+    'الأحد',
+  ];
 
   // Login
   static const loginTitle = 'تسجيل الدخول';
@@ -28,6 +65,10 @@ abstract final class AppStrings {
   static const adminHomeTitle = 'لوحة المدير';
   static const teacherHomeTitle = 'لوحة المعلم';
   static const studentHomeTitle = 'لوحة الطالب';
+  static const teacherComingSoon =
+      'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
+  static const studentComingSoon =
+      'ستظهر هنا تسجيلاتك وملاحظات معلمك قريباً، إن شاء الله.';
 
   // Shared actions and states
   static const cancel = 'إلغاء';

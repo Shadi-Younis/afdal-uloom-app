@@ -5,8 +5,8 @@ import '../../../../core/application/recording_player_controller.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/recording.dart';
-import '../../../../core/widgets/common/error_view.dart';
-import '../../../../core/widgets/common/loading_view.dart';
+import '../../../../core/widgets/islamic/error_state.dart';
+import '../../../../core/widgets/islamic/loading_state.dart';
 import '../../application/recording_details_providers.dart';
 import 'feedback_tile.dart';
 
@@ -48,12 +48,12 @@ class FeedbackSection extends ConsumerWidget {
                     ),
                 ],
               ),
-              AsyncError(:final error) => ErrorView(
+              AsyncError(:final error) => ErrorState(
                 error: error,
                 onRetry: () =>
                     ref.invalidate(recordingFeedbackProvider(recording.id)),
               ),
-              _ => const LoadingView(),
+              _ => const LoadingState(),
             },
           ],
         ),

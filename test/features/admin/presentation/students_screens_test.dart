@@ -91,9 +91,7 @@ void main() {
   });
 
   group('student details', () {
-    testWidgets('account info, actions and the recordings', (
-      tester,
-    ) async {
+    testWidgets('account info, actions and the recordings', (tester) async {
       usePhoneSize(tester);
       await pumpAdminApp(tester, school, location: '/admin/students/s001');
 

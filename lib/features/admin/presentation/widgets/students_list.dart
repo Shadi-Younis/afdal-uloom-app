@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/widgets/common/empty_view.dart';
+import '../../../../core/widgets/islamic/empty_state.dart';
 import '../../application/students_filter_controller.dart';
 import 'admin_async_view.dart';
 import 'student_tile.dart';
@@ -19,10 +19,7 @@ class StudentsList extends ConsumerWidget {
     return AdminAsyncView(
       value: ref.watch(filteredStudentsProvider),
       builder: (context, students) => students.isEmpty
-          ? const EmptyView(
-              icon: Icons.search_off,
-              message: AppStrings.noResults,
-            )
+          ? const EmptyState(message: AppStrings.noResults)
           : ListView.separated(
               padding: const EdgeInsets.only(bottom: AppSizes.fabClearance),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

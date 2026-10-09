@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/widgets/common/error_view.dart';
-import '../../../../core/widgets/common/loading_view.dart';
+import '../../../../core/widgets/islamic/error_state.dart';
+import '../../../../core/widgets/islamic/loading_state.dart';
 import '../../../../core/widgets/common/recording_tile.dart';
 import '../../application/admin_data_providers.dart';
 import 'section_card.dart';
@@ -36,11 +36,11 @@ class StudentRecordingsSection extends ConsumerWidget {
               ),
           ],
         ),
-        AsyncError(:final error) => ErrorView(
+        AsyncError(:final error) => ErrorState(
           error: error,
           onRetry: () => ref.invalidate(studentRecordingsProvider(studentId)),
         ),
-        _ => const LoadingView(),
+        _ => const LoadingState(),
       },
     );
   }

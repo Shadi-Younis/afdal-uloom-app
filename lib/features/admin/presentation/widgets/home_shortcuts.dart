@@ -5,7 +5,9 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 
-/// The home screen's buttons for the three most common tasks.
+/// The home screen's buttons for the three most common tasks: the first
+/// filled, the others outlined. Each form opens on top of the home (push),
+/// so back returns here.
 class HomeShortcuts extends StatelessWidget {
   const HomeShortcuts({super.key});
 
@@ -15,20 +17,20 @@ class HomeShortcuts extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton.icon(
-          onPressed: () => context.go(AppRoutes.adminNewStudent),
-          icon: const Icon(Icons.person_add_alt_1_outlined),
+          onPressed: () => context.push(AppRoutes.adminNewStudent),
+          icon: const Icon(Icons.add),
           label: const Text(AppStrings.addStudent),
         ),
         const SizedBox(height: AppSizes.spaceS),
-        FilledButton.tonalIcon(
-          onPressed: () => context.go(AppRoutes.adminNewTeacher),
-          icon: const Icon(Icons.person_add_outlined),
+        OutlinedButton.icon(
+          onPressed: () => context.push(AppRoutes.adminNewTeacher),
+          icon: const Icon(Icons.add),
           label: const Text(AppStrings.addTeacher),
         ),
         const SizedBox(height: AppSizes.spaceS),
-        FilledButton.tonalIcon(
-          onPressed: () => context.go(AppRoutes.adminNewHalaqa),
-          icon: const Icon(Icons.group_add_outlined),
+        OutlinedButton.icon(
+          onPressed: () => context.push(AppRoutes.adminNewHalaqa),
+          icon: const Icon(Icons.add),
           label: const Text(AppStrings.createHalaqa),
         ),
       ],

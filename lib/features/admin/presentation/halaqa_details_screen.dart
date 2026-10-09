@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/app_exception.dart';
-import '../../../core/widgets/common/error_view.dart';
+import '../../../core/widgets/islamic/error_state.dart';
 import '../application/halaqa_summary.dart';
 import 'widgets/admin_async_view.dart';
 import 'widgets/admin_page.dart';
@@ -24,7 +24,7 @@ class HalaqaDetailsScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: summary,
         builder: (context, summary) => summary == null
-            ? const ErrorView(error: AppException(AppErrorCode.notFound))
+            ? const ErrorState(error: AppException(AppErrorCode.notFound))
             : HalaqaDetailsView(summary: summary),
       ),
     );

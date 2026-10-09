@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/halaqa_summary.dart';
 import 'widgets/admin_async_view.dart';
 import 'widgets/admin_page.dart';
@@ -28,8 +28,7 @@ class HalaqatScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: ref.watch(halaqaSummariesProvider),
         builder: (context, halaqat) => halaqat.isEmpty
-            ? EmptyView(
-                icon: Icons.groups_outlined,
+            ? EmptyState(
                 message: AppStrings.noHalaqat,
                 actionLabel: AppStrings.createHalaqa,
                 onAction: create,
