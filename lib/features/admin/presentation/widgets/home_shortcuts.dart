@@ -5,8 +5,8 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 
-/// The home screen's buttons for the three most common tasks: the first
-/// filled, the others outlined. Each form opens on top of the home (push),
+/// The home screen's buttons for the most common tasks, and adding a
+/// backup admin: the first filled, the others outlined. Each form opens on top of the home (push),
 /// so back returns here.
 class HomeShortcuts extends StatelessWidget {
   const HomeShortcuts({super.key});
@@ -32,6 +32,12 @@ class HomeShortcuts extends StatelessWidget {
           onPressed: () => context.push(AppRoutes.adminNewHalaqa),
           icon: const Icon(Icons.add),
           label: const Text(AppStrings.createHalaqa),
+        ),
+        const SizedBox(height: AppSizes.spaceS),
+        OutlinedButton.icon(
+          onPressed: () => context.push(AppRoutes.adminNewAdmin),
+          icon: const Icon(Icons.add_moderator_outlined),
+          label: const Text(AppStrings.addAdmin),
         ),
       ],
     );

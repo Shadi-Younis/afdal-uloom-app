@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
 
 import '../core/constants/app_routes.dart';
+import '../features/admin/presentation/add_admin_screen.dart';
 import '../features/admin/presentation/add_student_screen.dart';
+import '../features/admin/presentation/admin_details_screen.dart';
 import '../features/admin/presentation/add_teacher_screen.dart';
 import '../features/admin/presentation/admin_home_screen.dart';
 import '../features/admin/presentation/admin_shell.dart';
@@ -79,6 +81,17 @@ StatefulShellRoute buildAdminRoutes() => StatefulShellRoute.indexedStack(
               path: AppRoutes.newSegment,
               name: AppRoutes.adminNewTeacherName,
               builder: (context, state) => const AddTeacherScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.newAdminSegment,
+              name: AppRoutes.adminNewAdminName,
+              builder: (context, state) => const AddAdminScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.adminAdminPath,
+              name: AppRoutes.adminAdminName,
+              builder: (context, state) =>
+                  AdminDetailsScreen(adminId: _id(state)),
             ),
             GoRoute(
               path: AppRoutes.idPath,

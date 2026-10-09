@@ -8,6 +8,7 @@ import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/student_summary.dart';
 import '../application/students_filter_controller.dart';
 import 'widgets/admin_async_view.dart';
+import '../../../core/widgets/common/account_button.dart';
 import '../../../core/widgets/common/logout_button.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/students_filter_bar.dart';
@@ -53,7 +54,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
   Widget build(BuildContext context) {
     void add() => context.push(AppRoutes.adminNewStudent);
     return AppPageScaffold(
-      actions: const [LogoutButton()],
+      actions: const [AccountButton(), LogoutButton()],
       title: AppStrings.adminNavStudents,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: add,

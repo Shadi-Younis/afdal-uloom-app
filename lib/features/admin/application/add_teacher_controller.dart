@@ -9,8 +9,9 @@ import 'input_field.dart';
 import 'input_validator.dart';
 import 'issued_credentials.dart';
 
-/// The add-teacher form: validates, calls createUser, and hands back the
-/// login details to show once.
+/// The add-teacher form, also used for a new admin (same fields):
+/// validates, calls createUser, and hands back the login details to show
+/// once.
 class AddTeacherController extends Notifier<FormSubmitState> {
   @override
   FormSubmitState build() => const FormSubmitState();
@@ -27,6 +28,7 @@ class AddTeacherController extends Notifier<FormSubmitState> {
     required String fullName,
     required String username,
     required String password,
+    UserRole role = UserRole.teacher,
   }) async {
     if (state.submitting) return null;
     final errors = {
@@ -43,7 +45,7 @@ class AddTeacherController extends Notifier<FormSubmitState> {
       fullName: fullName.trim(),
       username: InputValidator.normalizeUsername(username),
       password: password,
-      role: UserRole.teacher,
+      role: role,
     );
     state = const FormSubmitState(submitting: true);
     try {
@@ -53,7 +55,7 @@ class AddTeacherController extends Notifier<FormSubmitState> {
             username: credentials.username,
             password: password,
             fullName: credentials.fullName,
-            role: UserRole.teacher,
+            role: role,
           );
     } catch (error, stackTrace) {
       if (ref.mounted) {

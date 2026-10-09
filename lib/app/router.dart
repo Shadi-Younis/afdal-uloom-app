@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/application/session_providers.dart';
 import '../core/constants/app_routes.dart';
 import '../core/models/auth_session.dart';
+import '../features/account/presentation/account_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/recordings/presentation/recording_screen.dart';
@@ -55,6 +56,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => RecordingScreen(
           recordingId: state.pathParameters[AppRoutes.idParam]!,
         ),
+      ),
+      // Outside the role shells too: every role's own account page.
+      GoRoute(
+        path: AppRoutes.account,
+        name: AppRoutes.accountName,
+        builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
         path: AppRoutes.student,

@@ -13,7 +13,11 @@ abstract final class AppRoutes {
   static const recordingPath = '$recordingBase/:$idParam';
   static String recording(String recordingId) => '$recordingBase/$recordingId';
 
+  /// The signed-in user's own account ("حسابي"), for every role.
+  static const account = '/account';
+
   static const splashName = 'splash';
+  static const accountName = 'account';
   static const recordingName = 'recording';
   static const loginName = 'login';
   static const adminName = 'admin';
@@ -28,6 +32,11 @@ abstract final class AppRoutes {
   static const adminNewHalaqa = '$adminHalaqat/$newSegment';
   static const adminNewTeacher = '$adminTeachers/$newSegment';
   static const adminNewStudent = '$adminStudents/$newSegment';
+
+  /// Admins are listed in the teachers section.
+  static const adminNewAdmin = '$adminTeachers/$newAdminSegment';
+  static String adminAdmin(String adminId) =>
+      '$adminTeachers/$adminSegment/$adminId';
 
   static String adminHalaqa(String halaqaId) => '$adminHalaqat/$halaqaId';
   static String adminTeacher(String teacherId) => '$adminTeachers/$teacherId';
@@ -52,6 +61,9 @@ abstract final class AppRoutes {
   // Relative paths of the nested admin routes (app/router.dart). `new` is
   // matched before `:id`; Firestore ids are never "new".
   static const newSegment = 'new';
+  static const newAdminSegment = 'new-admin';
+  static const adminSegment = 'admin';
+  static const adminAdminPath = '$adminSegment/:$idParam';
   static const addStudentSegment = 'add-student';
   static const studentsSegment = 'students';
   static const idParam = 'id';
@@ -85,12 +97,16 @@ abstract final class AppRoutes {
       ),
       (m) => adminHalaqa(m[1]!),
     ),
-    // /admin/teachers/new, /admin/teachers/:id
+    // /admin/teachers/new, /admin/teachers/new-admin, /admin/teachers/:id
     (RegExp(r'^/admin/teachers/[^/]+$'), (_) => adminTeachers),
+    // /admin/teachers/admin/:id
+    (RegExp('^/admin/teachers/$adminSegment/[^/]+\$'), (_) => adminTeachers),
     // /admin/students/new, /admin/students/:id
     (RegExp(r'^/admin/students/[^/]+$'), (_) => adminStudents),
-    // /recording/:id: the role's home (the splash route redirects there).
+    // /recording/:id and /account: the role's home (the splash route
+    // redirects there).
     (RegExp(r'^/recording/[^/]+$'), (_) => splash),
+    (RegExp(r'^/account$'), (_) => splash),
   ];
 
   static const adminHalaqatName = 'adminHalaqat';
@@ -101,6 +117,8 @@ abstract final class AppRoutes {
   static const adminTeachersName = 'adminTeachers';
   static const adminNewTeacherName = 'adminNewTeacher';
   static const adminTeacherName = 'adminTeacher';
+  static const adminNewAdminName = 'adminNewAdmin';
+  static const adminAdminName = 'adminAdmin';
   static const adminStudentsName = 'adminStudents';
   static const adminNewStudentName = 'adminNewStudent';
   static const adminStudentName = 'adminStudent';

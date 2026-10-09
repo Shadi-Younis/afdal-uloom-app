@@ -17,7 +17,7 @@ String homeFor(UserRole role) => switch (role) {
 /// - signed out, or the session could not be read: the login screen;
 /// - signed in: the role's home, also when another role's URL is typed in;
 ///   a recording (`/recording/{id}`) opens for every role, its data is
-///   protected by the security rules.
+///   protected by the security rules; so does one's own account page.
 String? redirectFor(AsyncValue<AuthSession?> session, String location) {
   if (!session.hasValue && !session.hasError) {
     return location == AppRoutes.splash ? null : AppRoutes.splash;
@@ -26,7 +26,10 @@ String? redirectFor(AsyncValue<AuthSession?> session, String location) {
   if (current == null) {
     return location == AppRoutes.login ? null : AppRoutes.login;
   }
-  if (location.startsWith('${AppRoutes.recordingBase}/')) return null;
+  if (location.startsWith('${AppRoutes.recordingBase}/') ||
+      location == AppRoutes.account) {
+    return null;
+  }
   final home = homeFor(current.role);
   final atHome = location == home || location.startsWith('$home/');
   return atHome ? null : home;
