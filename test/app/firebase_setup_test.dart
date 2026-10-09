@@ -10,7 +10,10 @@ void main() {
   });
 
   test('every platform uses the bucket the functions clean up', () {
-    expect(FirebaseConstants.storageBucket, 'afdal-al-uloom.firebasestorage.app');
+    expect(
+      FirebaseConstants.storageBucket,
+      'afdal-al-uloom.firebasestorage.app',
+    );
     for (final options in [
       DefaultFirebaseOptions.android,
       DefaultFirebaseOptions.ios,

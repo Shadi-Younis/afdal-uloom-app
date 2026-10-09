@@ -35,7 +35,10 @@ class SummaryCard extends StatelessWidget {
             children: [
               Icon(icon, color: theme.colorScheme.primary),
               const SizedBox(height: AppSizes.spaceXS),
-              Text(toArabicDigits(count), style: theme.textTheme.headlineMedium),
+              Text(
+                toArabicDigits(count),
+                style: theme.textTheme.headlineMedium,
+              ),
               Text(
                 label,
                 maxLines: 1,
