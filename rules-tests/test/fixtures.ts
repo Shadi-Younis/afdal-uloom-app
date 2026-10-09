@@ -1,4 +1,5 @@
-// Shared test environment and fixture data for the Firestore rules tests.
+// Shared test environment and fixture data for the Firestore and Storage
+// rules tests.
 //
 // Fixture: admin; teachers t1 (owns h1) and t2 (owns h2); students s1, s2
 // in h1 and s3 in h2; one official recording per student, one unreviewed
@@ -12,6 +13,7 @@ import {
 import { doc, setDoc, Timestamp, type Firestore } from "firebase/firestore";
 
 const rulesPath = fileURLToPath(new URL("../../firestore.rules", import.meta.url));
+const storageRulesPath = fileURLToPath(new URL("../../storage.rules", import.meta.url));
 
 export async function createTestEnv(): Promise<RulesTestEnvironment> {
   return initializeTestEnvironment({
@@ -19,6 +21,7 @@ export async function createTestEnv(): Promise<RulesTestEnvironment> {
     // emulator's namespace, nothing reaches the real project.
     projectId: process.env.GCLOUD_PROJECT ?? "afdal-al-uloom",
     firestore: { rules: readFileSync(rulesPath, "utf8") },
+    storage: { rules: readFileSync(storageRulesPath, "utf8") },
   });
 }
 
@@ -27,6 +30,28 @@ export type Role = "admin" | "teacher" | "student";
 /** A Firestore client signed in as [uid] with the [role] custom claim. */
 export function as(env: RulesTestEnvironment, uid: string, role: Role): Firestore {
   return env.authenticatedContext(uid, { role }).firestore() as unknown as Firestore;
+}
+
+/** A Storage client signed in as [uid] with the [role] custom claim. */
+export function storageAs(env: RulesTestEnvironment, uid: string, role: Role): Storage {
+  return env.authenticatedContext(uid, { role }).storage();
+}
+
+/** The compat Storage client of a test context. */
+export type Storage = ReturnType<ReturnType<RulesTestEnvironment["unauthenticatedContext"]>["storage"]>;
+
+/**
+ * Deletes every Storage object. env.clearStorage() empties another bucket
+ * than the one the test clients use, so it leaves files behind.
+ */
+export async function clearAllStorage(env: RulesTestEnvironment): Promise<void> {
+  await env.withSecurityRulesDisabled(async (context) => {
+    const deleteUnder = async (ref: ReturnType<Storage["ref"]>): Promise<void> => {
+      const { items, prefixes } = await ref.listAll();
+      await Promise.all([...items.map((item) => item.delete()), ...prefixes.map(deleteUnder)]);
+    };
+    await deleteUnder(context.storage().ref());
+  });
 }
 
 export function anonymous(env: RulesTestEnvironment): Firestore {
