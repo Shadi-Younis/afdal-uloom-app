@@ -62,9 +62,6 @@ abstract final class AppStrings {
   static const passwordRequired = 'أدخل كلمة السر';
 
   // Role home screens
-  static const adminHomeTitle = 'لوحة المدير';
-  static const teacherHomeTitle = 'لوحة المعلم';
-  static const studentHomeTitle = 'لوحة الطالب';
   static const teacherComingSoon =
       'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
   static const studentComingSoon =
@@ -94,7 +91,6 @@ abstract final class AppStrings {
   static const adminNavStudents = 'الطلاب';
 
   // Admin home
-  static const adminWelcome = 'أهلاً بك';
   static const shortcutsTitle = 'اختصارات';
   static const addStudent = 'إضافة طالب';
   static const addTeacher = 'إضافة معلم';
@@ -216,7 +212,6 @@ abstract final class AppStrings {
       '$passwordLabel: $password';
 
   // Recording screen
-  static const home = 'الرئيسية';
   static const recordingScreenTitle = 'التسجيل';
   static String recordingOf(String student) => 'تسجيل $student';
   static String surahName(String name) => 'سورة $name';

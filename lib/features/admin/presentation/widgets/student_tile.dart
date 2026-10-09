@@ -24,7 +24,7 @@ class StudentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final code = student.studentCode ?? '';
     return ListTile(
-      leading: const CircleAvatar(child: Icon(Icons.school_outlined)),
+      leading: const CircleAvatar(child: Icon(Icons.menu_book_outlined)),
       title: Text(student.fullName),
       subtitle: Text(
         halaqaName == null
