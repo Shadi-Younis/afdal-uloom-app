@@ -1,0 +1,77 @@
+{
+  "reciter": "Muhammad Siddiq al-Minshawi, Hafs, murattal",
+  "clips": [
+    {
+      "id": "fatiha",
+      "file": "001.mp3",
+      "url": "https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/001.mp3",
+      "surahNumber": 1,
+      "ayahFrom": 1,
+      "ayahTo": 7
+    },
+    {
+      "id": "ikhlas",
+      "file": "112.mp3",
+      "url": "https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/112.mp3",
+      "surahNumber": 112,
+      "ayahFrom": 1,
+      "ayahTo": 4
+    },
+    {
+      "id": "falaq",
+      "file": "113.mp3",
+      "url": "https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/113.mp3",
+      "surahNumber": 113,
+      "ayahFrom": 1,
+      "ayahTo": 5
+    },
+    {
+      "id": "nas",
+      "file": "114.mp3",
+      "url": "https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/114.mp3",
+      "surahNumber": 114,
+      "ayahFrom": 1,
+      "ayahTo": 6
+    },
+    {
+      "id": "mulk-1",
+      "file": "067001.mp3",
+      "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/067001.mp3",
+      "surahNumber": 67,
+      "ayahFrom": 1,
+      "ayahTo": 1
+    },
+    {
+      "id": "mulk-2",
+      "file": "067002.mp3",
+      "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/067002.mp3",
+      "surahNumber": 67,
+      "ayahFrom": 2,
+      "ayahTo": 2
+    },
+    {
+      "id": "mulk-3",
+      "file": "067003.mp3",
+      "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/067003.mp3",
+      "surahNumber": 67,
+      "ayahFrom": 3,
+      "ayahTo": 3
+    },
+    {
+      "id": "mulk-4",
+      "file": "067004.mp3",
+      "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/067004.mp3",
+      "surahNumber": 67,
+      "ayahFrom": 4,
+      "ayahTo": 4
+    },
+    {
+      "id": "mulk-5",
+      "file": "067005.mp3",
+      "url": "https://everyayah.com/data/Minshawy_Murattal_128kbps/067005.mp3",
+      "surahNumber": 67,
+      "ayahFrom": 5,
+      "ayahTo": 5
+    }
+  ]
+}
