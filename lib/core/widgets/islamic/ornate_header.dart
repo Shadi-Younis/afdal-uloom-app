@@ -15,8 +15,13 @@ class OrnateHeader extends StatelessWidget {
   final Widget top;
   final Widget child;
 
-  /// Room left under the content, which the stat cards overlap.
-  static const bottomPadding = 34.0;
+  /// How far content under the header (the stat cards) may overlap it,
+  /// as in the design.
+  static const overlap = 34.0;
+
+  /// Room under the header's content: the overlap plus a gap, so the
+  /// overlapping cards never cover the name.
+  static const bottomPadding = overlap + AppSizes.spaceL;
   static const _goldLineBottom = 10.0;
   static const _goldLineHeight = 2.0;
 

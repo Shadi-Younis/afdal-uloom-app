@@ -33,6 +33,7 @@ class StatCard extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const IslamicStar(size: starSize),
           const SizedBox(height: AppSizes.spaceXS),
@@ -42,6 +43,7 @@ class StatCard extends StatelessWidget {
           ),
           Text(
             label,
+            textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodyMedium?.copyWith(

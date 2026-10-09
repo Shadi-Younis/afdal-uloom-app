@@ -27,7 +27,7 @@ class AdminHomeScreen extends StatelessWidget {
               const HomeHeader(),
               // The counts overlap the header's bottom, as in the design.
               Transform.translate(
-                offset: const Offset(0, -OrnateHeader.bottomPadding),
+                offset: const Offset(0, -OrnateHeader.overlap),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: AppSizes.pagePadding,

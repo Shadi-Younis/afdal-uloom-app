@@ -56,7 +56,10 @@ class AppCard extends StatelessWidget {
           borderRadius: radius,
           child: Material(
             type: MaterialType.transparency,
+            // passthrough: the content gets the card's width, so centered
+            // content is centered in the card.
             child: Stack(
+              fit: StackFit.passthrough,
               children: [
                 content,
                 if (accent)

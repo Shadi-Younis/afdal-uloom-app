@@ -85,6 +85,15 @@ void main() {
     );
     await tester.tap(find.text('١٢'));
     expect(taps, 1);
+    // Star, number and label centered in the card.
+    final center = tester.getCenter(find.byType(StatCard)).dx;
+    for (final part in [
+      find.byType(IslamicStar),
+      find.text('١٢'),
+      find.text('الطلاب'),
+    ]) {
+      expect(tester.getCenter(part).dx, closeTo(center, 1));
+    }
   });
 
   group('states', () {

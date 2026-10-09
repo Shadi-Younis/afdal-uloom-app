@@ -1,3 +1,4 @@
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/stat_card.dart';
 import 'package:afdal_uloom_tilawat/core/constants/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,4 +72,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/admin/students');
   });
+
+  for (final (name, size) in [
+    ('phone', const Size(1080, 1920)),
+    ('wide', const Size(1440, 900)),
+  ]) {
+    testWidgets('home ($name): the cards never cover the name', (tester) async {
+      tester.view
+        ..physicalSize = size
+        ..devicePixelRatio = name == 'phone' ? 3 : 1;
+      addTearDown(tester.view.reset);
+      await pumpAdminApp(tester, AdminFixture());
+      final nameBottom = tester.getRect(find.text('شادي')).bottom;
+      for (final card in tester.widgetList(find.byType(StatCard))) {
+        expect(
+          tester.getRect(find.byWidget(card)).top,
+          greaterThanOrEqualTo(nameBottom),
+        );
+      }
+    });
+  }
 }
