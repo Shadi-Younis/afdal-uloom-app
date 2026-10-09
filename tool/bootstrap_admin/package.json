@@ -1,7 +1,7 @@
 {
   "name": "bootstrap-admin",
   "private": true,
-  "description": "Creates the FIRST admin in the REAL project. See docs/BOOTSTRAP_ADMIN.md before running.",
+  "description": "Creates the FIRST admin in the REAL project, or resets a forgotten admin password. See docs/BOOTSTRAP_ADMIN.md before running.",
   "type": "module",
   "scripts": {
     "bootstrap": "tsx src/bootstrap_admin.ts",
