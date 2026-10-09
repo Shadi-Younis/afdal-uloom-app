@@ -16,6 +16,7 @@ class AppUser {
     this.halaqaId,
     this.fcmTokens = const [],
     required this.createdAt,
+    this.disabled = false,
   });
 
   /// Throws [FormatException] for a missing field, a wrong type or an
@@ -29,6 +30,8 @@ class AppUser {
     halaqaId: readOptional<String>(map, Fields.halaqaId),
     fcmTokens: readStringList(map, Fields.fcmTokens),
     createdAt: readRequired<DateTime>(map, Fields.createdAt),
+    // Missing in documents written before the field existed.
+    disabled: readOptional<bool>(map, Fields.disabled) ?? false,
   );
 
   /// The Firebase Auth uid; not stored in the document.
@@ -49,6 +52,10 @@ class AppUser {
   final List<String> fcmTokens;
   final DateTime createdAt;
 
+  /// The account is disabled and cannot sign in. Mirrors the Auth account;
+  /// only the setUserDisabled function changes it.
+  final bool disabled;
+
   Map<String, dynamic> toMap() => {
     Fields.username: username,
     Fields.fullName: fullName,
@@ -57,6 +64,7 @@ class AppUser {
     Fields.halaqaId: halaqaId,
     Fields.fcmTokens: fcmTokens,
     Fields.createdAt: createdAt,
+    Fields.disabled: disabled,
   };
 
   /// Nullable fields cannot be cleared to null through copyWith.
@@ -69,6 +77,7 @@ class AppUser {
     String? halaqaId,
     List<String>? fcmTokens,
     DateTime? createdAt,
+    bool? disabled,
   }) => AppUser(
     id: id ?? this.id,
     username: username ?? this.username,
@@ -78,6 +87,7 @@ class AppUser {
     halaqaId: halaqaId ?? this.halaqaId,
     fcmTokens: fcmTokens ?? this.fcmTokens,
     createdAt: createdAt ?? this.createdAt,
+    disabled: disabled ?? this.disabled,
   );
 
   @override
@@ -90,7 +100,8 @@ class AppUser {
       other.studentCode == studentCode &&
       other.halaqaId == halaqaId &&
       listEquals(other.fcmTokens, fcmTokens) &&
-      other.createdAt == createdAt;
+      other.createdAt == createdAt &&
+      other.disabled == disabled;
 
   @override
   int get hashCode => Object.hash(
@@ -102,11 +113,13 @@ class AppUser {
     halaqaId,
     Object.hashAll(fcmTokens),
     createdAt,
+    disabled,
   );
 
   @override
   String toString() =>
       'AppUser(id: $id, username: $username, fullName: $fullName, '
       'role: ${role.value}, studentCode: $studentCode, halaqaId: $halaqaId, '
-      'fcmTokens: ${fcmTokens.length}, createdAt: $createdAt)';
+      'fcmTokens: ${fcmTokens.length}, createdAt: $createdAt, '
+      'disabled: $disabled)';
 }

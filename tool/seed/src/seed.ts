@@ -72,6 +72,7 @@ async function seedFirestore(): Promise<void> {
       halaqaId: isStudent ? user.halaqaId : null,
       fcmTokens: [],
       createdAt: usersCreatedAt,
+      disabled: false,
     });
   }
 

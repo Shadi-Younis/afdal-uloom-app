@@ -82,6 +82,7 @@ export const createUser = callable(async (request) => {
         [F.halaqaId]: halaqaId ?? null,
         [F.fcmTokens]: [],
         [F.createdAt]: FieldValue.serverTimestamp(),
+        [F.disabled]: false,
       });
     });
   } catch (error) {

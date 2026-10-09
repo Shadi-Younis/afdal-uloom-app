@@ -42,6 +42,7 @@ async function addUser(uid: string, role: Role, halaqaId: string | null = null) 
     halaqaId,
     fcmTokens: [],
     createdAt: Timestamp.now(),
+    disabled: false,
   });
 }
 

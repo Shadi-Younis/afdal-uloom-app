@@ -16,3 +16,8 @@ String errorMessageFor(AppErrorCode code) => switch (code) {
   AppErrorCode.failedPrecondition => AppStrings.errorFailedPrecondition,
   AppErrorCode.unknown => AppStrings.errorUnknown,
 };
+
+/// The Arabic text for any caught [error]: its code's message for an
+/// [AppException], the generic one for anything else (never raw text).
+String errorMessageOf(Object error) =>
+    errorMessageFor(error is AppException ? error.code : AppErrorCode.unknown);

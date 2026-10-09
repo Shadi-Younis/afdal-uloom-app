@@ -44,6 +44,7 @@ function user(username: string, fullName: string, role: Role, halaqaId: string |
     halaqaId,
     fcmTokens: [],
     createdAt: created,
+    disabled: false,
   };
 }
 

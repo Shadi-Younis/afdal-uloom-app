@@ -29,7 +29,16 @@ describe("createUser", () => {
 
     const doc = (await db.doc(`users/${uid}`).get()).data()!;
     expect(Object.keys(doc).sort()).toEqual(
-      ["createdAt", "fcmTokens", "fullName", "halaqaId", "role", "studentCode", "username"],
+      [
+        "createdAt",
+        "disabled",
+        "fcmTokens",
+        "fullName",
+        "halaqaId",
+        "role",
+        "studentCode",
+        "username",
+      ],
     );
     expect(doc).toMatchObject({
       username: "s100.ali",
@@ -38,6 +47,7 @@ describe("createUser", () => {
       studentCode: "S100",
       halaqaId: "h1",
       fcmTokens: [],
+      disabled: false,
     });
     expect(doc.createdAt.toDate().getTime()).toBeGreaterThan(Date.now() - 60_000);
 
@@ -58,6 +68,7 @@ describe("createUser", () => {
       role: "teacher",
       halaqaId: null,
       studentCode: null,
+      disabled: false,
     });
     expect((await auth.getUser(uid)).customClaims).toEqual({role: "teacher"});
   });

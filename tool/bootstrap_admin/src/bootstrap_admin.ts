@@ -128,6 +128,7 @@ try {
     halaqaId: null,
     fcmTokens: [],
     createdAt: FieldValue.serverTimestamp(),
+    disabled: false,
   });
 } catch (error) {
   // No half-created admin: remove the Auth user again.

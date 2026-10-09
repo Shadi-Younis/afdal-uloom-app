@@ -58,6 +58,7 @@ users/{uid}
   halaqaId: string?           // للطلاب فقط
   fcmTokens: string[]         // لأجهزة الإشعارات
   createdAt: timestamp
+  disabled: bool              // الحساب موقوف؟ (الافتراضي false، يغيّره السيرفر فقط)
 
 users/{uid}/progress/{surahNumber}     // متابعة الحفظ (المرحلة الثانية)
   status: "in_progress" | "memorized"

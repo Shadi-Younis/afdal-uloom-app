@@ -46,6 +46,18 @@ enum AppErrorCode {
 class AppException implements Exception {
   const AppException(this.code, {this.cause, this.stackTrace});
 
+  /// [error] itself when it already is an [AppException], otherwise an
+  /// [AppErrorCode.unknown] one wrapping it. For callers that must never
+  /// expose another error type, whatever an implementation throws.
+  factory AppException.wrap(Object error, [StackTrace? stackTrace]) =>
+      error is AppException
+      ? error
+      : AppException(
+          AppErrorCode.unknown,
+          cause: error,
+          stackTrace: stackTrace,
+        );
+
   final AppErrorCode code;
 
   /// The original error, for logs only; never show it to the user.

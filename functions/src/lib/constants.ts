@@ -33,6 +33,7 @@ export const F = {
   halaqaId: "halaqaId",
   fcmTokens: "fcmTokens",
   createdAt: "createdAt",
+  disabled: "disabled",
   teacherId: "teacherId",
   studentId: "studentId",
 } as const;

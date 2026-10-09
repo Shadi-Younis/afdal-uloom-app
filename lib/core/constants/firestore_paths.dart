@@ -33,6 +33,7 @@ abstract final class Fields {
   static const role = 'role';
   static const studentCode = 'studentCode';
   static const fcmTokens = 'fcmTokens';
+  static const disabled = 'disabled';
 
   // users/{uid}/progress
   static const status = 'status';
