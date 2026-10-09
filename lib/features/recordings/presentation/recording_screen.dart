@@ -23,7 +23,15 @@ class RecordingScreen extends ConsumerWidget {
     final studentId = recording.value?.studentId;
     final student = studentId == null
         ? null
-        : ref.watch(personNameProvider((uid: studentId, fallback: ''))).value;
+        : ref
+              .watch(
+                personNameProvider((
+                  uid: studentId,
+                  fallback: '',
+                  missing: null,
+                )),
+              )
+              .value;
     return AppPageScaffold(
       title: student == null || student.isEmpty
           ? AppStrings.recordingScreenTitle
