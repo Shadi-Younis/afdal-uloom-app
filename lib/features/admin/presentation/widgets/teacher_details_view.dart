@@ -44,7 +44,7 @@ class TeacherDetailsView extends StatelessWidget {
                     ListTile(
                       leading: const Icon(Icons.groups_outlined),
                       title: Text(halaqa.name),
-                      trailing: const Icon(Icons.chevron_left),
+                      trailing: const Icon(Icons.chevron_right),
                       contentPadding: EdgeInsets.zero,
                       onTap: () =>
                           context.push(AppRoutes.adminHalaqa(halaqa.id)),

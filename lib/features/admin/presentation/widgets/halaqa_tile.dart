@@ -24,7 +24,8 @@ class HalaqaTile extends StatelessWidget {
         '${AppStrings.studentCount(toArabicDigits(summary.activeStudentCount))}',
       ),
       isThreeLine: true,
-      trailing: const Icon(Icons.chevron_left),
+      // chevron_right mirrors in RTL: it points left, "forward" in Arabic.
+      trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );
   }
