@@ -6,7 +6,8 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/common/app_snack_bar.dart';
 import '../application/issued_credentials.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/islamic/app_card.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/content_width.dart';
 import 'widgets/credentials_sheet.dart';
 import 'widgets/teacher_form.dart';
@@ -31,12 +32,14 @@ class AddTeacherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdminPage(
+    return AppPageScaffold(
       title: AppStrings.newTeacherTitle,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSizes.screenPadding),
         child: ContentWidth(
-          child: TeacherForm(onCreated: (c) => _created(context, c)),
+          child: AppCard(
+            child: TeacherForm(onCreated: (c) => _created(context, c)),
+          ),
         ),
       ),
     );

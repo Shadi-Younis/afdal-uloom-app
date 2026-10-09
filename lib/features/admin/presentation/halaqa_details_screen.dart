@@ -6,7 +6,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/widgets/islamic/error_state.dart';
 import '../application/halaqa_summary.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/halaqa_details_view.dart';
 
 /// One halaqa: its name, teacher and students, and what the admin can
@@ -19,7 +19,7 @@ class HalaqaDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(halaqaSummaryProvider(halaqaId));
-    return AdminPage(
+    return AppPageScaffold(
       title: summary.value?.halaqa.name ?? AppStrings.adminNavHalaqat,
       body: AdminAsyncView(
         value: summary,

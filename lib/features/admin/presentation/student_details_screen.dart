@@ -6,7 +6,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/widgets/islamic/error_state.dart';
 import '../application/student_summary.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/student_details_view.dart';
 
 /// One student: account, halaqa, password reset, move, disable / enable,
@@ -19,7 +19,7 @@ class StudentDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(studentSummaryProvider(studentId));
-    return AdminPage(
+    return AppPageScaffold(
       title: summary.value?.student.fullName ?? AppStrings.adminNavStudents,
       body: AdminAsyncView(
         value: summary,

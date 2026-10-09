@@ -1,3 +1,4 @@
+import 'package:afdal_uloom_tilawat/core/constants/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,7 +36,13 @@ void main() {
         Directionality.of(tester.element(find.byType(Scaffold).last)),
         TextDirection.rtl,
       );
-      expect(find.byTooltip('تسجيل الخروج'), findsOneWidget);
+      // Sections' first pages offer logout; the pages under them go back.
+      final root = AppRoutes.parentOf(location) == null;
+      expect(
+        find.byTooltip('تسجيل الخروج'),
+        root ? findsOneWidget : findsNothing,
+      );
+      expect(find.byTooltip('رجوع'), root ? findsNothing : findsOneWidget);
     });
   }
 

@@ -6,7 +6,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/widgets/islamic/error_state.dart';
 import '../application/teacher_summary.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/teacher_details_view.dart';
 
 /// One teacher: account, halaqat, password reset and disable / enable.
@@ -18,7 +18,7 @@ class TeacherDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(teacherSummaryProvider(teacherId));
-    return AdminPage(
+    return AppPageScaffold(
       title: summary.value?.teacher.fullName ?? AppStrings.adminNavTeachers,
       body: AdminAsyncView(
         value: summary,

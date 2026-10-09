@@ -81,7 +81,7 @@ void main() {
     expect(find.byType(RecordingScreen), findsOneWidget);
     expect(find.byTooltip('تشغيل'), findsOneWidget);
 
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.byTooltip('رجوع'));
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/admin/students/s001');
   });

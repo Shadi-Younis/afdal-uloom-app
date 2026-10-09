@@ -121,6 +121,11 @@ Future<void> pumpAdminApp(
 GoRouter currentRouter(WidgetTester tester) =>
     GoRouter.of(tester.element(find.byType(Scaffold).first));
 
-/// The path the router shows now.
+/// The location of the page on top now, pushed pages included (a push
+/// keeps the configuration's uri at the page underneath).
 String currentPath(WidgetTester tester) =>
-    currentRouter(tester).routerDelegate.currentConfiguration.uri.path;
+    currentRouter(tester)
+        .routerDelegate
+        .currentConfiguration
+        .last
+        .matchedLocation;

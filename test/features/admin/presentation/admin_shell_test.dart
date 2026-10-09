@@ -1,3 +1,4 @@
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/app_top_bar.dart';
 import 'package:afdal_uloom_tilawat/core/models/auth_session.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
 import 'package:afdal_uloom_tilawat/features/admin/presentation/admin_home_screen.dart';
@@ -18,7 +19,7 @@ void main() {
   setUp(() => school = AdminFixture());
 
   Finder appBarTitle(String title) =>
-      find.descendant(of: find.byType(AppBar), matching: find.text(title));
+      find.descendant(of: find.byType(AppTopBar), matching: find.text(title));
 
   testWidgets('phone: bottom navigation bar with the four sections', (
     tester,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/islamic/app_card.dart';
 import '../../../../core/widgets/islamic/empty_state.dart';
 import '../../application/students_filter_controller.dart';
 import 'admin_async_view.dart';
@@ -21,17 +22,28 @@ class StudentsList extends ConsumerWidget {
       builder: (context, students) => students.isEmpty
           ? const EmptyState(message: AppStrings.noResults)
           : ListView.separated(
-              padding: const EdgeInsets.only(bottom: AppSizes.fabClearance),
+              padding: const EdgeInsets.fromLTRB(
+                AppSizes.pagePadding,
+                AppSizes.spaceXS,
+                AppSizes.pagePadding,
+                AppSizes.fabClearance,
+              ),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemCount: students.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
+              separatorBuilder: (_, _) =>
+                  const SizedBox(height: AppSizes.spaceS),
               itemBuilder: (context, i) {
                 final summary = students[i];
-                return StudentTile(
-                  student: summary.student,
-                  halaqaName: summary.halaqa?.name ?? AppStrings.withoutHalaqa,
-                  onTap: () =>
-                      context.go(AppRoutes.adminStudent(summary.student.id)),
+                return AppCard(
+                  padding: EdgeInsets.zero,
+                  child: StudentTile(
+                    student: summary.student,
+                    halaqaName:
+                        summary.halaqa?.name ?? AppStrings.withoutHalaqa,
+                    onTap: () => context.push(
+                      AppRoutes.adminStudent(summary.student.id),
+                    ),
+                  ),
                 );
               },
             ),

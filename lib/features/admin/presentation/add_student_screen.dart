@@ -10,7 +10,8 @@ import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/add_student_controller.dart';
 import '../application/issued_credentials.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/islamic/app_card.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/content_width.dart';
 import 'widgets/credentials_sheet.dart';
 import 'widgets/student_form.dart';
@@ -38,7 +39,7 @@ class AddStudentScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AdminPage(
+    return AppPageScaffold(
       title: AppStrings.newStudentTitle,
       body: AdminAsyncView(
         value: ref.watch(addStudentChoicesProvider),
@@ -46,18 +47,20 @@ class AddStudentScreen extends ConsumerWidget {
             ? EmptyState(
                 message: AppStrings.createHalaqaFirst,
                 actionLabel: AppStrings.createHalaqa,
-                onAction: () => context.go(AppRoutes.adminNewHalaqa),
+                onAction: () => context.push(AppRoutes.adminNewHalaqa),
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSizes.screenPadding),
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 child: ContentWidth(
-                  child: StudentForm(
-                    halaqat: choices.halaqat,
-                    suggestedCode: choices.suggestedCode,
-                    initialHalaqaId: initialHalaqaId,
-                    onCreated: (c) => _created(context, c),
+                  child: AppCard(
+                    child: StudentForm(
+                      halaqat: choices.halaqat,
+                      suggestedCode: choices.suggestedCode,
+                      initialHalaqaId: initialHalaqaId,
+                      onCreated: (c) => _created(context, c),
+                    ),
                   ),
                 ),
               ),

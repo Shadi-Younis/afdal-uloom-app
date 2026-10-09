@@ -46,7 +46,8 @@ class TeacherDetailsView extends StatelessWidget {
                       title: Text(halaqa.name),
                       trailing: const Icon(Icons.chevron_left),
                       contentPadding: EdgeInsets.zero,
-                      onTap: () => context.go(AppRoutes.adminHalaqa(halaqa.id)),
+                      onTap: () =>
+                          context.push(AppRoutes.adminHalaqa(halaqa.id)),
                     ),
                 ],
               ),

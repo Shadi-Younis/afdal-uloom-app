@@ -168,7 +168,7 @@ void main() {
       );
 
       expect(find.text('الشيخ محمود'), findsOneWidget);
-      expect(find.text('طلاب الحلقة (3)'), findsOneWidget);
+      expect(find.text('طلاب الحلقة (٣)'), findsOneWidget);
       expect(find.text('أحمد الخطيب'), findsOneWidget);
       expect(find.text('موقوف'), findsOneWidget); // s012
       expect(tester.takeException(), isNull);
@@ -178,7 +178,7 @@ void main() {
       expect(currentPath(tester), '/admin/halaqat/halaqa-fajr/students/s002');
       expect(find.text('S002'), findsOneWidget);
 
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
       expect(currentPath(tester), '/admin/halaqat/halaqa-fajr');
     });

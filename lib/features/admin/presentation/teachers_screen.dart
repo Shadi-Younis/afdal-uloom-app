@@ -8,7 +8,9 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/teacher_summary.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/common/logout_button.dart';
+import '../../../core/widgets/islamic/app_card.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/teacher_tile.dart';
 
 /// Every teacher, with their halaqat; disabled ones marked.
@@ -17,8 +19,9 @@ class TeachersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void add() => context.go(AppRoutes.adminNewTeacher);
-    return AdminPage(
+    void add() => context.push(AppRoutes.adminNewTeacher);
+    return AppPageScaffold(
+      actions: const [LogoutButton()],
       title: AppStrings.adminNavTeachers,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: add,
@@ -34,13 +37,22 @@ class TeachersScreen extends ConsumerWidget {
                 onAction: add,
               )
             : ListView.separated(
-                padding: const EdgeInsets.only(bottom: AppSizes.fabClearance),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSizes.pagePadding,
+                  AppSizes.spaceXS,
+                  AppSizes.pagePadding,
+                  AppSizes.fabClearance,
+                ),
                 itemCount: teachers.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) => TeacherTile(
-                  summary: teachers[i],
-                  onTap: () => context.go(
-                    AppRoutes.adminTeacher(teachers[i].teacher.id),
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppSizes.spaceS),
+                itemBuilder: (context, i) => AppCard(
+                  padding: EdgeInsets.zero,
+                  child: TeacherTile(
+                    summary: teachers[i],
+                    onTap: () => context.push(
+                      AppRoutes.adminTeacher(teachers[i].teacher.id),
+                    ),
                   ),
                 ),
               ),
