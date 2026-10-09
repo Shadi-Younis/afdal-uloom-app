@@ -15,7 +15,7 @@ abstract final class AppSizes {
   static const pagePadding = spaceM;
 
   /// The school logo on the login screen.
-  static const logoLarge = 160.0;
+  static const logoLarge = 150.0;
 
   /// The school logo on the start-up screen.
   static const logoMedium = 120.0;
