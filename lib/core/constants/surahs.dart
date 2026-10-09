@@ -169,3 +169,8 @@ String formatRecordingTitle(int surah, int from, int to) {
           toArabicDigits(to),
         );
 }
+
+/// Just the ayat: "الآيات ١–٢٠", or "الآية ٥" for a single ayah.
+String formatAyahRange(int from, int to) => from == to
+    ? AppStrings.oneAyah(toArabicDigits(from))
+    : AppStrings.ayahRange(toArabicDigits(from), toArabicDigits(to));

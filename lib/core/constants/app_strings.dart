@@ -218,6 +218,10 @@ abstract final class AppStrings {
   // Recording screen
   static const home = 'الرئيسية';
   static const recordingScreenTitle = 'التسجيل';
+  static String recordingOf(String student) => 'تسجيل $student';
+  static String surahName(String name) => 'سورة $name';
+  static String ayahRange(String from, String to) => 'الآيات $from–$to';
+  static String oneAyah(String ayah) => 'الآية $ayah';
   static const typeOfficial = 'رسمي';
   static const typePractice = 'تدريب';
   static const recordedAtLabel = 'تاريخ التسجيل';

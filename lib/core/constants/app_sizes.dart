@@ -80,6 +80,9 @@ abstract final class AppSizes {
   static const playButton = 64.0;
   static const playIcon = 36.0;
 
+  /// The gold halo around the play button.
+  static const playHalo = 4.0;
+
   /// The back / forward 5 s icons.
   static const skipIcon = 30.0;
 }

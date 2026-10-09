@@ -6,6 +6,7 @@ import '../../application/recording_player_phase.dart';
 import '../../constants/app_durations.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
+import '../islamic/app_card.dart';
 import '../islamic/error_state.dart';
 import 'playback_speed_selector.dart';
 import 'player_controls.dart';
@@ -27,40 +28,37 @@ class RecordingPlayer extends ConsumerWidget {
     final provider = recordingPlayerControllerProvider(storagePath);
     final state = ref.watch(provider);
     final controller = ref.read(provider.notifier);
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSizes.spaceM),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spaceM),
-        child: switch (state.phase) {
-          RecordingPlayerPhase.loading => const _PlayerLoading(),
-          RecordingPlayerPhase.error => ErrorState(
-            error: state.error!,
-            onRetry: controller.retry,
-          ),
-          RecordingPlayerPhase.ready => Column(
-            children: [
-              PlayerSeekBar(
-                position: state.position,
-                duration: state.duration,
-                onSeek: controller.seek,
-              ),
-              const SizedBox(height: AppSizes.spaceS),
-              PlayerControls(
-                playing: state.playing,
-                buffering: state.buffering,
-                onTogglePlay: controller.togglePlay,
-                onSkipBack: () => controller.skip(-AppDurations.playerSkip),
-                onSkipForward: () => controller.skip(AppDurations.playerSkip),
-              ),
-              const SizedBox(height: AppSizes.spaceS),
-              PlaybackSpeedSelector(
-                speed: state.speed,
-                onChanged: controller.setSpeed,
-              ),
-            ],
-          ),
-        },
-      ),
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: AppSizes.spaceS),
+      child: switch (state.phase) {
+        RecordingPlayerPhase.loading => const _PlayerLoading(),
+        RecordingPlayerPhase.error => ErrorState(
+          error: state.error!,
+          onRetry: controller.retry,
+        ),
+        RecordingPlayerPhase.ready => Column(
+          children: [
+            PlayerSeekBar(
+              position: state.position,
+              duration: state.duration,
+              onSeek: controller.seek,
+            ),
+            const SizedBox(height: AppSizes.spaceS),
+            PlayerControls(
+              playing: state.playing,
+              buffering: state.buffering,
+              onTogglePlay: controller.togglePlay,
+              onSkipBack: () => controller.skip(-AppDurations.playerSkip),
+              onSkipForward: () => controller.skip(AppDurations.playerSkip),
+            ),
+            const SizedBox(height: AppSizes.spaceS),
+            PlaybackSpeedSelector(
+              speed: state.speed,
+              onChanged: controller.setSpeed,
+            ),
+          ],
+        ),
+      },
     );
   }
 }

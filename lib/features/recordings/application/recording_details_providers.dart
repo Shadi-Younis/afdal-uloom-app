@@ -27,28 +27,37 @@ final recordingFeedbackProvider = StreamProvider.autoDispose
       retry: _noRetry,
     );
 
-/// Who uploaded [recording]: their name when the viewer may read their
-/// profile, otherwise "المعلم" / "الطالب". A student may not read a
-/// teacher's profile (firestore.rules), so for them it is never asked.
-final uploaderNameProvider = FutureProvider.autoDispose
-    .family<String, Recording>((ref, recording) async {
-      final uploaderId = recording.uploadedBy;
-      final fallback = uploaderId == recording.studentId
-          ? AppStrings.roleStudent
-          : AppStrings.roleTeacher;
+/// A person on the recording screen: [uid], and the label to show when
+/// the viewer may not read their profile.
+typedef PersonName = ({String uid, String fallback});
+
+/// The name of [PersonName.uid] (the uploader, a note's teacher, the
+/// student), or its fallback when the viewer may not read that profile. A
+/// student may only read their own (firestore.rules), so for anyone else
+/// it is never asked: no denied reads.
+final personNameProvider = FutureProvider.autoDispose
+    .family<String, PersonName>((ref, person) async {
       final viewer = ref.watch(sessionProvider).value;
       if (viewer == null ||
-          (viewer.role == UserRole.student && viewer.uid != uploaderId)) {
-        return fallback;
+          (viewer.role == UserRole.student && viewer.uid != person.uid)) {
+        return person.fallback;
       }
       try {
         final user = await ref
             .watch(userRepositoryProvider)
-            .watchUser(uploaderId)
+            .watchUser(person.uid)
             .first;
-        return user?.fullName ?? fallback;
+        return user?.fullName ?? person.fallback;
       } on Object {
         // Only a label: the screen works without the name.
-        return fallback;
+        return person.fallback;
       }
     }, retry: _noRetry);
+
+/// The uploader of [recording]: "الطالب" or "المعلم" when unreadable.
+PersonName uploaderOf(Recording recording) => (
+  uid: recording.uploadedBy,
+  fallback: recording.uploadedBy == recording.studentId
+      ? AppStrings.roleStudent
+      : AppStrings.roleTeacher,
+);

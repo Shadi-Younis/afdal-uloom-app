@@ -73,4 +73,9 @@ void main() {
       expect(() => formatRecordingTitle(0, 1, 1), throwsRangeError);
     });
   });
+
+  test('formatAyahRange: the ayat alone', () {
+    expect(formatAyahRange(1, 20), 'الآيات ١–٢٠');
+    expect(formatAyahRange(5, 5), 'الآية ٥');
+  });
 }

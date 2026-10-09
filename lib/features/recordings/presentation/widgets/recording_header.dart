@@ -7,9 +7,11 @@ import '../../../../core/constants/surahs.dart';
 import '../../../../core/models/recording.dart';
 import '../../../../core/utils/date_format.dart';
 import '../../../../core/widgets/common/recording_type_chip.dart';
+import '../../../../core/widgets/islamic/surah_cartouche.dart';
 import '../../application/recording_details_providers.dart';
 
-/// Title (surah and ayat), type, recorded date and uploader.
+/// The surah in its cartouche, then the ayat, the type and the recorded
+/// date on one line, and who uploaded it.
 class RecordingHeader extends ConsumerWidget {
   const RecordingHeader({super.key, required this.recording});
 
@@ -19,55 +21,41 @@ class RecordingHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final r = recording;
     final theme = Theme.of(context);
-    final uploader = ref.watch(uploaderNameProvider(r)).value;
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSizes.spaceM),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spaceM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final muted = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    final uploader = ref.watch(personNameProvider(uploaderOf(r))).value;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SurahCartouche(
+          title: AppStrings.surahName(surahByNumber(r.surahNumber).nameAr),
+        ),
+        const SizedBox(height: AppSizes.spaceS),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSizes.spaceS,
+          runSpacing: AppSizes.spaceXS,
           children: [
-            Text(
-              formatRecordingTitle(r.surahNumber, r.ayahFrom, r.ayahTo),
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppSizes.spaceS),
+            Text(formatAyahRange(r.ayahFrom, r.ayahTo), style: muted),
             RecordingTypeChip(type: r.type),
-            const SizedBox(height: AppSizes.spaceS),
-            _DetailLine(
-              icon: Icons.event_outlined,
-              text: '${AppStrings.recordedAtLabel}: ${formatDay(r.recordedAt)}',
+            Text(
+              '${AppStrings.recordedAtLabel}: ${formatDay(r.recordedAt)}',
+              style: muted,
             ),
-            if (uploader != null)
-              _DetailLine(
-                icon: Icons.person_outline,
-                text: '${AppStrings.uploadedByLabel}: $uploader',
-              ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _DetailLine extends StatelessWidget {
-  const _DetailLine({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceXS),
-      child: Row(
-        children: [
-          Icon(icon, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: AppSizes.spaceS),
-          Expanded(child: Text(text, style: theme.textTheme.bodyMedium)),
-        ],
-      ),
+        if (uploader != null)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSizes.spaceXS),
+            child: Text(
+              '${AppStrings.uploadedByLabel}: $uploader',
+              textAlign: TextAlign.center,
+              style: muted,
+            ),
+          ),
+      ],
     );
   }
 }

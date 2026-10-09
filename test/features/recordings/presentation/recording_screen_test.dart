@@ -5,6 +5,8 @@ import 'package:afdal_uloom_tilawat/core/models/auth_session.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
 import 'package:afdal_uloom_tilawat/core/providers/repository_providers.dart';
 import 'package:afdal_uloom_tilawat/core/providers/service_providers.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/app_card.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/surah_cartouche.dart';
 import 'package:afdal_uloom_tilawat/features/recordings/presentation/recording_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,7 +50,7 @@ void main() {
     expect(find.text('التسجيل'), findsOneWidget);
     school.recordings.getGate!.complete();
     await tester.pumpAndSettle();
-    expect(find.text('البقرة: الآيات ١–٢٠'), findsOneWidget);
+    expect(find.text('سورة البقرة'), findsOneWidget);
   });
 
   testWidgets('everything about the recording, on a phone', (tester) async {
@@ -56,7 +58,15 @@ void main() {
     usePhoneSize(tester);
     await pumpRecording(tester, 'rec-02');
 
-    expect(find.text('البقرة: الآيات ١–٢٠'), findsOneWidget);
+    expect(find.text('تسجيل أحمد الخطيب'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(SurahCartouche),
+        matching: find.text('سورة البقرة'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('الآيات ١–٢٠'), findsOneWidget);
     expect(find.text('رسمي'), findsOneWidget);
     expect(find.text('تاريخ التسجيل: ٨ سبتمبر ٢٠٢٦'), findsOneWidget);
     expect(find.text('رُفع بواسطة: الشيخ محمود'), findsOneWidget);
@@ -71,6 +81,12 @@ void main() {
     );
     expect(find.text('ملاحظات المعلم'), findsOneWidget);
     expect(find.text('أحسنت، انتبه لمدّ الألف'), findsOneWidget);
+    // Notes are cards with the gold bar, signed by the teacher.
+    expect(
+      find.byWidgetPredicate((w) => w is AppCard && w.accent),
+      findsNWidgets(2),
+    );
+    expect(find.text('الشيخ محمود · ٩ سبتمبر ٢٠٢٦'), findsOneWidget);
     expect(find.text('عند ٠٠:١٢'), findsOneWidget);
     expect(find.bySemanticsLabel('التقييم: ٤ من ٥'), findsOneWidget);
     expect(find.byIcon(Icons.star), findsNWidgets(4));
@@ -95,7 +111,8 @@ void main() {
   testWidgets('no notes: a message', (tester) async {
     await pumpRecording(tester, 'rec-01');
     expect(find.text('لا توجد ملاحظات بعد'), findsOneWidget);
-    expect(find.text('الفاتحة: الآيات ١–٧'), findsOneWidget);
+    expect(find.text('سورة الفاتحة'), findsOneWidget);
+    expect(find.text('الآيات ١–٧'), findsOneWidget);
   });
 
   testWidgets('notes fail to load: Arabic error, the rest still works', (
@@ -133,17 +150,19 @@ void main() {
     const student = AuthSession(uid: 's001', role: UserRole.student);
     await pumpRecording(tester, 'rec-02', session: student);
     expect(find.text('رُفع بواسطة: المعلم'), findsOneWidget);
+    // Their own name in the title; never a teacher's profile.
+    expect(find.text('تسجيل أحمد الخطيب'), findsOneWidget);
+    expect(find.text('المعلم · ٩ سبتمبر ٢٠٢٦'), findsOneWidget);
 
     await pumpRecording(tester, 'rec-20', session: student);
     expect(find.text('تدريب'), findsOneWidget);
     expect(find.text('رُفع بواسطة: أحمد الخطيب'), findsOneWidget);
   });
 
-  testWidgets('opened from a link: a home button instead of back', (
+  testWidgets('pumped alone (no router, no parent known): no back button', (
     tester,
   ) async {
     await pumpRecording(tester, 'rec-02');
-    expect(find.byTooltip('الرئيسية'), findsOneWidget);
-    expect(find.byType(BackButton), findsNothing);
+    expect(find.byTooltip('رجوع'), findsNothing);
   });
 }
