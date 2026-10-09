@@ -51,6 +51,7 @@ flutter run -d chrome
 بعد تشغيل الـ Emulators، في نافذة أخرى:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File tool/seed/download_test_audio.ps1   # مرة واحدة: تلاوات المنشاوي خارج المستودع
 powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1
 ```
 

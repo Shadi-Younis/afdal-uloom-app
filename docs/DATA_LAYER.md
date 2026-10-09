@@ -77,10 +77,11 @@ powershell -ExecutionPolicy Bypass -File tool/test_rules.ps1
 ## بيانات تجريبية (Seed)
 
 1. شغّل الـ Emulators: `powershell -ExecutionPolicy Bypass -File tool/emulators.ps1`
-2. في نافذة أخرى: `powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1`
-3. البيانات تظهر في http://localhost:4001 وتبقى محفوظة في `.emulator-data`.
+2. في نافذة أخرى، مرة واحدة فقط، نزّل ملفات التلاوة: `powershell -ExecutionPolicy Bypass -File tool/seed/download_test_audio.ps1`
+3. ثم: `powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1`
+4. البيانات تظهر في http://localhost:4001 وتبقى محفوظة في `.emulator-data`.
 
-كل تسجيل في الـ Seed له ملف صوت WAV مولَّد محلياً (نغمات بطول ٢٠ أو ٣٠ أو ٤٠ ثانية تحاكي التلاوة) مرفوع إلى Storage Emulator، فيعمل التشغيل مباشرة.
+كل تسجيل في الـ Seed يشغّل تلاوة حقيقية للشيخ محمد صديق المنشاوي (مرتّل): الفاتحة أو الإخلاص أو الفلق أو الناس أو آية من أول سورة الملك، وسورته وآياته ومدته تطابق الملف الذي يشغّله. الملفات MP3 مرفوعة إلى Storage Emulator، وتُحفظ خارج المستودع في `C:\dev\test-audio\minshawi\` ولا تُرفع إلى Git (التفاصيل في `tool/seed/README.md`). إذا لم تكن موجودة يرفض الـ Seed العمل ويذكر أمر التنزيل.
 
 يمكن تشغيل الـ Seed أكثر من مرة بأمان. كلمة السر لكل الحسابات `test1234`، والإيميل `<username>@afdal-uloom.app`:
 
