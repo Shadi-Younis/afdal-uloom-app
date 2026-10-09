@@ -14,6 +14,9 @@ String errorMessageFor(AppErrorCode code) => switch (code) {
   AppErrorCode.usernameTaken => AppStrings.errorUsernameTaken,
   AppErrorCode.studentCodeTaken => AppStrings.errorStudentCodeTaken,
   AppErrorCode.failedPrecondition => AppStrings.errorFailedPrecondition,
+  AppErrorCode.fileTooLarge => AppStrings.errorFileTooLarge,
+  AppErrorCode.unsupportedFile => AppStrings.errorUnsupportedFile,
+  AppErrorCode.uploadCancelled => AppStrings.errorUploadCancelled,
   AppErrorCode.unknown => AppStrings.errorUnknown,
 };
 

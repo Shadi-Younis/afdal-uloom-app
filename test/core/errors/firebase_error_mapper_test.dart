@@ -11,6 +11,7 @@ void main() {
       'unauthorized': AppErrorCode.permissionDenied,
       'not-found': AppErrorCode.notFound,
       'object-not-found': AppErrorCode.notFound,
+      'canceled': AppErrorCode.uploadCancelled,
       'unavailable': AppErrorCode.network,
       'deadline-exceeded': AppErrorCode.network,
       'network-request-failed': AppErrorCode.network,

@@ -194,5 +194,10 @@ abstract final class AppStrings {
   static const errorStudentCodeTaken = 'رقم الطالب مستخدم من قبل';
   static const errorFailedPrecondition =
       'لا يمكن تنفيذ هذا الإجراء على هذا العنصر.';
+
+  /// The limit is AudioFormats.maxUploadBytes (100 MiB).
+  static const errorFileTooLarge = 'الملف أكبر من ١٠٠ ميغابايت.';
+  static const errorUnsupportedFile = 'نوع الملف غير مدعوم. اختر ملفاً صوتياً.';
+  static const errorUploadCancelled = 'تم إلغاء الرفع.';
   static const errorUnknown = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
 }

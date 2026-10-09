@@ -18,6 +18,8 @@ AppErrorCode appErrorCodeFor(String firebaseCode) => switch (firebaseCode) {
   'invalid-argument' ||
   'out-of-range' ||
   'data-loss' => AppErrorCode.invalidData,
+  // Storage: UploadTask.cancel().
+  'canceled' => AppErrorCode.uploadCancelled,
   _ => AppErrorCode.unknown,
 };
 

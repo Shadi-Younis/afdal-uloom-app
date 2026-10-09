@@ -1,11 +1,23 @@
 import 'package:afdal_uloom_tilawat/app/firebase_setup.dart';
 import 'package:afdal_uloom_tilawat/core/constants/firebase_constants.dart';
+import 'package:afdal_uloom_tilawat/firebase_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('functions run in me-west1', () {
     expect(FirebaseConstants.functionsRegion, 'me-west1');
+  });
+
+  test('every platform uses the bucket the functions clean up', () {
+    expect(FirebaseConstants.storageBucket, 'afdal-al-uloom.firebasestorage.app');
+    for (final options in [
+      DefaultFirebaseOptions.android,
+      DefaultFirebaseOptions.ios,
+      DefaultFirebaseOptions.web,
+    ]) {
+      expect(options.storageBucket, FirebaseConstants.storageBucket);
+    }
   });
 
   test('emulators are off unless USE_EMULATORS=true is passed', () {
