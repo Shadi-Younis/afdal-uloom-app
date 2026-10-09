@@ -175,6 +175,12 @@ abstract final class AppStrings {
       '$usernameLabel: $username\n'
       '$passwordLabel: $password';
 
+  // Recording titles. The numbers arrive already in Arabic-Indic digits.
+  static String recordingTitle(String surah, String from, String to) =>
+      '$surah: الآيات $from–$to';
+  static String recordingTitleOneAyah(String surah, String ayah) =>
+      '$surah: الآية $ayah';
+
   // Errors, one per AppErrorCode
   static const errorPermissionDenied = 'ليست لديك صلاحية لهذا الإجراء.';
   static const errorNotFound = 'العنصر المطلوب غير موجود.';

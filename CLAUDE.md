@@ -144,7 +144,15 @@ Tests may use literal values when they assert behavior (e.g. "the region is
 - Call Cloud Functions only through `regionalFunctions` (me-west1); never
   `FirebaseFunctions.instance` (that is us-central1).
 - Firestore stores the Storage path (`storagePath`), never a download URL.
-  Surahs are stored by number (1..114).
+  Surahs are stored by number (1..114); names and ayah counts come from
+  `core/constants/surahs.dart` (`functions/src/lib/surahs.ts` is generated
+  from it by `dart run tool/generate_surahs_ts.dart`).
+- Digits: every number shown in Arabic text uses Arabic-Indic digits
+  (`٠١٢٣٤٥٦٧٨٩`): counts, ayat, times (`٠١:٢٣`), dates (Material's Arabic
+  dates already do). Convert with `toArabicDigits` (core/utils) at the call
+  site; `AppStrings` functions take the converted text. Identifiers people
+  type (usernames, student codes such as `S023`, passwords) keep Latin
+  characters and digits.
 - `flutter analyze` must stay at zero issues; do not add `// ignore:` to
   silence a lint without a comment explaining why.
 
