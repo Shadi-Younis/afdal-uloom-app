@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/widgets/common/error_view.dart';
-import '../../../../core/widgets/common/loading_view.dart';
+import '../../../../core/widgets/islamic/error_state.dart';
+import '../../../../core/widgets/islamic/loading_state.dart';
 import '../../application/admin_data_providers.dart';
 
 /// Shows [value] with [builder] once it has data; the shared loading and
@@ -18,14 +18,14 @@ class AdminAsyncView<T> extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (value) {
       AsyncData(:final value) => builder(context, value),
-      AsyncError(:final error) => ErrorView(
+      AsyncError(:final error) => ErrorState(
         error: error,
         onRetry: () => ref
           ..invalidate(adminHalaqatProvider)
           ..invalidate(adminTeachersProvider)
           ..invalidate(adminStudentsProvider),
       ),
-      _ => const LoadingView(),
+      _ => const LoadingState(),
     };
   }
 }

@@ -14,6 +14,12 @@ import 'admin_routes.dart';
 import 'route_guard.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Pages opened with push (every drill-down) get their own URL and browser
+  // history entry, so the browser's back / forward follow the app's back,
+  // and a refresh reopens the same page. Every route is deep-linkable, so
+  // the URL of the top page is always valid.
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   // The router is built once; session changes only re-run its redirect.
   final session = ValueNotifier<AsyncValue<AuthSession?>>(
     ref.read(sessionProvider),

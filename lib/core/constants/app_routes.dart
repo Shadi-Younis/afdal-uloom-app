@@ -52,6 +52,37 @@ abstract final class AppRoutes {
   static const idPath = ':$idParam';
   static const halaqaStudentPath = '$studentsSegment/:$studentIdParam';
 
+  /// Where "back" leads from [location] when there is no page under it to
+  /// return to (opened from a link or a web refresh): its logical parent.
+  /// Null for root pages: login, the role homes and the admin's sections.
+  /// One explicit entry per drill-down route.
+  static String? parentOf(String location) {
+    final path = Uri.parse(location).path;
+    for (final (pattern, parent) in _parents) {
+      final match = pattern.firstMatch(path);
+      if (match != null) return parent(match);
+    }
+    return null;
+  }
+
+  static final _parents = <(RegExp, String Function(RegExpMatch))>[
+    // /admin/halaqat/new, /admin/halaqat/:id
+    (RegExp(r'^/admin/halaqat/[^/]+$'), (_) => adminHalaqat),
+    // /admin/halaqat/:id/add-student, /admin/halaqat/:id/students/:studentId
+    (
+      RegExp(
+        '^/admin/halaqat/([^/]+)/($addStudentSegment|$studentsSegment/[^/]+)\$',
+      ),
+      (m) => adminHalaqa(m[1]!),
+    ),
+    // /admin/teachers/new, /admin/teachers/:id
+    (RegExp(r'^/admin/teachers/[^/]+$'), (_) => adminTeachers),
+    // /admin/students/new, /admin/students/:id
+    (RegExp(r'^/admin/students/[^/]+$'), (_) => adminStudents),
+    // /recording/:id: the role's home (the splash route redirects there).
+    (RegExp(r'^/recording/[^/]+$'), (_) => splash),
+  ];
+
   static const adminHalaqatName = 'adminHalaqat';
   static const adminNewHalaqaName = 'adminNewHalaqa';
   static const adminHalaqaName = 'adminHalaqa';

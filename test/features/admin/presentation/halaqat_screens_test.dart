@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:afdal_uloom_tilawat/app/app.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/common/confirm_dialog.dart';
-import 'package:afdal_uloom_tilawat/core/widgets/common/empty_view.dart';
-import 'package:afdal_uloom_tilawat/core/widgets/common/loading_view.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/empty_state.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/loading_state.dart';
 import 'package:afdal_uloom_tilawat/features/admin/presentation/add_student_screen.dart';
 import 'package:afdal_uloom_tilawat/features/admin/presentation/halaqat_screen.dart';
 import 'package:flutter/material.dart';
@@ -43,11 +43,11 @@ void main() {
       school = AdminFixture.empty();
       await pumpAdminApp(tester, school, location: '/admin/halaqat');
 
-      expect(find.byType(EmptyView), findsOneWidget);
+      expect(find.byType(EmptyState), findsOneWidget);
       expect(find.text('لا توجد حلقات بعد'), findsOneWidget);
       await tester.tap(
         find.descendant(
-          of: find.byType(EmptyView),
+          of: find.byType(EmptyState),
           matching: find.text('إنشاء حلقة'),
         ),
       );
@@ -84,7 +84,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(HalaqatScreen),
-          matching: find.byType(LoadingView),
+          matching: find.byType(LoadingState),
         ),
         findsOneWidget,
       );
@@ -168,7 +168,7 @@ void main() {
       );
 
       expect(find.text('الشيخ محمود'), findsOneWidget);
-      expect(find.text('طلاب الحلقة (3)'), findsOneWidget);
+      expect(find.text('طلاب الحلقة (٣)'), findsOneWidget);
       expect(find.text('أحمد الخطيب'), findsOneWidget);
       expect(find.text('موقوف'), findsOneWidget); // s012
       expect(tester.takeException(), isNull);
@@ -178,7 +178,7 @@ void main() {
       expect(currentPath(tester), '/admin/halaqat/halaqa-fajr/students/s002');
       expect(find.text('S002'), findsOneWidget);
 
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byTooltip('رجوع'));
       await tester.pumpAndSettle();
       expect(currentPath(tester), '/admin/halaqat/halaqa-fajr');
     });

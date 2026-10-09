@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/student_summary.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/common/logout_button.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/students_filter_bar.dart';
 import 'widgets/students_list.dart';
 
@@ -17,8 +18,9 @@ class StudentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void add() => context.go(AppRoutes.adminNewStudent);
-    return AdminPage(
+    void add() => context.push(AppRoutes.adminNewStudent);
+    return AppPageScaffold(
+      actions: const [LogoutButton()],
       title: AppStrings.adminNavStudents,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: add,
@@ -28,8 +30,7 @@ class StudentsScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: ref.watch(studentSummariesProvider),
         builder: (context, students) => students.isEmpty
-            ? EmptyView(
-                icon: Icons.school_outlined,
+            ? EmptyState(
                 message: AppStrings.noStudents,
                 actionLabel: AppStrings.addStudent,
                 onAction: add,

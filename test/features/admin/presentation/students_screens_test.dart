@@ -91,12 +91,13 @@ void main() {
   });
 
   group('student details', () {
-    testWidgets('account info, actions and the recordings', (
-      tester,
-    ) async {
+    testWidgets('account info, actions and the recordings', (tester) async {
       usePhoneSize(tester);
       await pumpAdminApp(tester, school, location: '/admin/students/s001');
 
+      // The name once, in the page title; the section is "بيانات الطالب".
+      expect(find.text('أحمد الخطيب'), findsOneWidget);
+      expect(find.text('بيانات الطالب'), findsOneWidget);
       expect(find.text('S001'), findsOneWidget);
       expect(find.text('s001'), findsOneWidget);
       expect(find.text('حلقة الفجر'), findsOneWidget);

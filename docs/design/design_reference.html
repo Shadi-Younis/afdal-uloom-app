@@ -1,0 +1,101 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Amiri;src:url(amiri-arabic-400-normal.woff2)}
+@font-face{font-family:Amiri;font-weight:700;src:url(amiri-arabic-700-normal.woff2)}
+@font-face{font-family:Cairo;src:url(cairo-arabic-400-normal.woff2)}
+@font-face{font-family:Cairo;font-weight:700;src:url(cairo-arabic-700-normal.woff2)}
+@font-face{font-family:Kufi;font-weight:600;src:url(reem-kufi-arabic-600-normal.woff2)}
+:root{--g:#0B4019;--g2:#14572A;--gold:#C59C38;--gold2:#E6D3A0;--iv:#FBF8F1;--ink:#1E2A22;--mut:#6B756D}
+body{margin:0;background:#2b2f2c;font-family:Cairo;display:flex;gap:28px;padding:28px;direction:rtl}
+.ph{width:360px;height:760px;background:var(--iv);border-radius:28px;overflow:hidden;position:relative;box-shadow:0 10px 30px #0006}
+.pat{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23C59C38' stroke-width='1'%3E%3Crect x='14' y='14' width='28' height='28'/%3E%3Crect x='14' y='14' width='28' height='28' transform='rotate(45 28 28)'/%3E%3Ccircle cx='28' cy='28' r='6'/%3E%3C/g%3E%3C/svg%3E");opacity:.09}
+.hdr{position:relative;background:var(--g);color:#fff;padding:22px 20px 34px;border-radius:0 0 28px 28px;overflow:hidden}
+.hdr .pat{opacity:.18}
+.hdr:after{content:"";position:absolute;left:0;right:0;bottom:10px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.top{display:flex;justify-content:space-between;align-items:center;position:relative}
+.date{font-size:12px;color:var(--gold2)}
+.salam{font-family:Amiri;font-size:20px;color:var(--gold2);margin-top:14px;position:relative}
+.name{font-family:Kufi;font-weight:600;font-size:30px;position:relative;margin-top:2px}
+.ico{width:34px;height:34px;border-radius:50%;border:1px solid #ffffff40;display:flex;align-items:center;justify-content:center;font-size:16px}
+.body{position:relative;padding:18px}
+.stats{display:flex;gap:10px;margin-top:-34px;position:relative}
+.st{flex:1;background:#fff;border:1px solid var(--gold2);border-radius:16px;padding:12px 6px;text-align:center;box-shadow:0 4px 12px #0b40191a}
+.star{width:30px;height:30px;margin:0 auto;position:relative}
+.star:before,.star:after{content:"";position:absolute;inset:4px;background:var(--g);}
+.star:after{transform:rotate(45deg)}
+.star span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gold2);font-size:12px;z-index:1}
+.num{font-family:Kufi;font-weight:600;font-size:26px;color:var(--g);margin-top:6px}
+.lbl{font-size:13px;color:var(--mut)}
+.orn{display:flex;align-items:center;gap:10px;color:var(--g);font-family:Kufi;font-weight:600;font-size:17px;margin:22px 0 12px}
+.orn:before,.orn:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.orn:after{background:linear-gradient(270deg,transparent,var(--gold))}
+
+.btn{background:var(--g);color:#fff;border-radius:14px;padding:13px;text-align:center;font-weight:700;margin-bottom:10px;border:1px solid var(--g)}
+.btn.o{background:#fff;color:var(--g);border-color:var(--gold2)}
+.nav{position:absolute;bottom:0;left:0;right:0;height:66px;background:#fff;border-top:1px solid var(--gold2);display:flex;justify-content:space-around;align-items:center;font-size:12px;color:var(--mut)}
+.nav div{text-align:center}.nav b{display:block;font-size:18px}
+.nav .on{color:var(--g);font-weight:700}.nav .on b{background:#0b40191a;border-radius:14px;padding:2px 16px}
+.bar{display:flex;align-items:center;gap:10px;padding:16px 18px;position:relative}
+.bar .t{font-family:Kufi;font-weight:600;font-size:20px;color:var(--g);flex:1}
+.back{width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid var(--gold2);display:flex;align-items:center;justify-content:center;color:var(--g);font-size:18px}
+.cart{margin:6px 18px 0;position:relative;height:74px;display:flex;align-items:center;justify-content:center}
+.cart svg{position:absolute;inset:0}
+.cart .s{position:relative;font-family:Amiri;font-weight:700;font-size:28px;color:#fff}
+.sub{text-align:center;color:var(--mut);font-size:14px;margin-top:8px;position:relative}
+.chip{display:inline-block;background:#C59C3822;color:#7a5d17;border-radius:20px;padding:2px 12px;font-size:12px;margin:0 3px}
+.player{margin:16px 18px;background:#fff;border:1px solid var(--gold2);border-radius:20px;padding:16px;position:relative}
+.trk{height:6px;background:#eee7d6;border-radius:3px;position:relative;margin:10px 0 4px}
+.trk i{position:absolute;right:0;top:0;bottom:0;width:38%;background:var(--g);border-radius:3px}
+.trk b{position:absolute;right:38%;top:-5px;width:16px;height:16px;border-radius:50%;background:var(--gold);transform:translateX(50%)}
+.tm{display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}
+.ctl{display:flex;justify-content:center;align-items:center;gap:22px;margin-top:10px;color:var(--g);font-size:15px}
+.play{width:58px;height:58px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 0 4px #C59C3844}
+.spd{display:flex;justify-content:center;gap:6px;margin-top:12px}
+.spd span{border:1px solid var(--gold2);border-radius:12px;padding:1px 10px;font-size:12px;color:var(--mut)}.spd .a{background:var(--g);color:#fff;border-color:var(--g)}
+.note{margin:0 18px 10px;background:#fff;border-radius:14px;padding:12px;border-right:4px solid var(--gold);position:relative;font-size:14px;color:var(--ink)}
+.note .h{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:4px}
+.stars{color:var(--gold);letter-spacing:2px}
+.login{display:flex;flex-direction:column;align-items:center;padding:26px 24px;position:relative}
+.basm{font-family:Amiri;font-size:24px;color:var(--g);margin-top:4px}
+.had{font-family:Amiri;font-size:15px;color:#8a6a1e;margin:6px 0 16px}
+.fld{width:100%;background:#fff;border:1px solid var(--gold2);border-radius:14px;padding:12px 14px;margin-bottom:12px;color:var(--mut);box-sizing:border-box;display:flex;justify-content:space-between}
+.cap{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#ffffff99;font-size:12px}
+.s8{width:22px;height:22px;flex:none}.st .s8{width:40px;height:40px;display:block;margin:0 auto}</style></head><body>
+
+<div class="ph"><div class="pat"></div><div class="login">
+<div class="basm">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+<img src="logo.png" style="width:150px;margin:16px 0 6px">
+<div class="had">«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»</div>
+<div class="orn" style="width:100%"><svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg> تسجيل الدخول <svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg></div>
+<div class="fld"><span>اسم المستخدم</span><span>👤</span></div>
+<div class="fld"><span>كلمة السر</span><span>🔒</span></div>
+<div class="btn" style="width:100%;box-sizing:border-box;margin-top:6px">دخول</div>
+</div></div>
+
+<div class="ph"><div class="pat"></div>
+<div class="hdr"><div class="pat"></div>
+<div class="top"><div class="date">٢٧ ربيع الآخر ١٤٤٨ هـ · الجمعة</div><div class="ico">⇥</div></div>
+<div class="salam">السلام عليكم ورحمة الله</div><div class="name">شادي</div></div>
+<div class="body">
+<div class="stats">
+<div class="st"><svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg><div class="num">3</div><div class="lbl">الحلقات</div></div>
+<div class="st"><svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg><div class="num">2</div><div class="lbl">المعلمون</div></div>
+<div class="st"><svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg><div class="num">12</div><div class="lbl">الطلاب</div></div></div>
+<div class="orn"><svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg> اختصارات <svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg></div>
+<div class="btn">＋ إضافة طالب</div><div class="btn o">＋ إضافة معلم</div><div class="btn o">＋ إنشاء حلقة</div>
+</div>
+<div class="nav"><div class="on"><b>⌂</b>الرئيسية</div><div><b>☪</b>الحلقات</div><div><b>👤</b>المعلمون</div><div><b>📖</b>الطلاب</div></div>
+</div>
+
+<div class="ph"><div class="pat"></div>
+<div class="bar"><div class="back">→</div><div class="t">تسجيل أحمد الخطيب</div></div>
+<div class="cart"><svg viewBox="0 0 324 74" preserveAspectRatio="none"><path d="M18 37 L40 6 H284 L306 37 L284 68 H40 Z" fill="#0B4019" stroke="#C59C38" stroke-width="2"/><path d="M26 37 L45 11 H279 L298 37 L279 63 H45 Z" fill="none" stroke="#C59C38" stroke-width="1" opacity=".6"/><circle cx="12" cy="37" r="4" fill="#C59C38"/><circle cx="312" cy="37" r="4" fill="#C59C38"/></svg><div class="s">سورة الكهف</div></div>
+<div class="sub">الآيات ١ – ٢٠ <span class="chip">تسجيل رسمي</span> · ٥ أكتوبر</div>
+<div class="player"><div class="tm"><span>٠٣:١٢</span><span>٠١:١٤</span></div><div class="trk"><i></i><b></b></div>
+<div class="ctl"><span>٥ ث ⟳</span><div class="play">❚❚</div><span>⟲ ٥ ث</span></div>
+<div class="spd"><span>٠٫٧٥×</span><span class="a">١×</span><span>١٫٢٥×</span></div></div>
+<div class="orn" style="margin:6px 18px 10px"><svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg> ملاحظات المعلم <svg class="s8" viewBox="0 0 40 40"><g transform="translate(20 20)"><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6"/><rect x="-13" y="-13" width="26" height="26" fill="#0B4019" stroke="#C59C38" stroke-width="1.6" transform="rotate(45)"/><rect x="-12.2" y="-12.2" width="24.4" height="24.4" fill="#0B4019" transform="rotate(0)"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1"/><rect x="-7" y="-7" width="14" height="14" fill="none" stroke="#C59C38" stroke-width="1" transform="rotate(45)"/><circle r="3" fill="#C59C38"/><g fill="#C59C38"><circle cx="9.74" cy="3.93" r="0.9"/><circle cx="4.10" cy="9.67" r="0.9"/><circle cx="-3.93" cy="9.74" r="0.9"/><circle cx="-9.67" cy="4.10" r="0.9"/><circle cx="-9.74" cy="-3.93" r="0.9"/><circle cx="-4.10" cy="-9.67" r="0.9"/><circle cx="3.93" cy="-9.74" r="0.9"/><circle cx="9.67" cy="-4.10" r="0.9"/></g></g></svg></div>
+<div class="note"><div class="h"><span>الشيخ محمود</span><span class="chip">عند ٠١:٠٥</span></div>انتبه لمدّ المتصل في الآية السابعة.</div>
+<div class="note"><div class="h"><span>الشيخ محمود</span><span class="stars">★★★★☆</span></div>تلاوة جميلة، بارك الله فيك. راجع الوقف عند رأس الآية العاشرة.</div>
+</div>
+</body></html>

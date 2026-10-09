@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:afdal_uloom_tilawat/app/app_colors.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/common/school_logo.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/islamic/ornament_divider.dart';
 import 'package:afdal_uloom_tilawat/features/auth/presentation/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,6 +34,42 @@ void main() {
     expect(submit, findsOneWidget);
     expect(find.text('دخول كمدير'), findsNothing);
     expect(find.textContaining('حساب جديد'), findsNothing);
+  });
+
+  testWidgets('basmala, logo, hadith and the ornament title, in order', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await pumpLogin(tester);
+    final basmala = find.text('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ');
+    final hadith = find.text(
+      '«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»',
+    );
+    final top = [
+      basmala,
+      find.byType(SchoolLogo),
+      hadith,
+      find.byType(OrnamentDivider),
+      usernameField,
+    ].map((f) => tester.getRect(f).top).toList();
+    expect(top, orderedEquals([...top]..sort()));
+    // The hadith does not touch the logo.
+    expect(
+      tester.getRect(hadith).top -
+          tester.getRect(find.byType(SchoolLogo)).bottom,
+      greaterThanOrEqualTo(12),
+    );
+    expect(tester.widget<Text>(basmala).style!.fontFamily, contains('Amiri'));
+    final hadithStyle = tester.widget<Text>(hadith).style!;
+    expect(hadithStyle.fontFamily, contains('Amiri'));
+    expect(hadithStyle.color, AppColors.goldDark);
+    expect(
+      find.descendant(
+        of: find.byType(OrnamentDivider),
+        matching: find.text('تسجيل الدخول'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('empty fields show Arabic errors and do not call the server', (

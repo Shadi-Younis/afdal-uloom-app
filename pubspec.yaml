@@ -46,6 +46,7 @@ dependencies:
   firebase_storage: ^13.6.0
   cloud_functions: ^6.5.0
   just_audio: ^0.10.6
+  hijri: ^3.0.1
 
 dev_dependencies:
   flutter_test:

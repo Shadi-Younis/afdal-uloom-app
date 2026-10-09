@@ -7,14 +7,15 @@ import '../../utils/error_messages.dart';
 
 /// An Arabic error message for [error], with a retry button when [onRetry]
 /// is given. Never shows raw exception text.
-class ErrorView extends StatelessWidget {
-  const ErrorView({super.key, required this.error, this.onRetry});
+class ErrorState extends StatelessWidget {
+  const ErrorState({super.key, required this.error, this.onRetry});
 
   final Object error;
   final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final code = error is AppException
         ? (error as AppException).code
         : AppErrorCode.unknown;
@@ -24,10 +25,14 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(Icons.error_outline, color: theme.colorScheme.error),
+            const SizedBox(height: AppSizes.spaceS),
             Text(
               errorMessageFor(code),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.error,
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: AppSizes.spaceS),

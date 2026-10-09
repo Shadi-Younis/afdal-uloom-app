@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/recording.dart';
 import '../../../../core/widgets/common/recording_player.dart';
+import '../../../../core/widgets/islamic/ornament_divider.dart';
 import 'feedback_section.dart';
 import 'recording_header.dart';
 
@@ -25,7 +27,10 @@ class RecordingDetailsView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               RecordingHeader(recording: recording),
+              const SizedBox(height: AppSizes.spaceM),
               RecordingPlayer(storagePath: recording.storagePath),
+              const OrnamentDivider(title: AppStrings.feedbackTitle),
+              const SizedBox(height: AppSizes.spaceXS),
               FeedbackSection(recording: recording),
             ],
           ),

@@ -13,6 +13,43 @@ abstract final class AppStrings {
 
   static const retry = 'إعادة المحاولة';
   static const loading = 'جارٍ التحميل';
+  static const back = 'رجوع';
+
+  // Ornamental texts (Amiri).
+  static const basmala = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+  static const hadith = '«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»';
+  static const salam = 'السلام عليكم ورحمة الله';
+
+  /// Android back on a home screen; a second press within 2 s exits.
+  static const pressBackAgainToExit = 'اضغط مرة أخرى للخروج';
+
+  // Hijri date: "٢٧ ربيع الآخر ١٤٤٨ هـ · الجمعة".
+  static const hijriMonths = [
+    'محرم',
+    'صفر',
+    'ربيع الأول',
+    'ربيع الآخر',
+    'جمادى الأولى',
+    'جمادى الآخرة',
+    'رجب',
+    'شعبان',
+    'رمضان',
+    'شوال',
+    'ذو القعدة',
+    'ذو الحجة',
+  ];
+  static const hijriEra = 'هـ';
+
+  /// Monday first, like DateTime.weekday (1 = Monday).
+  static const weekdays = [
+    'الاثنين',
+    'الثلاثاء',
+    'الأربعاء',
+    'الخميس',
+    'الجمعة',
+    'السبت',
+    'الأحد',
+  ];
 
   // Login
   static const loginTitle = 'تسجيل الدخول';
@@ -25,9 +62,10 @@ abstract final class AppStrings {
   static const passwordRequired = 'أدخل كلمة السر';
 
   // Role home screens
-  static const adminHomeTitle = 'لوحة المدير';
-  static const teacherHomeTitle = 'لوحة المعلم';
-  static const studentHomeTitle = 'لوحة الطالب';
+  static const teacherComingSoon =
+      'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
+  static const studentComingSoon =
+      'ستظهر هنا تسجيلاتك وملاحظات معلمك قريباً، إن شاء الله.';
 
   // Shared actions and states
   static const cancel = 'إلغاء';
@@ -53,7 +91,6 @@ abstract final class AppStrings {
   static const adminNavStudents = 'الطلاب';
 
   // Admin home
-  static const adminWelcome = 'أهلاً بك';
   static const shortcutsTitle = 'اختصارات';
   static const addStudent = 'إضافة طالب';
   static const addTeacher = 'إضافة معلم';
@@ -129,6 +166,8 @@ abstract final class AppStrings {
   static const statusLabel = 'الحالة';
   static const statusActive = 'مفعّل';
   static const recordingsTitle = 'التسجيلات';
+  static const studentInfo = 'بيانات الطالب';
+  static const teacherInfo = 'بيانات المعلم';
   static const noRecordings = 'لا توجد تسجيلات بعد';
   static const moveStudent = 'نقل إلى حلقة أخرى';
   static const chooseHalaqaTitle = 'اختر الحلقة الجديدة';
@@ -175,8 +214,11 @@ abstract final class AppStrings {
       '$passwordLabel: $password';
 
   // Recording screen
-  static const home = 'الرئيسية';
   static const recordingScreenTitle = 'التسجيل';
+  static String recordingOf(String student) => 'تسجيل $student';
+  static String surahName(String name) => 'سورة $name';
+  static String ayahRange(String from, String to) => 'الآيات $from–$to';
+  static String oneAyah(String ayah) => 'الآية $ayah';
   static const typeOfficial = 'رسمي';
   static const typePractice = 'تدريب';
   static const recordedAtLabel = 'تاريخ التسجيل';

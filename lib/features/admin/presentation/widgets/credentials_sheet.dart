@@ -5,6 +5,7 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/user_role.dart';
 import '../../../../core/widgets/common/app_snack_bar.dart';
+import '../../../../core/widgets/islamic/ornament_divider.dart';
 import '../../application/issued_credentials.dart';
 import 'info_row.dart';
 
@@ -57,11 +58,8 @@ class CredentialsSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              AppStrings.credentialsTitle,
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppSizes.spaceM),
+            const OrnamentDivider(title: AppStrings.credentialsTitle),
+            const SizedBox(height: AppSizes.spaceS),
             InfoRow(label: AppStrings.nameLabel, value: credentials.fullName),
             InfoRow(
               label: AppStrings.usernameLabel,

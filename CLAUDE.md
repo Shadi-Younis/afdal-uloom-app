@@ -76,7 +76,8 @@ lib/
     errors/                     AppException + mapping of Firebase errors
     utils/                      small pure helpers
     widgets/common/             shared widgets (SchoolLogo, buttons,
-                                empty / error / loading states)
+                                player, dialogs)
+    widgets/islamic/            the design's building blocks (see Design)
   features/<feature>/           auth, admin, teacher, student, recordings
                                 (screens every role opens, e.g. /recording/:id)
     presentation/               <name>_screen.dart, widgets/
@@ -110,8 +111,24 @@ All in `lib/core/constants/`, as `abstract final class` with `static const`:
 | `playback_speeds.dart` | `PlaybackSpeeds` | the player's speeds |
 | `surahs.dart` | `Surah`, `surahs` | the 114 surahs with Arabic names and ayah counts |
 
-Colors and the text theme stay in `lib/app/theme.dart` (`kBrandGreen`,
-`kBrandGold`). Never use `kBrandGold` for text on white (contrast too low).
+Colors are in `lib/app/app_colors.dart` (`AppColors`), named text styles
+in `lib/app/app_text_styles.dart` (`AppTextStyles`), the theme in
+`lib/app/theme.dart`. Never use `AppColors.gold` for text on ivory or white
+(contrast too low): gold text is `AppColors.goldDark`.
+
+## Design
+
+The approved Islamic design and its rules: [docs/design/README.md](docs/design/README.md)
+(colors, fonts, widget catalog, navigation). Permanent rules:
+
+- Use the widgets in `core/widgets/islamic/` and `AppColors` /
+  `AppTextStyles`; never hard-code colors or fonts.
+- Every 8-point star is `IslamicStar`.
+- Every non-root page uses `AppPageScaffold` (pattern, top bar, back).
+- Drill-down = `context.push` (never `go`); tab switches and auth
+  redirects use `go`; a create that opens the new item uses
+  `pushReplacement`. Every drill-down route has its parent in
+  `AppRoutes.parentOf`.
 
 ```dart
 // Wrong
@@ -136,7 +153,8 @@ Tests may use literal values when they assert behavior (e.g. "the region is
   state; `setState` is fine for purely visual local state (e.g. a password
   visibility toggle).
 - Every async screen handles loading, error and empty states with the shared
-  widgets in `core/widgets/common/` — never a blank screen.
+  widgets in `core/widgets/islamic/` (`LoadingState`, `ErrorState`,
+  `EmptyState`) — never a blank screen.
 - Errors: the data layer catches Firebase exceptions and throws `AppException`
   (an `AppErrorCode` plus the original error for logs). Controllers expose it
   as state; presentation shows `errorMessageFor(code)` (core/utils). Never

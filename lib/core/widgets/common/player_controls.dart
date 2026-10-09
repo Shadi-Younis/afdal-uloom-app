@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/app_colors.dart';
 import '../../constants/app_durations.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
@@ -44,8 +45,19 @@ class PlayerControls extends StatelessWidget {
           icon: const Icon(Icons.replay_5),
         ),
         const SizedBox(width: AppSizes.spaceL),
-        SizedBox.square(
-          dimension: AppSizes.playButton,
+        Container(
+          width: AppSizes.playButton,
+          height: AppSizes.playButton,
+          // The gold halo of the design.
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.goldHalo,
+                spreadRadius: AppSizes.playHalo,
+              ),
+            ],
+          ),
           child: Stack(
             fit: StackFit.expand,
             children: [

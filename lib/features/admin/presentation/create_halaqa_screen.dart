@@ -6,10 +6,11 @@ import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/common/app_snack_bar.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/admin_data_providers.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/islamic/app_card.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/content_width.dart';
 import 'widgets/halaqa_form.dart';
 
@@ -19,26 +20,29 @@ class CreateHalaqaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AdminPage(
+    return AppPageScaffold(
       title: AppStrings.newHalaqaTitle,
       body: AdminAsyncView(
         value: ref.watch(activeTeachersProvider),
         builder: (context, teachers) => teachers.isEmpty
-            ? EmptyView(
-                icon: Icons.person_off_outlined,
+            ? EmptyState(
                 message: AppStrings.noActiveTeachers,
                 actionLabel: AppStrings.addTeacher,
-                onAction: () => context.go(AppRoutes.adminNewTeacher),
+                onAction: () => context.push(AppRoutes.adminNewTeacher),
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSizes.screenPadding),
                 child: ContentWidth(
-                  child: HalaqaForm(
-                    teachers: teachers,
-                    onCreated: (id) {
-                      showAppSnackBar(context, AppStrings.halaqaCreated);
-                      context.go(AppRoutes.adminHalaqa(id));
-                    },
+                  child: AppCard(
+                    child: HalaqaForm(
+                      teachers: teachers,
+                      onCreated: (id) {
+                        showAppSnackBar(context, AppStrings.halaqaCreated);
+                        // Replaces the form: back from the new halaqa goes to
+                        // the list, not to an empty form.
+                        context.pushReplacement(AppRoutes.adminHalaqa(id));
+                      },
+                    ),
                   ),
                 ),
               ),

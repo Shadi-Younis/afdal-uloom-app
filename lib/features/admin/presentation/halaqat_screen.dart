@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/widgets/common/empty_view.dart';
+import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/halaqa_summary.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/admin_page.dart';
+import '../../../core/widgets/common/logout_button.dart';
+import '../../../core/widgets/islamic/app_card.dart';
+import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import 'widgets/halaqa_tile.dart';
 
 /// Every halaqa with its teacher and number of students.
@@ -17,8 +19,9 @@ class HalaqatScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void create() => context.go(AppRoutes.adminNewHalaqa);
-    return AdminPage(
+    void create() => context.push(AppRoutes.adminNewHalaqa);
+    return AppPageScaffold(
+      actions: const [LogoutButton()],
       title: AppStrings.adminNavHalaqat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: create,
@@ -28,20 +31,29 @@ class HalaqatScreen extends ConsumerWidget {
       body: AdminAsyncView(
         value: ref.watch(halaqaSummariesProvider),
         builder: (context, halaqat) => halaqat.isEmpty
-            ? EmptyView(
-                icon: Icons.groups_outlined,
+            ? EmptyState(
                 message: AppStrings.noHalaqat,
                 actionLabel: AppStrings.createHalaqa,
                 onAction: create,
               )
             : ListView.separated(
-                padding: const EdgeInsets.only(bottom: AppSizes.fabClearance),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSizes.pagePadding,
+                  AppSizes.spaceXS,
+                  AppSizes.pagePadding,
+                  AppSizes.fabClearance,
+                ),
                 itemCount: halaqat.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) => HalaqaTile(
-                  summary: halaqat[i],
-                  onTap: () =>
-                      context.go(AppRoutes.adminHalaqa(halaqat[i].halaqa.id)),
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppSizes.spaceS),
+                itemBuilder: (context, i) => AppCard(
+                  padding: EdgeInsets.zero,
+                  child: HalaqaTile(
+                    summary: halaqat[i],
+                    onTap: () => context.push(
+                      AppRoutes.adminHalaqa(halaqat[i].halaqa.id),
+                    ),
+                  ),
                 ),
               ),
       ),

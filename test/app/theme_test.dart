@@ -1,3 +1,5 @@
+import 'package:afdal_uloom_tilawat/app/app_colors.dart';
+import 'package:afdal_uloom_tilawat/app/app_text_styles.dart';
 import 'package:afdal_uloom_tilawat/app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,7 +25,7 @@ void main() {
     'titleMedium': (18, FontWeight.w600),
     'bodyLarge': (18, null),
     'bodyMedium': (16, null),
-    'labelLarge': (16, FontWeight.w600),
+    'labelLarge': (16, FontWeight.w700),
   };
 
   TextStyle? styleOf(TextTheme textTheme, String name) => switch (name) {
@@ -36,18 +38,43 @@ void main() {
     _ => throw ArgumentError(name),
   };
 
-  test('primary is the brand green with white on top', () {
+  test('primary is the school green with white on top', () {
     final scheme = buildAppTheme().colorScheme;
 
-    expect(scheme.primary, kBrandGreen);
-    expect(scheme.onPrimary, Colors.white);
+    expect(scheme.primary, const Color(0xFF0B4019));
+    expect(scheme.onPrimary, const Color(0xFFFFFFFF));
   });
 
-  test('screens and surfaces are pure white', () {
+  test('pages are ivory, cards and surfaces white, text ink', () {
     final theme = buildAppTheme();
 
-    expect(theme.scaffoldBackgroundColor, const Color(0xFFFFFFFF));
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFFBF8F1));
     expect(theme.colorScheme.surface, const Color(0xFFFFFFFF));
+    expect(theme.colorScheme.onSurface, AppColors.ink);
+  });
+
+  test('cards: white, radius 16, gold hairline', () {
+    final shape = buildAppTheme().cardTheme.shape! as RoundedRectangleBorder;
+    expect(shape.borderRadius, BorderRadius.circular(16));
+    expect(shape.side.color, AppColors.goldLight);
+  });
+
+  test('named styles: Amiri for Quranic text, Reem Kufi for headings', () {
+    final styles = buildAppTheme().extension<AppTextStyles>()!;
+    for (final style in [styles.basmala, styles.hadith, styles.surahTitle]) {
+      expect(style.fontFamily, contains('Amiri'));
+    }
+    for (final style in [
+      styles.heading,
+      styles.sectionTitle,
+      styles.statNumber,
+      styles.headerName,
+    ]) {
+      expect(style.fontFamily, contains('ReemKufi'));
+      expect(style.fontWeight, FontWeight.w600);
+    }
+    expect(styles.hadith.color, AppColors.goldDark);
+    expect(styles.basmala.color, AppColors.green);
   });
 
   for (final MapEntry(key: name, value: (size, weight)) in expected.entries) {

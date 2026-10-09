@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/arabic_digits.dart';
 import '../../application/halaqa_summary.dart';
 import 'change_teacher_button.dart';
 import 'content_width.dart';
@@ -42,20 +43,15 @@ class HalaqaDetailsView extends StatelessWidget {
                         summary.teacher?.fullName ?? AppStrings.unknownTeacher,
                   ),
                   const SizedBox(height: AppSizes.spaceS),
-                  Wrap(
-                    spacing: AppSizes.spaceS,
-                    runSpacing: AppSizes.spaceS,
-                    children: [
-                      RenameHalaqaButton(halaqa: halaqa),
-                      ChangeTeacherButton(summary: summary),
-                    ],
-                  ),
+                  RenameHalaqaButton(halaqa: halaqa),
+                  const SizedBox(height: AppSizes.spaceS),
+                  ChangeTeacherButton(summary: summary),
                 ],
               ),
             ),
             SectionCard(
               title:
-                  '${AppStrings.halaqaStudents} (${summary.students.length})',
+                  '${AppStrings.halaqaStudents} (${toArabicDigits(summary.students.length)})',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -64,14 +60,15 @@ class HalaqaDetailsView extends StatelessWidget {
                   for (final student in summary.students)
                     StudentTile(
                       student: student,
-                      onTap: () => context.go(
+                      onTap: () => context.push(
                         AppRoutes.adminHalaqaStudent(halaqa.id, student.id),
                       ),
                     ),
                   const SizedBox(height: AppSizes.spaceS),
                   FilledButton.icon(
-                    onPressed: () =>
-                        context.go(AppRoutes.adminHalaqaAddStudent(halaqa.id)),
+                    onPressed: () => context.push(
+                      AppRoutes.adminHalaqaAddStudent(halaqa.id),
+                    ),
                     icon: const Icon(Icons.person_add_alt_1_outlined),
                     label: const Text(AppStrings.addStudent),
                   ),

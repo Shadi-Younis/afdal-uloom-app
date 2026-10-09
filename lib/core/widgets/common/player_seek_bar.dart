@@ -4,7 +4,7 @@ import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
 import '../../utils/player_format.dart';
 
-/// The player's progress slider with the current and total time.
+/// The player's progress slider, the current and total time above it.
 ///
 /// RTL: the slider follows Material's RTL default and fills from the right
 /// (the start) to the left, like the Arabic text around it. The current
@@ -37,9 +37,28 @@ class _PlayerSeekBarState extends State<PlayerSeekBar> {
     final current = (_dragMillis ?? widget.position.inMilliseconds.toDouble())
         .clamp(0, total)
         .toDouble();
-    final textStyle = Theme.of(context).textTheme.bodyMedium;
+    final theme = Theme.of(context);
+    final textStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.spaceM),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                formatClock(Duration(milliseconds: current.round())),
+                style: textStyle,
+              ),
+              Text(
+                formatClock(widget.duration ?? Duration.zero),
+                style: textStyle,
+              ),
+            ],
+          ),
+        ),
         Semantics(
           label: AppStrings.playbackPosition,
           child: Slider(
@@ -56,22 +75,6 @@ class _PlayerSeekBarState extends State<PlayerSeekBar> {
                     widget.onSeek(Duration(milliseconds: value.round()));
                   }
                 : null,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.spaceM),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                formatClock(Duration(milliseconds: current.round())),
-                style: textStyle,
-              ),
-              Text(
-                formatClock(widget.duration ?? Duration.zero),
-                style: textStyle,
-              ),
-            ],
           ),
         ),
       ],
