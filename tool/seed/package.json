@@ -1,7 +1,7 @@
 {
   "name": "seed",
   "private": true,
-  "description": "Fills the Auth and Firestore EMULATORS with test data. Run through tool/seed_emulator.ps1.",
+  "description": "Fills the Auth, Firestore and Storage EMULATORS with test data. Run through tool/seed_emulator.ps1.",
   "type": "module",
   "scripts": {
     "seed": "tsx src/seed.ts",

@@ -66,3 +66,13 @@ ui-debug.log
 database-debug.log
 pubsub-debug.log
 .emulator-data/
+
+# Audio is never committed: the seed's recitations live outside the repo
+# (tool/seed/README.md).
+*.mp3
+*.wav
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.flac
