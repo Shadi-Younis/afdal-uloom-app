@@ -41,7 +41,8 @@ class LoginScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSizes.spaceM),
                     const Center(child: SchoolLogo(size: AppSizes.logoLarge)),
-                    const SizedBox(height: AppSizes.spaceXS),
+                    // Amiri's tall diacritics need room under the logo.
+                    const SizedBox(height: AppSizes.spaceM),
                     Text(
                       AppStrings.hadith,
                       textAlign: TextAlign.center,

@@ -53,6 +53,12 @@ void main() {
       usernameField,
     ].map((f) => tester.getRect(f).top).toList();
     expect(top, orderedEquals([...top]..sort()));
+    // The hadith does not touch the logo.
+    expect(
+      tester.getRect(hadith).top -
+          tester.getRect(find.byType(SchoolLogo)).bottom,
+      greaterThanOrEqualTo(12),
+    );
     expect(tester.widget<Text>(basmala).style!.fontFamily, contains('Amiri'));
     final hadithStyle = tester.widget<Text>(hadith).style!;
     expect(hadithStyle.fontFamily, contains('Amiri'));
