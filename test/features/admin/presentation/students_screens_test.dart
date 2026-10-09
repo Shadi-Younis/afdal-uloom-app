@@ -104,6 +104,12 @@ void main() {
       expect(find.text('تغيير كلمة السر'), findsOneWidget);
       expect(find.text('نقل إلى حلقة أخرى'), findsOneWidget);
       expect(find.text('إيقاف الحساب'), findsOneWidget);
+
+      // Left-to-right values (username, code) end at the same edge as the
+      // Arabic ones, not next to their label.
+      final arabicEnd = tester.getRect(find.text('حلقة الفجر')).left;
+      expect(tester.getRect(find.text('s001')).left, closeTo(arabicEnd, 1));
+      expect(tester.getRect(find.text('S001')).left, closeTo(arabicEnd, 1));
       await tester.scrollUntilVisible(find.text('التسجيلات'), 100);
       expect(
         find.text('ستظهر هنا تسجيلات الطالب في تحديث قادم.'),

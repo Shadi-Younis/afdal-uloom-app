@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_sizes.dart';
 
-/// One "label: value" line of a details page. [ltr] for usernames and
-/// codes, which read left to right inside the Arabic layout.
+/// One "label: value" line of a details page: the label at the start, the
+/// value at the end. [ltr] for usernames, codes and passwords, which read
+/// left to right inside the Arabic layout. [valueWidget], when given, is
+/// shown instead of [value] (e.g. a status chip).
 class InfoRow extends StatelessWidget {
   const InfoRow({
     super.key,
     required this.label,
-    required this.value,
+    this.value = '',
     this.ltr = false,
-    this.trailing,
+    this.valueWidget,
   });
 
   final String label;
   final String value;
   final bool ltr;
-  final Widget? trailing;
+  final Widget? valueWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +35,19 @@ class InfoRow extends StatelessWidget {
           ),
           const SizedBox(width: AppSizes.spaceS),
           Expanded(
-            child: Text(
-              value,
-              textDirection: ltr ? TextDirection.ltr : null,
-              textAlign: TextAlign.end,
-              style: theme.textTheme.bodyLarge,
+            // Aligned by the layout, not by textAlign: an LTR text's "end"
+            // is its right, which in this RTL row is next to the label.
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child:
+                  valueWidget ??
+                  Text(
+                    value,
+                    textDirection: ltr ? TextDirection.ltr : null,
+                    style: theme.textTheme.bodyLarge,
+                  ),
             ),
           ),
-          ?trailing,
         ],
       ),
     );

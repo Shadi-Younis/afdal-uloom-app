@@ -39,10 +39,8 @@ class AccountInfo extends StatelessWidget {
           InfoRow(label: AppStrings.createdAtLabel, value: created),
           InfoRow(
             label: AppStrings.statusLabel,
-            value: user.disabled
-                ? AppStrings.statusDisabled
-                : AppStrings.statusActive,
-            trailing: user.disabled ? const DisabledChip() : null,
+            value: AppStrings.statusActive,
+            valueWidget: user.disabled ? const DisabledChip() : null,
           ),
           const SizedBox(height: AppSizes.spaceS),
           Wrap(

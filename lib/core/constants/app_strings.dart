@@ -128,7 +128,6 @@ abstract final class AppStrings {
   static const createdAtLabel = 'تاريخ الإنشاء';
   static const statusLabel = 'الحالة';
   static const statusActive = 'مفعّل';
-  static const statusDisabled = 'موقوف';
   static const recordingsTitle = 'التسجيلات';
   static const recordingsPlaceholder =
       'ستظهر هنا تسجيلات الطالب في تحديث قادم.';
