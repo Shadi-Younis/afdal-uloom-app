@@ -10,7 +10,8 @@ import 'package:afdal_uloom_tilawat/core/repositories/recording_repository.dart'
 /// - [watchError] / [getError] / [createError] / [deleteError]: thrown or
 ///   emitted instead of the normal result.
 /// - [createGate]: when set, create waits for it.
-/// - [getGate]: when set, get waits for it (to test loading states).
+/// - [getGate] / [watchGate]: when set, get / watch wait for it (to test
+///   loading states).
 class FakeRecordingRepository implements RecordingRepository {
   FakeRecordingRepository([List<Recording> recordings = const []])
     : recordings = {for (final r in recordings) r.id: r};
@@ -22,6 +23,7 @@ class FakeRecordingRepository implements RecordingRepository {
   Object? deleteError;
   Completer<void>? createGate;
   Completer<void>? getGate;
+  Completer<void>? watchGate;
 
   final created = <Recording>[];
   final deleted = <String>[];
@@ -83,6 +85,7 @@ class FakeRecordingRepository implements RecordingRepository {
   }
 
   Stream<T> _live<T>(T Function() read) async* {
+    await watchGate?.future;
     if (watchError case final error?) throw error;
     yield read();
     yield* _changed.stream.map((_) => read());

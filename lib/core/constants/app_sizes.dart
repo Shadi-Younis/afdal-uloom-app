@@ -39,6 +39,15 @@ abstract final class AppSizes {
   /// The icon of an empty state.
   static const emptyIcon = 56.0;
 
+  /// The icon inside a small chip (recording type).
+  static const chipIcon = 18.0;
+
+  /// The "new feedback" dot on a recording.
+  static const unreadDot = 10.0;
+
+  /// The stars of a teacher's rating.
+  static const ratingStar = 20.0;
+
   /// Every player button is at least this big (Material's touch target).
   static const touchTarget = 48.0;
 

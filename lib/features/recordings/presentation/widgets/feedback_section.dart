@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/application/recording_player_controller.dart';
+import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/models/recording.dart';
+import '../../../../core/widgets/common/error_view.dart';
+import '../../../../core/widgets/common/loading_view.dart';
+import '../../application/recording_details_providers.dart';
+import 'feedback_tile.dart';
+
+/// The teacher's notes on [recording], read-only. A note's "عند ٠١:٢٣"
+/// moves the player there.
+class FeedbackSection extends ConsumerWidget {
+  const FeedbackSection({super.key, required this.recording});
+
+  final Recording recording;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notes = ref.watch(recordingFeedbackProvider(recording.id));
+    final player = recordingPlayerControllerProvider(recording.storagePath);
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppSizes.spaceM),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.spaceM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              AppStrings.feedbackTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSizes.spaceS),
+            switch (notes) {
+              AsyncData(value: final notes) when notes.isEmpty => const Text(
+                AppStrings.noFeedback,
+              ),
+              AsyncData(value: final notes) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final note in notes)
+                    FeedbackTile(
+                      note: note,
+                      onSeek: (position) =>
+                          ref.read(player.notifier).seek(position),
+                    ),
+                ],
+              ),
+              AsyncError(:final error) => ErrorView(
+                error: error,
+                onRetry: () =>
+                    ref.invalidate(recordingFeedbackProvider(recording.id)),
+              ),
+              _ => const LoadingView(),
+            },
+          ],
+        ),
+      ),
+    );
+  }
+}

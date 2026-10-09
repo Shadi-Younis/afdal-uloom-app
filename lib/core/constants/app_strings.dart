@@ -175,6 +175,21 @@ abstract final class AppStrings {
       '$usernameLabel: $username\n'
       '$passwordLabel: $password';
 
+  // Recording screen
+  static const home = 'الرئيسية';
+  static const recordingScreenTitle = 'التسجيل';
+  static const typeOfficial = 'رسمي';
+  static const typePractice = 'تدريب';
+  static const recordedAtLabel = 'تاريخ التسجيل';
+  static const uploadedByLabel = 'رُفع بواسطة';
+  static const unreadFeedback = 'ملاحظة جديدة لم يقرأها الطالب';
+  static const feedbackTitle = 'ملاحظات المعلم';
+  static const noFeedback = 'لا توجد ملاحظات بعد';
+
+  /// A note about a moment of the recording, e.g. "عند ٠١:٢٣".
+  static String atTime(String clock) => 'عند $clock';
+  static String ratingOf(String stars, String max) => 'التقييم: $stars من $max';
+
   // Recording player
   static const playerLoading = 'جارٍ تحميل التسجيل';
   static const play = 'تشغيل';
