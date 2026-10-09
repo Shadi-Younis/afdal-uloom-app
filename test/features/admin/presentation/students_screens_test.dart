@@ -91,7 +91,7 @@ void main() {
   });
 
   group('student details', () {
-    testWidgets('account info, actions and the recordings placeholder', (
+    testWidgets('account info, actions and the recordings', (
       tester,
     ) async {
       usePhoneSize(tester);
@@ -110,11 +110,8 @@ void main() {
       final arabicEnd = tester.getRect(find.text('حلقة الفجر')).left;
       expect(tester.getRect(find.text('s001')).left, closeTo(arabicEnd, 1));
       expect(tester.getRect(find.text('S001')).left, closeTo(arabicEnd, 1));
-      await tester.scrollUntilVisible(find.text('التسجيلات'), 100);
-      expect(
-        find.text('ستظهر هنا تسجيلات الطالب في تحديث قادم.'),
-        findsOneWidget,
-      );
+      await tester.scrollUntilVisible(find.text('الفاتحة: الآيات ١–٧'), 100);
+      expect(find.text('التسجيلات'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

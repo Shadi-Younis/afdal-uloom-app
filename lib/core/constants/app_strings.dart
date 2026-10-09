@@ -129,8 +129,7 @@ abstract final class AppStrings {
   static const statusLabel = 'الحالة';
   static const statusActive = 'مفعّل';
   static const recordingsTitle = 'التسجيلات';
-  static const recordingsPlaceholder =
-      'ستظهر هنا تسجيلات الطالب في تحديث قادم.';
+  static const noRecordings = 'لا توجد تسجيلات بعد';
   static const moveStudent = 'نقل إلى حلقة أخرى';
   static const chooseHalaqaTitle = 'اختر الحلقة الجديدة';
   static const noOtherHalaqa = 'لا توجد حلقة أخرى.';
