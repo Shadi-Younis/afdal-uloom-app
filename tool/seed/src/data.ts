@@ -5,8 +5,12 @@
 //           حلقة المغرب (t01, 2 students).
 // s012 has no recordings (empty state). 25 recordings: 19 official,
 // 6 practice (4 not reviewed); 4 with unread feedback; notes on 8
-// recordings, rec-09 has 3. Every recording gets a generated WAV file of
-// 20, 30 or 40 s (audio.ts); "at second" notes stay inside 20 s.
+// recordings, rec-09 has 3. Every recording plays a recitation by
+// al-Minshawi (test_audio.json): al-Fatiha, al-Ikhlas, al-Falaq, an-Nas or
+// one of al-Mulk 1..5; its surah and ayat are the clip's. The seed refuses
+// a note whose "at second" is past the end of its recording's audio.
+
+import { clips } from "./test_audio.js";
 
 export type Role = "admin" | "teacher" | "student";
 
@@ -27,6 +31,8 @@ export interface SeedRecording {
   id: string;
   studentId: string;
   type: "official" | "practice";
+  /** The id of the clip in test_audio.json that this recording plays. */
+  clipId: string;
   surahNumber: number;
   ayahFrom: number;
   ayahTo: number;
@@ -93,9 +99,7 @@ type Row = [
   id: string,
   studentId: string,
   type: "official" | "practice",
-  surah: number,
-  from: number,
-  to: number,
+  clip: string,
   date: string,
   reviewed: boolean,
   unread: boolean,
@@ -103,56 +107,64 @@ type Row = [
 
 // Official studio recordings are reviewed by definition.
 const rows: Row[] = [
-  ["rec-01", "s001", "official", 1, 1, 7, "2026-09-01", true, false],
-  ["rec-02", "s001", "official", 2, 1, 20, "2026-09-08", true, true],
-  ["rec-03", "s001", "official", 2, 21, 40, "2026-09-15", true, false],
-  ["rec-04", "s002", "official", 67, 1, 15, "2026-09-02", true, true],
-  ["rec-05", "s002", "official", 67, 16, 30, "2026-09-09", true, false],
-  ["rec-06", "s003", "official", 78, 1, 20, "2026-09-03", true, false],
-  ["rec-07", "s003", "official", 78, 21, 40, "2026-09-10", true, false],
-  ["rec-08", "s004", "official", 36, 1, 27, "2026-09-04", true, false],
-  ["rec-09", "s005", "official", 55, 1, 25, "2026-09-05", true, true],
-  ["rec-10", "s006", "official", 18, 1, 10, "2026-09-02", true, false],
-  ["rec-11", "s006", "official", 18, 11, 26, "2026-09-09", true, false],
-  ["rec-12", "s007", "official", 112, 1, 4, "2026-09-03", true, false],
-  ["rec-13", "s007", "official", 114, 1, 6, "2026-09-10", true, false],
-  ["rec-14", "s008", "official", 3, 1, 20, "2026-09-04", true, true],
-  ["rec-15", "s009", "official", 2, 255, 257, "2026-09-05", true, false],
-  ["rec-16", "s010", "official", 36, 28, 54, "2026-09-06", true, false],
-  ["rec-17", "s011", "official", 67, 1, 30, "2026-09-07", true, false],
-  ["rec-18", "s011", "official", 1, 1, 7, "2026-09-14", true, false],
-  ["rec-19", "s004", "official", 36, 28, 50, "2026-09-11", true, false],
-  ["rec-20", "s001", "practice", 2, 41, 50, "2026-09-20", false, false],
-  ["rec-21", "s002", "practice", 67, 1, 10, "2026-09-21", true, false],
-  ["rec-22", "s006", "practice", 18, 27, 31, "2026-09-22", false, false],
-  ["rec-23", "s008", "practice", 3, 21, 30, "2026-09-23", false, false],
-  ["rec-24", "s011", "practice", 112, 1, 4, "2026-09-24", false, false],
-  ["rec-25", "s010", "practice", 55, 26, 40, "2026-09-25", true, false],
+  ["rec-01", "s001", "official", "ikhlas", "2026-09-01", true, false],
+  ["rec-02", "s001", "official", "fatiha", "2026-09-08", true, true],
+  ["rec-03", "s001", "official", "falaq", "2026-09-15", true, false],
+  ["rec-04", "s002", "official", "mulk-1", "2026-09-02", true, true],
+  ["rec-05", "s002", "official", "mulk-2", "2026-09-09", true, false],
+  ["rec-06", "s003", "official", "ikhlas", "2026-09-03", true, false],
+  ["rec-07", "s003", "official", "falaq", "2026-09-10", true, false],
+  ["rec-08", "s004", "official", "fatiha", "2026-09-04", true, false],
+  ["rec-09", "s005", "official", "nas", "2026-09-05", true, true],
+  ["rec-10", "s006", "official", "mulk-1", "2026-09-02", true, false],
+  ["rec-11", "s006", "official", "mulk-2", "2026-09-09", true, false],
+  ["rec-12", "s007", "official", "ikhlas", "2026-09-03", true, false],
+  ["rec-13", "s007", "official", "nas", "2026-09-10", true, false],
+  ["rec-14", "s008", "official", "fatiha", "2026-09-04", true, true],
+  ["rec-15", "s009", "official", "falaq", "2026-09-05", true, false],
+  ["rec-16", "s010", "official", "mulk-3", "2026-09-06", true, false],
+  ["rec-17", "s011", "official", "mulk-1", "2026-09-07", true, false],
+  ["rec-18", "s011", "official", "fatiha", "2026-09-14", true, false],
+  ["rec-19", "s004", "official", "ikhlas", "2026-09-11", true, false],
+  ["rec-20", "s001", "practice", "nas", "2026-09-20", false, false],
+  ["rec-21", "s002", "practice", "mulk-3", "2026-09-21", true, false],
+  ["rec-22", "s006", "practice", "mulk-4", "2026-09-22", false, false],
+  ["rec-23", "s008", "practice", "falaq", "2026-09-23", false, false],
+  ["rec-24", "s011", "practice", "mulk-2", "2026-09-24", false, false],
+  ["rec-25", "s010", "practice", "mulk-5", "2026-09-25", true, false],
 ];
 
+const clipById = new Map(clips.map((clip) => [clip.id, clip]));
+
 export const recordings: SeedRecording[] = rows.map(
-  ([id, studentId, type, surahNumber, ayahFrom, ayahTo, date, reviewed, unreadFeedback]) => ({
-    id,
-    studentId,
-    type,
-    surahNumber,
-    ayahFrom,
-    ayahTo,
-    recordedAt: `${date}T16:00:00Z`,
-    reviewed,
-    unreadFeedback,
-  }),
+  ([id, studentId, type, clipId, date, reviewed, unreadFeedback]) => {
+    const clip = clipById.get(clipId);
+    if (!clip) throw new Error(`${id}: no clip "${clipId}" in test_audio.json`);
+    return {
+      id,
+      studentId,
+      type,
+      clipId,
+      // Taken from the clip, so the ayat shown always match the audio.
+      surahNumber: clip.surahNumber,
+      ayahFrom: clip.ayahFrom,
+      ayahTo: clip.ayahTo,
+      recordedAt: `${date}T16:00:00Z`,
+      reviewed,
+      unreadFeedback,
+    };
+  },
 );
 
 export const notes: SeedNote[] = [
-  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الألف في آية ٥", atSecond: 12, rating: 4 },
-  { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في الآيات الأولى", rating: 3 },
+  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الياء في «الرحيم»", atSecond: 12, rating: 4 },
+  { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في هذه الآية", rating: 3 },
   { id: "fb-03", recordingId: "rec-07", note: "تلاوة جميلة، بارك الله فيك", rating: 5 },
   { id: "fb-04", recordingId: "rec-09", note: "انتبه للغنّة في النون المشدّدة", atSecond: 5 },
   { id: "fb-05", recordingId: "rec-09", note: "الوقف هنا غير مناسب، أعد الآية", atSecond: 17 },
   { id: "fb-06", recordingId: "rec-09", note: "تحسّن واضح في آخر التلاوة", rating: 4 },
   { id: "fb-07", recordingId: "rec-11", note: "ممتاز، استمر على هذا", rating: 5 },
-  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة الآية ١٢ ببطء", atSecond: 14, rating: 3 },
+  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة هذه الآية ببطء", atSecond: 14, rating: 3 },
   { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن", rating: 5 },
-  { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام الإدغام", atSecond: 8 },
+  { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام النون الساكنة", atSecond: 8 },
 ];

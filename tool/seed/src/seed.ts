@@ -1,7 +1,10 @@
 // Fills the Auth, Firestore and Storage EMULATORS with test data (see
-// data.ts), including a generated audio file for every recording.
+// data.ts), including a recitation (al-Minshawi) for every recording, read
+// from the folder that tool/seed/download_test_audio.ps1 fills.
 // Run it through tool/seed_emulator.ps1 while tool/emulators.ps1 is running.
 // Safe to run again: every account and document has a fixed id.
+
+import { existsSync } from "node:fs";
 
 // Refuse before touching firebase-admin: without these variables the Admin
 // SDK would talk to the real project.
@@ -34,12 +37,25 @@ if (remote.length > 0) {
   process.exit(1);
 }
 
+// Without the recitations every recording would be silent; say how to get them.
+const { audioDir, missingClips, loadClipAudio } = await import("./test_audio.js");
+const missingAudio = missingClips();
+if (missingAudio.length > 0) {
+  const what = existsSync(audioDir)
+    ? `${missingAudio.map((c) => c.file).join(", ")} not found in ${audioDir}`
+    : `the audio folder ${audioDir} does not exist`;
+  console.error(
+    `Refusing to seed: ${what}. ` +
+      "Download them first: powershell -ExecutionPolicy Bypass -File tool/seed/download_test_audio.ps1",
+  );
+  process.exit(1);
+}
+
 const { initializeApp } = await import("firebase-admin/app");
 const { getAuth } = await import("firebase-admin/auth");
 const { getFirestore, Timestamp } = await import("firebase-admin/firestore");
 const { getStorage } = await import("firebase-admin/storage");
 const data = await import("./data.js");
-const { makeTones } = await import("./audio.js");
 // The same ayah table as the app and the functions.
 const { isValidAyahRange } = await import("../../../functions/src/lib/surahs.js");
 
@@ -49,17 +65,26 @@ if (badRange) {
   process.exit(1);
 }
 
+const clipAudio = loadClipAudio();
+const audioOf = (r: { clipId: string }) => clipAudio.get(r.clipId)!;
+
+// A note "at second 40" on a 19-second recitation could never be reached.
+const recordingById = new Map(data.recordings.map((r) => [r.id, r]));
+const lateNote = data.notes.find(
+  (n) => n.atSecond != null && n.atSecond >= audioOf(recordingById.get(n.recordingId)!).durationSec,
+);
+if (lateNote) {
+  console.error(`Refusing to seed: ${lateNote.id} is at second ${lateNote.atSecond}, after the end of its audio.`);
+  process.exit(1);
+}
+
 const projectId = process.env.GCLOUD_PROJECT ?? "afdal-al-uloom";
 initializeApp({ projectId });
 const auth = getAuth();
 const db = getFirestore();
 const bucket = getStorage().bucket(data.storageBucket);
-const tones = makeTones();
-
-/** The audio file of the [index]th recording: the three tones in turn. */
-const toneOf = (index: number) => tones[index % tones.length];
 const audioPathOf = (r: { id: string; studentId: string }) =>
-  `recordings/${r.studentId}/${r.id}.wav`;
+  `recordings/${r.studentId}/${r.id}.mp3`;
 
 const usersCreatedAt = Timestamp.fromDate(new Date("2026-08-25T09:00:00Z"));
 const hour = 60 * 60 * 1000;
@@ -108,7 +133,7 @@ async function seedFirestore(): Promise<void> {
   const studentHalaqa = new Map(data.users.map((u) => [u.uid, u.halaqaId]));
   const halaqaTeacher = new Map(data.halaqat.map((h) => [h.id, h.teacherId]));
 
-  data.recordings.forEach((r, index) => {
+  for (const r of data.recordings) {
     const halaqaId = studentHalaqa.get(r.studentId)!;
     const teacherId = halaqaTeacher.get(halaqaId)!;
     const official = r.type === "official";
@@ -123,16 +148,15 @@ async function seedFirestore(): Promise<void> {
       ayahFrom: r.ayahFrom,
       ayahTo: r.ayahTo,
       storagePath: audioPathOf(r),
-      durationSec: toneOf(index).seconds,
+      durationSec: audioOf(r).durationSec,
       recordedAt: Timestamp.fromDate(recordedAt),
       // Studio files are uploaded a couple of hours after the session.
       createdAt: Timestamp.fromDate(new Date(recordedAt.getTime() + (official ? 2 * hour : 0))),
       unreadFeedback: r.unreadFeedback,
       reviewed: r.reviewed,
     });
-  });
+  }
 
-  const recordingById = new Map(data.recordings.map((r) => [r.id, r]));
   data.notes.forEach((n, i) => {
     const recording = recordingById.get(n.recordingId)!;
     const teacherId = halaqaTeacher.get(studentHalaqa.get(recording.studentId)!)!;
@@ -149,17 +173,21 @@ async function seedFirestore(): Promise<void> {
   await batch.commit();
 }
 
-/** Uploads (or overwrites) every recording's audio file. */
+/**
+ * Uploads (or overwrites) every recording's audio file, after deleting the
+ * generated .wav tones older seeds left in .emulator-data at the same id.
+ */
 async function seedAudio(): Promise<void> {
   await Promise.all(
-    data.recordings.map((r, index) =>
-      bucket.file(audioPathOf(r)).save(toneOf(index).wav, {
-        contentType: "audio/wav",
+    data.recordings.map(async (r) => {
+      await bucket.file(`recordings/${r.studentId}/${r.id}.wav`).delete({ ignoreNotFound: true });
+      await bucket.file(audioPathOf(r)).save(audioOf(r).mp3, {
+        contentType: "audio/mpeg",
         // A fixed token: getDownloadURL() needs one, and seeding again keeps
         // the URLs the app may have cached.
         metadata: { metadata: { firebaseStorageDownloadTokens: `seed-${r.id}` } },
-      }),
-    ),
+      });
+    }),
   );
 }
 
@@ -173,5 +201,5 @@ console.log(
     `(${count("admin")} admin, ${count("teacher")} teachers, ${count("student")} students), ` +
     `${data.halaqat.length} halaqat, ${data.recordings.length} recordings, ` +
     `${data.notes.length} feedback notes, ${data.recordings.length} audio files ` +
-    `(${tones.map((t) => `${t.seconds} s`).join(", ")}). Password for every account: ${data.devPassword}`,
+    `(${clipAudio.size} recitations from ${audioDir}). Password for every account: ${data.devPassword}`,
 );
