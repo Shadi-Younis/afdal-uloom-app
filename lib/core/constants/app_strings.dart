@@ -259,6 +259,14 @@ abstract final class AppStrings {
   static const errorStudentCodeTaken = 'رقم الطالب مستخدم من قبل';
   static const errorFailedPrecondition =
       'لا يمكن تنفيذ هذا الإجراء على هذا العنصر.';
+  static const errorHalaqaHasStudents = 'انقل طلاب الحلقة أولاً';
+  static const errorHalaqaHasRecordings =
+      'ما زالت في الحلقة تسجيلات، انقل طلابها أولاً';
+  static const errorTeacherOwnsHalaqat = 'انقل حلقات المعلم لمعلم آخر أولاً';
+  static const errorLastAdmin =
+      'لا يمكن إيقاف آخر مدير مفعّل. أضف مديراً آخر أولاً.';
+  static const errorWrongPassword = 'كلمة السر الحالية غير صحيحة';
+  static const errorWeakPassword = 'كلمة السر الجديدة ضعيفة، اختر أطول منها';
 
   /// The limit is AudioFormats.maxUploadBytes (100 MiB).
   static const errorFileTooLarge = 'الملف أكبر من ١٠٠ ميغابايت.';

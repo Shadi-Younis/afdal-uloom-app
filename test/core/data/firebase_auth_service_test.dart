@@ -10,15 +10,20 @@ import 'package:mock_exceptions/mock_exceptions.dart';
 Matcher throwsAppError(AppErrorCode code) =>
     throwsA(isA<AppException>().having((e) => e.code, 'code', code));
 
-MockFirebaseAuth authWith({Object? role, bool signedIn = false}) =>
-    MockFirebaseAuth(
-      signedIn: signedIn,
-      mockUser: MockUser(
-        uid: 'u1',
-        email: 'shadi@afdal-uloom.app',
-        customClaim: {'role': ?role},
-      ),
-    );
+/// [uid]: mock_exceptions matches users by equality (their uid), so a test
+/// that makes a user's method throw needs a uid of its own.
+MockFirebaseAuth authWith({
+  Object? role,
+  bool signedIn = false,
+  String uid = 'u1',
+}) => MockFirebaseAuth(
+  signedIn: signedIn,
+  mockUser: MockUser(
+    uid: uid,
+    email: 'shadi@afdal-uloom.app',
+    customClaim: {'role': ?role},
+  ),
+);
 
 void main() {
   group('appErrorCodeForAuth', () {
@@ -84,6 +89,66 @@ void main() {
         );
       });
     }
+  });
+
+  group('changePassword', () {
+    test(
+      're-authenticates, sets the new password and stays signed in',
+      () async {
+        final auth = authWith(role: 'student', signedIn: true);
+
+        await FirebaseAuthService(
+          auth,
+        ).changePassword(currentPassword: 'old-pass', newPassword: 'new-pass');
+
+        expect(auth.currentUser?.uid, 'u1');
+      },
+    );
+
+    test('signed out: permissionDenied', () async {
+      await expectLater(
+        FirebaseAuthService(authWith())
+            .changePassword(currentPassword: 'a', newPassword: 'b'),
+        throwsAppError(AppErrorCode.permissionDenied),
+      );
+    });
+
+    const reauthErrors = {
+      'invalid-credential': AppErrorCode.wrongPassword,
+      'wrong-password': AppErrorCode.wrongPassword,
+      'too-many-requests': AppErrorCode.tooManyAttempts,
+      'network-request-failed': AppErrorCode.network,
+    };
+    for (final MapEntry(key: firebaseCode, value: code)
+        in reauthErrors.entries) {
+      test('re-authentication $firebaseCode -> ${code.name}', () async {
+        final auth = authWith(
+          role: 'admin',
+          signedIn: true,
+          uid: 'reauth-$firebaseCode',
+        );
+        whenCalling(Invocation.method(#reauthenticateWithCredential, null))
+            .on(auth.currentUser!)
+            .thenThrow(FirebaseAuthException(code: firebaseCode));
+        await expectLater(
+          FirebaseAuthService(auth)
+              .changePassword(currentPassword: 'x', newPassword: 'new-pass'),
+          throwsAppError(code),
+        );
+      });
+    }
+
+    test('update weak-password -> weakPassword', () async {
+      final auth = authWith(role: 'admin', signedIn: true, uid: 'weak');
+      whenCalling(Invocation.method(#updatePassword, null))
+          .on(auth.currentUser!)
+          .thenThrow(FirebaseAuthException(code: 'weak-password'));
+      await expectLater(
+        FirebaseAuthService(auth)
+            .changePassword(currentPassword: 'old-pass', newPassword: '123'),
+        throwsAppError(AppErrorCode.weakPassword),
+      );
+    });
   });
 
   group('sessionChanges', () {

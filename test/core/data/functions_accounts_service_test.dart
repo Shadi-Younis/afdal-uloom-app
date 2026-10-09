@@ -81,6 +81,35 @@ void main() {
     expect(calledData, {'uid': 's1', 'disabled': true});
   });
 
+  test('deleteHalaqa, deleteUser and updateUserProfile', () async {
+    final service = serviceReturning({'recordingsDeleted': 4});
+
+    await service.deleteHalaqa('h1');
+    expect(calledName, 'deleteHalaqa');
+    expect(calledData, {'halaqaId': 'h1'});
+
+    expect(await service.deleteUser('s1'), 4);
+    expect(calledName, 'deleteUser');
+    expect(calledData, {'uid': 's1'});
+
+    await service.updateUserProfile(uid: 's1', fullName: 'اسم');
+    expect(calledName, 'updateUserProfile');
+    expect(calledData, {'uid': 's1', 'fullName': 'اسم'});
+
+    await service.updateUserProfile(
+      uid: 's1',
+      fullName: 'اسم',
+      username: 'ali',
+      studentCode: 'S150',
+    );
+    expect(calledData, {
+      'uid': 's1',
+      'fullName': 'اسم',
+      'username': 'ali',
+      'studentCode': 'S150',
+    });
+  });
+
   test('an unexpected result is invalidData', () async {
     await expectLater(
       serviceReturning({'nope': 1}).moveStudent(studentId: 's', halaqaId: 'h'),
@@ -98,6 +127,15 @@ void main() {
       ('already-exists', {'field': 'studentCode'}):
           AppErrorCode.studentCodeTaken,
       ('failed-precondition', null): AppErrorCode.failedPrecondition,
+      ('failed-precondition', {'reason': 'hasStudents'}):
+          AppErrorCode.halaqaHasStudents,
+      ('failed-precondition', {'reason': 'hasRecordings'}):
+          AppErrorCode.halaqaHasRecordings,
+      ('failed-precondition', {'reason': 'ownsHalaqat'}):
+          AppErrorCode.teacherOwnsHalaqat,
+      ('failed-precondition', {'reason': 'lastAdmin'}): AppErrorCode.lastAdmin,
+      ('failed-precondition', {'reason': 'other'}):
+          AppErrorCode.failedPrecondition,
       ('unavailable', null): AppErrorCode.network,
       ('internal', null): AppErrorCode.unknown,
     };

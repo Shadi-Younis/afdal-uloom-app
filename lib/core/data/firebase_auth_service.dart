@@ -68,6 +68,34 @@ class FirebaseAuthService implements AuthService {
     }
   }
 
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw const AppException(AppErrorCode.permissionDenied);
+    }
+    try {
+      // Firebase only lets a recent sign-in change the password; this also
+      // proves the current password.
+      await user.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: email, password: currentPassword),
+      );
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (error, stackTrace) {
+      throw AppException(
+        appErrorCodeForPasswordChange(error.code),
+        cause: error,
+        stackTrace: stackTrace,
+      );
+    } catch (error, stackTrace) {
+      throw toAppException(error, stackTrace);
+    }
+  }
+
   /// The role claim of [user], or null when it is missing or unknown.
   Future<UserRole?> _roleOf(User user, {required bool forceRefresh}) async {
     final token = await user.getIdTokenResult(forceRefresh);
@@ -92,4 +120,12 @@ AppErrorCode appErrorCodeForAuth(String code) => switch (code) {
   'too-many-requests' => AppErrorCode.tooManyAttempts,
   'network-request-failed' => AppErrorCode.network,
   _ => appErrorCodeFor(code),
+};
+
+/// Maps a [FirebaseAuthException] code from changing one's password (a
+/// re-authentication, then the update) to an [AppErrorCode].
+AppErrorCode appErrorCodeForPasswordChange(String code) => switch (code) {
+  'invalid-credential' || 'wrong-password' => AppErrorCode.wrongPassword,
+  'weak-password' => AppErrorCode.weakPassword,
+  _ => appErrorCodeForAuth(code),
 };

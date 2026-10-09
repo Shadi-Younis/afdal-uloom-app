@@ -21,6 +21,12 @@ class FakeUserRepository implements UserRepository {
     _changed.add(null);
   }
 
+  /// Removes the user [uid]; every open stream emits again.
+  void remove(String uid) {
+    users.remove(uid);
+    _changed.add(null);
+  }
+
   @override
   Stream<AppUser?> watchUser(String uid) => _live(() => users[uid]);
 

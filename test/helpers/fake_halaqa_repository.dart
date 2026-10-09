@@ -31,6 +31,12 @@ class FakeHalaqaRepository implements HalaqaRepository {
     _changed.add(null);
   }
 
+  /// Removes the halaqa [id]; every open stream emits again.
+  void remove(String id) {
+    halaqat.remove(id);
+    _changed.add(null);
+  }
+
   @override
   Stream<List<Halaqa>> watchAll() => _live(() => _sorted((_) => true));
 

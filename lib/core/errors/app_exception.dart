@@ -36,6 +36,25 @@ enum AppErrorCode {
   /// not a student.
   failedPrecondition,
 
+  /// A halaqa cannot be deleted while a student (even a disabled one)
+  /// belongs to it.
+  halaqaHasStudents,
+
+  /// A halaqa cannot be deleted while a recording still points to it.
+  halaqaHasRecordings,
+
+  /// A teacher cannot be deleted while they teach a halaqa.
+  teacherOwnsHalaqat,
+
+  /// The only active admin cannot be disabled.
+  lastAdmin,
+
+  /// Changing one's password: the current password is wrong.
+  wrongPassword,
+
+  /// Changing one's password: Firebase finds the new one too weak.
+  weakPassword,
+
   /// An audio file at or over AudioFormats.maxUploadBytes.
   fileTooLarge,
 

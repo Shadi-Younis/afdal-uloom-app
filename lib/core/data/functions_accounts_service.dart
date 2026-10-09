@@ -83,6 +83,29 @@ class FunctionsAccountsService implements AccountsService {
         'disabled': disabled,
       });
 
+  @override
+  Future<void> deleteHalaqa(String halaqaId) =>
+      _invoke(FirebaseConstants.deleteHalaqaFunction, {'halaqaId': halaqaId});
+
+  @override
+  Future<int> deleteUser(String uid) async => _read<int>(
+    await _invoke(FirebaseConstants.deleteUserFunction, {'uid': uid}),
+    'recordingsDeleted',
+  );
+
+  @override
+  Future<void> updateUserProfile({
+    required String uid,
+    String? fullName,
+    String? username,
+    String? studentCode,
+  }) => _invoke(FirebaseConstants.updateUserProfileFunction, {
+    'uid': uid,
+    'fullName': ?fullName,
+    'username': ?username,
+    'studentCode': ?studentCode,
+  });
+
   Future<Object?> _invoke(String name, Map<String, Object?> data) async {
     try {
       return await _call(name, data);
@@ -107,14 +130,22 @@ class FunctionsAccountsService implements AccountsService {
 }
 
 /// Maps a Functions error code (and its details) to an [AppErrorCode].
-/// `already-exists` carries `{field: 'username' | 'studentCode'}`.
+/// `already-exists` carries `{field: 'username' | 'studentCode'}`;
+/// `failed-precondition` may carry `{reason: ...}` (PreconditionReason in
+/// functions/src/lib/errors.ts).
 AppErrorCode appErrorCodeForFunctions(String code, Object? details) =>
     switch (code) {
       'already-exists' => switch (details) {
         {'field': 'studentCode'} => AppErrorCode.studentCodeTaken,
         _ => AppErrorCode.usernameTaken,
       },
-      'failed-precondition' => AppErrorCode.failedPrecondition,
+      'failed-precondition' => switch (details) {
+        {'reason': 'hasStudents'} => AppErrorCode.halaqaHasStudents,
+        {'reason': 'hasRecordings'} => AppErrorCode.halaqaHasRecordings,
+        {'reason': 'ownsHalaqat'} => AppErrorCode.teacherOwnsHalaqat,
+        {'reason': 'lastAdmin'} => AppErrorCode.lastAdmin,
+        _ => AppErrorCode.failedPrecondition,
+      },
       'internal' => AppErrorCode.unknown,
       _ => appErrorCodeFor(code),
     };
