@@ -33,6 +33,13 @@ abstract final class AppRoutes {
   static String adminTeacher(String teacherId) => '$adminTeachers/$teacherId';
   static String adminStudent(String studentId) => '$adminStudents/$studentId';
 
+  /// The students list showing only halaqa [halaqaId] (its filter chip
+  /// selected).
+  static String adminStudentsOfHalaqa(String halaqaId) => Uri(
+    path: adminStudents,
+    queryParameters: {halaqaQuery: halaqaId},
+  ).toString();
+
   /// The add-student form with [halaqaId] chosen, inside the halaqat
   /// section (back returns to the halaqa).
   static String adminHalaqaAddStudent(String halaqaId) =>
@@ -48,6 +55,9 @@ abstract final class AppRoutes {
   static const addStudentSegment = 'add-student';
   static const studentsSegment = 'students';
   static const idParam = 'id';
+
+  /// Query parameter of [adminStudentsOfHalaqa].
+  static const halaqaQuery = 'halaqa';
   static const studentIdParam = 'studentId';
   static const idPath = ':$idParam';
   static const halaqaStudentPath = '$studentsSegment/:$studentIdParam';

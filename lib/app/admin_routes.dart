@@ -95,7 +95,9 @@ StatefulShellRoute buildAdminRoutes() => StatefulShellRoute.indexedStack(
         GoRoute(
           path: AppRoutes.adminStudents,
           name: AppRoutes.adminStudentsName,
-          builder: (context, state) => const StudentsScreen(),
+          builder: (context, state) => StudentsScreen(
+            halaqaId: state.uri.queryParameters[AppRoutes.halaqaQuery],
+          ),
           routes: [
             GoRoute(
               path: AppRoutes.newSegment,

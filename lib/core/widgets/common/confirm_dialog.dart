@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../../constants/app_strings.dart';
 
 /// Asks before an action that is hard to undo. Resolves to true only when
-/// [confirmLabel] is tapped.
+/// [confirmLabel] is tapped. [destructive] draws that button in the error
+/// color (a delete).
 Future<bool> showConfirmDialog(
   BuildContext context, {
   required String title,
   required String message,
   required String confirmLabel,
+  bool destructive = false,
 }) async =>
     await showDialog<bool>(
       context: context,
@@ -16,6 +18,7 @@ Future<bool> showConfirmDialog(
         title: title,
         message: message,
         confirmLabel: confirmLabel,
+        destructive: destructive,
       ),
     ) ??
     false;
@@ -27,11 +30,13 @@ class ConfirmDialog extends StatelessWidget {
     required this.title,
     required this.message,
     required this.confirmLabel,
+    this.destructive = false,
   });
 
   final String title;
   final String message;
   final String confirmLabel;
+  final bool destructive;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +50,12 @@ class ConfirmDialog extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
+          style: destructive
+              ? FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.onError,
+                )
+              : null,
           child: Text(confirmLabel),
         ),
       ],
