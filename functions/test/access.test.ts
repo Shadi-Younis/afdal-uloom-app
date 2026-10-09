@@ -19,6 +19,9 @@ const requests: Record<string, unknown> = {
   moveStudent: {studentId: "s1", halaqaId: "h2"},
   changeHalaqaTeacher: {halaqaId: "h1", teacherId: "t2"},
   setUserDisabled: {uid: "s2", disabled: true},
+  deleteHalaqa: {halaqaId: "h2"},
+  deleteUser: {uid: "s2"},
+  updateUserProfile: {uid: "s1", fullName: "اسم جديد"},
 };
 
 describe("callers", () => {
@@ -35,7 +38,8 @@ describe("callers", () => {
     });
   }
 
-  for (const name of ["moveStudent", "changeHalaqaTeacher", "setUserDisabled"]) {
+  const adminOnly = ["moveStudent", "changeHalaqaTeacher", "setUserDisabled", "deleteHalaqa", "deleteUser"];
+  for (const name of adminOnly) {
     test(`${name}: teacher -> permission-denied (admin only)`, async () => {
       expect(await callAs("t1", name, requests[name])).toMatchObject({
         ok: false,
