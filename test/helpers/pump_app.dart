@@ -6,6 +6,7 @@ import 'package:afdal_uloom_tilawat/core/providers/service_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -78,10 +79,11 @@ Future<void> pumpScreen(
   WidgetTester tester,
   Widget screen, {
   required FakeAuthService auth,
+  List<Override> overrides = const [],
 }) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [authServiceProvider.overrideWithValue(auth)],
+      overrides: [authServiceProvider.overrideWithValue(auth), ...overrides],
       child: MaterialApp(
         theme: buildAppTheme(),
         locale: const Locale(AppStrings.languageCode),

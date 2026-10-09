@@ -38,4 +38,14 @@ abstract final class AppSizes {
 
   /// The icon of an empty state.
   static const emptyIcon = 56.0;
+
+  /// Every player button is at least this big (Material's touch target).
+  static const touchTarget = 48.0;
+
+  /// The player's play / pause button and its icon.
+  static const playButton = 64.0;
+  static const playIcon = 36.0;
+
+  /// The back / forward 5 s icons.
+  static const skipIcon = 30.0;
 }

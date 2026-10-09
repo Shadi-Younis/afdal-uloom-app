@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/firebase_setup.dart';
 import '../data/firebase_audio_storage_service.dart';
 import '../data/firebase_auth_service.dart';
+import '../data/just_audio_player_service.dart';
 import '../data/functions_accounts_service.dart';
 import '../services/accounts_service.dart';
+import '../services/audio_player_service.dart';
 import '../services/audio_storage_service.dart';
 import '../services/auth_service.dart';
 
@@ -35,3 +37,14 @@ final firebaseStorageProvider = Provider<FirebaseStorage>(
 final audioStorageServiceProvider = Provider<AudioStorageService>(
   (ref) => FirebaseAudioStorageService(ref.watch(firebaseStorageProvider)),
 );
+
+/// The one audio player. autoDispose: it stops and is freed as soon as no
+/// screen shows a player, so leaving a recording stops its audio and two
+/// players never play at once.
+final audioPlayerServiceProvider = Provider.autoDispose<AudioPlayerService>((
+  ref,
+) {
+  final player = JustAudioPlayerService();
+  ref.onDispose(player.dispose);
+  return player;
+});

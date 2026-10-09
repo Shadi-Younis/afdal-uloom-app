@@ -175,6 +175,15 @@ abstract final class AppStrings {
       '$usernameLabel: $username\n'
       '$passwordLabel: $password';
 
+  // Recording player
+  static const playerLoading = 'جارٍ تحميل التسجيل';
+  static const play = 'تشغيل';
+  static const pause = 'إيقاف مؤقت';
+  static String skipBack(String seconds) => 'رجوع $seconds ثوانٍ';
+  static String skipForward(String seconds) => 'تقديم $seconds ثوانٍ';
+  static const playbackPosition = 'موضع التشغيل';
+  static const playbackSpeed = 'سرعة التشغيل';
+
   // Recording titles. The numbers arrive already in Arabic-Indic digits.
   static String recordingTitle(String surah, String from, String to) =>
       '$surah: الآيات $from–$to';
