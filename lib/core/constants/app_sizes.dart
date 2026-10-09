@@ -39,6 +39,31 @@ abstract final class AppSizes {
   /// The icon of an empty state.
   static const emptyIcon = 56.0;
 
+  // Design (docs/design/): corner radii and borders.
+  static const radiusCard = 16.0;
+  static const radiusButton = 14.0;
+  static const radiusField = 14.0;
+  static const radiusDialog = 20.0;
+  static const radiusSheet = 24.0;
+  static const radiusChip = 20.0;
+  static const radiusSnackBar = 12.0;
+
+  /// The green header's bottom corners.
+  static const radiusHeader = 28.0;
+
+  /// Gold hairlines around cards, fields and buttons.
+  static const hairline = 1.0;
+
+  /// The green border of a focused field.
+  static const focusBorder = 1.5;
+
+  /// The soft green shadow under cards: blur and vertical offset.
+  static const cardShadowBlur = 12.0;
+  static const cardShadowOffset = 4.0;
+
+  /// Height of the player's progress bar.
+  static const playerTrack = 6.0;
+
   /// The icon inside a small chip (recording type).
   static const chipIcon = 18.0;
 

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_strings.dart';
+import 'app_colors.dart';
 import 'firebase_setup.dart';
 import 'router.dart';
 import 'theme.dart';
@@ -32,7 +33,7 @@ class AfdalUloomApp extends ConsumerWidget {
           ? Banner(
               message: AppStrings.prodBanner,
               location: BannerLocation.topStart,
-              color: Colors.red,
+              color: AppColors.error,
               child: child!,
             )
           : child!,

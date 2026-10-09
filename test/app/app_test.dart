@@ -1,3 +1,4 @@
+import 'package:afdal_uloom_tilawat/app/app_colors.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
 import 'package:afdal_uloom_tilawat/core/models/auth_session.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
@@ -67,7 +68,7 @@ void main() {
     final banner = tester.widget<Banner>(find.byType(Banner));
     expect(banner.message, 'PROD');
     expect(banner.location, BannerLocation.topStart);
-    expect(banner.color, Colors.red);
+    expect(banner.color, AppColors.error);
   });
 
   for (final (uid, role, title, name) in [

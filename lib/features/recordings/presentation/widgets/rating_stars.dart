@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme.dart';
+import '../../../../app/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/model_limits.dart';
@@ -28,7 +28,7 @@ class RatingStars extends StatelessWidget {
               Icon(
                 i <= rating ? Icons.star : Icons.star_border,
                 // Gold is fine for icons; only text on white must avoid it.
-                color: kBrandGold,
+                color: AppColors.gold,
                 size: AppSizes.ratingStar,
               ),
           ],
