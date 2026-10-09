@@ -5,6 +5,7 @@ import 'package:afdal_uloom_tilawat/core/widgets/islamic/ornament_divider.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/islamic/ornate_header.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/islamic/surah_cartouche.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/fake_auth_service.dart';
@@ -119,6 +120,20 @@ void main() {
     expect(
       tester.getCenter(find.text('التاريخ')).dy,
       lessThan(tester.getCenter(find.text('الاسم')).dy),
+    );
+    // Light status bar icons over the green.
+    expect(
+      tester
+          .widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+            find
+                .descendant(
+                  of: find.byType(OrnateHeader),
+                  matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+                )
+                .first,
+          )
+          .value,
+      SystemUiOverlayStyle.light,
     );
     expect(
       find.descendant(

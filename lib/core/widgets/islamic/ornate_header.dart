@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/app_colors.dart';
 import '../../constants/app_sizes.dart';
@@ -21,49 +22,53 @@ class OrnateHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(
-        bottom: Radius.circular(AppSizes.radiusHeader),
-      ),
-      child: ColoredBox(
-        color: AppColors.green,
-        child: IslamicPatternBackground(
-          opacity: IslamicPatternBackground.onGreen,
-          child: Stack(
-            children: [
-              SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                    AppSizes.spaceL,
-                    AppSizes.spaceL,
-                    AppSizes.spaceL,
-                    bottomPadding,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [top, child],
-                  ),
-                ),
-              ),
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: _goldLineBottom,
-                height: _goldLineHeight,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        AppColors.gold,
-                        Colors.transparent,
-                      ],
+    // Light status bar icons on the green.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(AppSizes.radiusHeader),
+        ),
+        child: ColoredBox(
+          color: AppColors.green,
+          child: IslamicPatternBackground(
+            opacity: IslamicPatternBackground.onGreen,
+            child: Stack(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      AppSizes.spaceL,
+                      AppSizes.spaceL,
+                      AppSizes.spaceL,
+                      bottomPadding,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [top, child],
                     ),
                   ),
                 ),
-              ),
-            ],
+                const Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: _goldLineBottom,
+                  height: _goldLineHeight,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          AppColors.gold,
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

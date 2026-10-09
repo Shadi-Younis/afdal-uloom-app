@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/app_colors.dart';
 
@@ -27,7 +28,7 @@ class IslamicPatternBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    final stack = Stack(
       children: [
         Positioned.fill(
           child: ExcludeSemantics(
@@ -44,6 +45,14 @@ class IslamicPatternBackground extends StatelessWidget {
         child,
       ],
     );
+    // A full page on ivory gets dark status bar icons; on the green header
+    // (OrnateHeader) the header's own light style wins.
+    return opacity == onIvory
+        ? AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.dark,
+            child: stack,
+          )
+        : stack;
   }
 }
 
