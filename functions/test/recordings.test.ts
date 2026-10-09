@@ -6,7 +6,7 @@ import {Timestamp} from "firebase-admin/firestore";
 import {beforeEach, describe, expect, test} from "vitest";
 
 import {runStalledUploadCleanup} from "../src/recordings/cleanup_stalled_uploads.js";
-import {bucket, db, resetFixture} from "./helpers.js";
+import {bucket, db, eventually, resetFixture} from "./helpers.js";
 
 beforeEach(resetFixture);
 
@@ -53,16 +53,6 @@ async function addFeedback(recordingId: string, count: number) {
 
 const feedbackCount = async (recordingId: string) =>
   (await db.collection(`recordings/${recordingId}/feedback`).count().get()).data().count;
-
-/** Polls [check] until it holds; triggers run asynchronously. */
-async function eventually(check: () => Promise<boolean>, what: string, timeoutMs = 20000) {
-  const end = Date.now() + timeoutMs;
-  while (Date.now() < end) {
-    if (await check()) return;
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
-  throw new Error(`Timed out waiting for: ${what}`);
-}
 
 describe("onRecordingDeleted", () => {
   test("removes the audio file and every feedback note", async () => {

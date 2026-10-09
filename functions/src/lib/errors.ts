@@ -15,8 +15,18 @@ export const notFound = (message: string) => new HttpsError("not-found", message
 export const alreadyExists = (message: string, field: string) =>
   new HttpsError("already-exists", message, {field});
 
-export const failedPrecondition = (message: string) =>
-  new HttpsError("failed-precondition", message);
+/**
+ * Why a `failed-precondition` was refused, sent as `details.reason` so the
+ * app can explain it (each has its own Arabic text there).
+ */
+export type PreconditionReason =
+  | "hasStudents" // deleteHalaqa: a student (active or disabled) is in it
+  | "hasRecordings" // deleteHalaqa: a recording still points to it
+  | "ownsHalaqat" // deleteUser: the teacher still teaches a halaqa
+  | "lastAdmin"; // the only active admin cannot be disabled
+
+export const failedPrecondition = (message: string, reason?: PreconditionReason) =>
+  new HttpsError("failed-precondition", message, reason === undefined ? undefined : {reason});
 
 /** The `code` of a firebase-admin error (e.g. `auth/user-not-found`), if any. */
 export function adminErrorCode(error: unknown): string | undefined {
