@@ -29,6 +29,12 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
   // newer one's result.
   var _loadNumber = 0;
 
+  // Reached the end. Until the next seek, play or load, positions from the
+  // player are ignored: after a seek, just_audio reported the old seek
+  // position again at the end (seen on Android), which showed "paused at
+  // 00:12" for a finished recording.
+  var _completed = false;
+
   @override
   RecordingPlayerState build() {
     _player = ref.watch(audioPlayerServiceProvider);
@@ -54,7 +60,7 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
   Future<void> play() async {
     if (!state.isReady) return;
     final duration = state.duration;
-    if (duration != null && state.position >= duration) {
+    if (_completed || (duration != null && state.position >= duration)) {
       await seek(Duration.zero);
     }
     state = state.copyWith(playing: true);
@@ -72,6 +78,7 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
   /// Jumps to [position], kept inside the recording. Also works while
   /// loading: the player starts there once loaded.
   Future<void> seek(Duration position) async {
+    _completed = false;
     final target = _clamp(position);
     state = state.copyWith(position: target);
     if (state.isReady) await _player.seek(target);
@@ -97,6 +104,7 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
   }) async {
     if (!ref.mounted) return;
     final number = ++_loadNumber;
+    _completed = false;
     state = state.copyWith(
       phase: RecordingPlayerPhase.loading,
       playing: false,
@@ -132,7 +140,9 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
   }
 
   void _onPosition(Duration position) {
-    if (state.isReady) state = state.copyWith(position: _clamp(position));
+    if (state.isReady && !_completed) {
+      state = state.copyWith(position: _clamp(position));
+    }
   }
 
   void _onDuration(Duration? duration) {
@@ -141,6 +151,7 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
 
   void _onStatus(PlaybackStatus status) {
     if (!state.isReady) return;
+    if (status == PlaybackStatus.completed) _completed = true;
     state = switch (status) {
       PlaybackStatus.playing => state.copyWith(playing: true, buffering: false),
       PlaybackStatus.paused => state.copyWith(playing: false, buffering: false),

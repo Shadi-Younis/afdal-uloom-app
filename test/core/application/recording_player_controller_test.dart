@@ -135,6 +135,40 @@ void main() {
     expect(state().playing, isTrue);
   });
 
+  // Seen on a phone: after a seek, at the end just_audio reported the old
+  // seek position again; the player then showed "paused at 00:12" and play
+  // restarted from 0 instead.
+  test('a stale position after the end is ignored; play rewinds', () async {
+    await loaded();
+    await controller().seek(const Duration(seconds: 12));
+    await controller().play();
+    player.emitStatus(PlaybackStatus.completed);
+    player.emitPosition(const Duration(seconds: 12));
+    await settle();
+    expect(state().position, const Duration(seconds: 30));
+    expect(state().playing, isFalse);
+
+    await controller().play();
+    expect(player.seeks.last, Duration.zero);
+    expect(state().position, Duration.zero);
+    player.emitPosition(const Duration(seconds: 1));
+    await settle();
+    expect(state().position, const Duration(seconds: 1));
+  });
+
+  test('a seek after the end plays on from there', () async {
+    await loaded();
+    await controller().play();
+    player.emitStatus(PlaybackStatus.completed);
+    await settle();
+    await controller().seek(const Duration(seconds: 20));
+    player.emitPosition(const Duration(seconds: 20));
+    await settle();
+    expect(state().position, const Duration(seconds: 20));
+    await controller().play();
+    expect(player.seeks.last, const Duration(seconds: 20));
+  });
+
   test('speed 0.75 / 1 / 1.25', () async {
     await loaded();
     await controller().setSpeed(1.25);
