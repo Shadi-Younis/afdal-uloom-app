@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/utils/arabic_digits.dart';
 
-/// A count on the admin's home ("12 الطلاب"); tapping opens its section.
+/// A count on the admin's home ("١٢ الطلاب"); tapping opens its section.
 class SummaryCard extends StatelessWidget {
   const SummaryCard({
     super.key,
@@ -34,7 +35,7 @@ class SummaryCard extends StatelessWidget {
             children: [
               Icon(icon, color: theme.colorScheme.primary),
               const SizedBox(height: AppSizes.spaceXS),
-              Text('$count', style: theme.textTheme.headlineMedium),
+              Text(toArabicDigits(count), style: theme.textTheme.headlineMedium),
               Text(
                 label,
                 maxLines: 1,

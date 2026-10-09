@@ -27,9 +27,9 @@ void main() {
 
       expect(find.text('حلقة الفجر'), findsOneWidget);
       // s012 in الفجر is disabled: 2 active of 3.
-      expect(find.text('المعلم: الشيخ محمود\nعدد الطلاب: 2'), findsOneWidget);
+      expect(find.text('المعلم: الشيخ محمود\nعدد الطلاب: ٢'), findsOneWidget);
       expect(
-        find.text('المعلم: الشيخ عبد الرحمن\nعدد الطلاب: 1'),
+        find.text('المعلم: الشيخ عبد الرحمن\nعدد الطلاب: ١'),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);

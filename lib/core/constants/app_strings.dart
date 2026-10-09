@@ -90,7 +90,7 @@ abstract final class AppStrings {
   static const newHalaqaTitle = 'حلقة جديدة';
   static const noHalaqat = 'لا توجد حلقات بعد';
   static String halaqaTeacher(String name) => 'المعلم: $name';
-  static String studentCount(int count) => 'عدد الطلاب: $count';
+  static String studentCount(String count) => 'عدد الطلاب: $count';
   static const unknownTeacher = 'غير معروف';
   static const noActiveTeachers = 'لا يوجد معلم مفعّل. أضف معلماً أولاً.';
   static const halaqaCreated = 'تم إنشاء الحلقة';
