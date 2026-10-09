@@ -43,14 +43,9 @@ class HalaqaDetailsView extends StatelessWidget {
                         summary.teacher?.fullName ?? AppStrings.unknownTeacher,
                   ),
                   const SizedBox(height: AppSizes.spaceS),
-                  Wrap(
-                    spacing: AppSizes.spaceS,
-                    runSpacing: AppSizes.spaceS,
-                    children: [
-                      RenameHalaqaButton(halaqa: halaqa),
-                      ChangeTeacherButton(summary: summary),
-                    ],
-                  ),
+                  RenameHalaqaButton(halaqa: halaqa),
+                  const SizedBox(height: AppSizes.spaceS),
+                  ChangeTeacherButton(summary: summary),
                 ],
               ),
             ),

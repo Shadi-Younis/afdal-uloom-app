@@ -79,7 +79,9 @@ ThemeData buildAppTheme() {
         borderSide: BorderSide(color: color, width: width),
       );
   final buttonText = textTheme.labelLarge;
-  const buttonSize = Size.fromHeight(AppSizes.touchTarget);
+  // A 48 dp minimum, not full width: dialog actions sit side by side.
+  // Full-width buttons stretch in their Column.
+  const buttonSize = Size(AppSizes.touchTarget, AppSizes.touchTarget);
 
   return base.copyWith(
     textTheme: textTheme,

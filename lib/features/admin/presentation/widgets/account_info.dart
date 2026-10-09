@@ -42,12 +42,11 @@ class AccountInfo extends StatelessWidget {
             value: AppStrings.statusActive,
             valueWidget: user.disabled ? const DisabledChip() : null,
           ),
-          const SizedBox(height: AppSizes.spaceS),
-          Wrap(
-            spacing: AppSizes.spaceS,
-            runSpacing: AppSizes.spaceS,
-            children: actions,
-          ),
+          // Full-width buttons, one under the other.
+          for (final action in actions) ...[
+            const SizedBox(height: AppSizes.spaceS),
+            action,
+          ],
         ],
       ),
     );
