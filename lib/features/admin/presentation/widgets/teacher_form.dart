@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/models/user_role.dart';
 import '../../application/add_teacher_controller.dart';
 import '../../application/input_field.dart';
 import '../../application/issued_credentials.dart';
@@ -11,11 +12,17 @@ import 'input_error_text.dart';
 import 'password_input.dart';
 import 'username_input.dart';
 
-/// Name, username and (generated, editable) password of a new teacher.
+/// Name, username and (generated, editable) password of a new teacher, or
+/// of a new admin when [role] is admin.
 class TeacherForm extends ConsumerStatefulWidget {
-  const TeacherForm({super.key, required this.onCreated});
+  const TeacherForm({
+    super.key,
+    required this.onCreated,
+    this.role = UserRole.teacher,
+  });
 
   final ValueChanged<IssuedCredentials> onCreated;
+  final UserRole role;
 
   @override
   ConsumerState<TeacherForm> createState() => _TeacherFormState();
@@ -49,6 +56,7 @@ class _TeacherFormState extends ConsumerState<TeacherForm> {
       fullName: _name.text,
       username: _username.text,
       password: _password.text,
+      role: widget.role,
     );
     if (credentials != null && mounted) widget.onCreated(credentials);
   }

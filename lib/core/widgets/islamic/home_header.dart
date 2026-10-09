@@ -7,11 +7,12 @@ import '../../application/session_providers.dart';
 import '../../constants/app_strings.dart';
 import '../../providers/clock_provider.dart';
 import '../../utils/hijri_date.dart';
+import '../common/account_button.dart';
 import '../common/logout_button.dart';
 import 'ornate_header.dart';
 
-/// The top of every role's home: [OrnateHeader] with today's Hijri date
-/// and sign-out, "السلام عليكم ورحمة الله" and the user's name.
+/// The top of every role's home: [OrnateHeader] with today's Hijri date,
+/// "حسابي" and sign-out, "السلام عليكم ورحمة الله" and the user's name.
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
 
@@ -32,6 +33,7 @@ class HomeHeader extends ConsumerWidget {
               style: textTheme.bodyMedium?.copyWith(color: AppColors.goldLight),
             ),
           ),
+          const AccountButton(onGreen: true),
           const LogoutButton(onGreen: true),
         ],
       ),

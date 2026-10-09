@@ -159,6 +159,21 @@ void main() {
     expect(find.text('رُفع بواسطة: أحمد الخطيب'), findsOneWidget);
   });
 
+  testWidgets('a deleted teacher: "معلم سابق" as uploader and note author', (
+    tester,
+  ) async {
+    school.users.remove('t01');
+    await pumpRecording(tester, 'rec-02');
+    expect(find.text('رُفع بواسطة: معلم سابق'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('راجع الآية الخامسة'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('معلم سابق · ٩ سبتمبر ٢٠٢٦'), findsOneWidget);
+    expect(find.text('معلم سابق · ١٠ سبتمبر ٢٠٢٦'), findsOneWidget);
+  });
+
   testWidgets('pumped alone (no router, no parent known): no back button', (
     tester,
   ) async {

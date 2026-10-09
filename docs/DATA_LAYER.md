@@ -24,7 +24,7 @@
 |---|---|---|---|
 | `UserRepository` | كل شيء للقراءة | `watchUser` و`watchStudentsInHalaqa` لطلاب حلقاته | `watchUser` لنفسه |
 | | | `addFcmToken` / `removeFcmToken` لنفسه | `addFcmToken` / `removeFcmToken` لنفسه |
-| `HalaqaRepository` | كل الدوال (`create`، `rename`) | `watchForTeacher(uid)`، `watch` لحلقاته | `watch` لحلقته |
+| `HalaqaRepository` | كل الدوال (`create`، `rename`)؛ الحذف عبر الدالة `deleteHalaqa` فقط (`AccountsService`) | `watchForTeacher(uid)`، `watch` لحلقاته | `watch` لحلقته |
 | `RecordingRepository` | كل الدوال | `watchForStudent(studentId, teacherId: uid)`، `watchPendingPractice(uid)`، `create` (رسمي)، `markReviewed`، `delete` | `watchForStudent(uid)`، `create` (تدريب)، `markFeedbackRead` |
 | `FeedbackRepository` | `watch`، `delete` | `watch`، `add` و`delete` لملاحظاته | `watch` على تسجيلاته |
 

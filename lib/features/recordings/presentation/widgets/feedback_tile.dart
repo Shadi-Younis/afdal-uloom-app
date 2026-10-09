@@ -15,7 +15,7 @@ import 'rating_stars.dart';
 /// the teacher and the date, "عند ٠١:٢٣" when it is about a moment of the
 /// recording (tapping it calls [onSeek]), the stars when rated, the text.
 /// Students see "المعلم" instead of the teacher's name (they may not read
-/// teachers' profiles).
+/// teachers' profiles); a deleted teacher shows as "معلم سابق".
 class FeedbackTile extends ConsumerWidget {
   const FeedbackTile({super.key, required this.note, required this.onSeek});
 
@@ -28,14 +28,7 @@ class FeedbackTile extends ConsumerWidget {
     final atSecond = note.atSecond;
     final rating = note.rating;
     final author =
-        ref
-            .watch(
-              personNameProvider((
-                uid: note.teacherId,
-                fallback: AppStrings.roleTeacher,
-              )),
-            )
-            .value ??
+        ref.watch(personNameProvider(noteAuthor(note.teacherId))).value ??
         AppStrings.roleTeacher;
     return AppCard(
       accent: true,

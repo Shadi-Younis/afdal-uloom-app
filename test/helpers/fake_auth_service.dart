@@ -52,4 +52,19 @@ class FakeAuthService implements AuthService {
     signOutCalls++;
     emit(null);
   }
+
+  /// What changePassword throws; [changePasswordGate] delays it.
+  Object? changePasswordError;
+  Completer<void>? changePasswordGate;
+  final changePasswordCalls = <(String current, String next)>[];
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    changePasswordCalls.add((currentPassword, newPassword));
+    await changePasswordGate?.future;
+    if (changePasswordError case final error?) throw error;
+  }
 }

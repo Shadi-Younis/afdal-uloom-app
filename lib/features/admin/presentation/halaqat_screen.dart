@@ -8,6 +8,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/widgets/islamic/empty_state.dart';
 import '../application/halaqa_summary.dart';
 import 'widgets/admin_async_view.dart';
+import '../../../core/widgets/common/account_button.dart';
 import '../../../core/widgets/common/logout_button.dart';
 import '../../../core/widgets/islamic/app_card.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
@@ -21,7 +22,7 @@ class HalaqatScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     void create() => context.push(AppRoutes.adminNewHalaqa);
     return AppPageScaffold(
-      actions: const [LogoutButton()],
+      actions: const [AccountButton(), LogoutButton()],
       title: AppStrings.adminNavHalaqat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: create,

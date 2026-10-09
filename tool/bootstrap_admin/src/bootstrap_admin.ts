@@ -4,6 +4,12 @@
 //
 //   npm --prefix tool/bootstrap_admin run bootstrap -- <path-to-key.json> --confirm afdal-al-uloom
 //
+// With --reset-password <username> it instead sets a new password for an
+// EXISTING admin who forgot theirs (and nobody else can reset it: another
+// admin may not, see functions/src/accounts/reset_password.ts):
+//
+//   npm --prefix tool/bootstrap_admin run bootstrap -- <path-to-key.json> --confirm afdal-al-uloom --reset-password <username>
+//
 // Username, full name and password are asked interactively, so the password
 // is never echoed and never lands in the shell history.
 import {readFileSync} from "node:fs";
@@ -33,7 +39,14 @@ const confirmIndex = args.indexOf("--confirm");
 if (confirmIndex === -1 || args[confirmIndex + 1] !== PROJECT_ID) {
   fail(`pass --confirm ${PROJECT_ID} to confirm you mean the real project.`);
 }
-const keyPath = args.find((arg, i) => !arg.startsWith("--") && i !== confirmIndex + 1);
+const resetIndex = args.indexOf("--reset-password");
+const resetUsername = resetIndex === -1 ? undefined : args[resetIndex + 1]?.trim().toLowerCase();
+if (resetIndex !== -1 && (!resetUsername || !USERNAME_PATTERN.test(resetUsername))) {
+  fail("pass the admin's username after --reset-password.");
+}
+const keyPath = args.find(
+  (arg, i) => !arg.startsWith("--") && i !== confirmIndex + 1 && (resetIndex === -1 || i !== resetIndex + 1),
+);
 if (!keyPath) fail("pass the path to the service account key file.");
 
 let serviceAccount: {project_id?: string; client_email?: string; private_key?: string};
@@ -84,22 +97,33 @@ function askHidden(question: string): Promise<string> {
   });
 }
 
-const rl = createInterface({input: process.stdin, output: process.stdout});
-const username = (await rl.question("Username (3-20 of a-z 0-9 . _ -): ")).trim().toLowerCase();
-if (!USERNAME_PATTERN.test(username)) fail("invalid username.");
-const fullName = (await rl.question("Full name (Arabic, 2-60 characters): ")).trim();
-if (fullName.length < FULL_NAME_LENGTH.min || fullName.length > FULL_NAME_LENGTH.max) {
-  fail("full name must be 2-60 characters.");
+/** Asks for a password twice, hidden; exits unless both match and fit the limits. */
+async function askNewPassword(): Promise<string> {
+  const password = await askHidden(`Password (${PASSWORD_LENGTH.min}-${PASSWORD_LENGTH.max} characters): `);
+  if (password.length < PASSWORD_LENGTH.min || password.length > PASSWORD_LENGTH.max) {
+    fail("password length.");
+  }
+  if ((await askHidden("Repeat the password: ")) !== password) fail("the passwords differ.");
+  return password;
 }
-rl.close();
 
-const password = await askHidden(`Password (${PASSWORD_LENGTH.min}-${PASSWORD_LENGTH.max} characters): `);
-if (password.length < PASSWORD_LENGTH.min || password.length > PASSWORD_LENGTH.max) {
-  fail("password length.");
+let username: string;
+let fullName = "";
+if (resetUsername !== undefined) {
+  username = resetUsername;
+  console.log(`Resetting the password of admin ${username} in ${PROJECT_ID}.`);
+} else {
+  const rl = createInterface({input: process.stdin, output: process.stdout});
+  username = (await rl.question("Username (3-20 of a-z 0-9 . _ -): ")).trim().toLowerCase();
+  if (!USERNAME_PATTERN.test(username)) fail("invalid username.");
+  fullName = (await rl.question("Full name (Arabic, 2-60 characters): ")).trim();
+  if (fullName.length < FULL_NAME_LENGTH.min || fullName.length > FULL_NAME_LENGTH.max) {
+    fail("full name must be 2-60 characters.");
+  }
+  rl.close();
 }
-if ((await askHidden("Repeat the password: ")) !== password) fail("the passwords differ.");
 
-// ---- Create ---------------------------------------------------------------
+const password = await askNewPassword();
 
 const {cert, initializeApp} = await import("firebase-admin/app");
 const {getAuth} = await import("firebase-admin/auth");
@@ -109,6 +133,31 @@ initializeApp({credential: cert(keyPath), projectId: PROJECT_ID});
 const auth = getAuth();
 const db = getFirestore();
 const email = `${username}@${EMAIL_DOMAIN}`;
+
+// ---- Reset an admin's password ----------------------------------------
+
+if (resetUsername !== undefined) {
+  const user = await auth.getUserByEmail(email).catch((error: {code?: string}) => {
+    if (error.code === "auth/user-not-found") fail(`no account with username ${username}.`);
+    throw error;
+  });
+  const profile = await db.doc(`users/${user.uid}`).get();
+  // Both must say admin: this mode must never become a way into a teacher's
+  // or a student's account.
+  if (user.customClaims?.role !== "admin" || profile.get("role") !== "admin") {
+    fail(`${username} is not an admin; reset other accounts from the app.`);
+  }
+  await auth.updateUser(user.uid, {password});
+  // As in the app's reset: a lost or shared device must sign in again.
+  await auth.revokeRefreshTokens(user.uid);
+  console.log(`\nNew password set for admin ${username} (uid ${user.uid}). Other sessions are signed out.`);
+  if (user.disabled) {
+    console.log("Note: this account is DISABLED; another admin must enable it before it can sign in.");
+  }
+  process.exit(0);
+}
+
+// ---- Create ---------------------------------------------------------------
 
 try {
   await auth.getUserByEmail(email);

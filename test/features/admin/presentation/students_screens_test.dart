@@ -155,6 +155,8 @@ void main() {
       expect(find.text('موقوف'), findsWidgets);
       expect(find.text('إعادة تفعيل الحساب'), findsOneWidget);
 
+      await tester.ensureVisible(find.text('إعادة تفعيل الحساب'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('إعادة تفعيل الحساب'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'إعادة تفعيل الحساب'));

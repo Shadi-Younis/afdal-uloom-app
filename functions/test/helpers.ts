@@ -145,3 +145,18 @@ export async function call(name: string, data: unknown, idToken?: string): Promi
 export async function callAs(uid: string, name: string, data: unknown): Promise<CallResult> {
   return call(name, data, await tokenOf(uid));
 }
+
+/** Polls [check] until it holds; triggers run asynchronously. */
+export async function eventually(check: () => Promise<boolean>, what: string, timeoutMs = 20000) {
+  const end = Date.now() + timeoutMs;
+  while (Date.now() < end) {
+    if (await check()) return;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`Timed out waiting for: ${what}`);
+}
+
+/** Adds a second admin, "admin2" (password PASSWORD). */
+export async function addSecondAdmin(): Promise<void> {
+  await addUser("admin2", "admin");
+}

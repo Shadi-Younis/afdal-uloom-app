@@ -35,6 +35,12 @@ final adminStudentsProvider = StreamProvider.autoDispose<List<AppUser>>(
   retry: _noRetry,
 );
 
+/// Every admin, disabled ones included, sorted by name.
+final adminAdminsProvider = StreamProvider.autoDispose<List<AppUser>>(
+  (ref) => ref.watch(userRepositoryProvider).watchUsersByRole(UserRole.admin),
+  retry: _noRetry,
+);
+
 /// Teachers who can be given a halaqa: the active ones, by name.
 final activeTeachersProvider = Provider.autoDispose<AsyncValue<List<AppUser>>>(
   (ref) => ref

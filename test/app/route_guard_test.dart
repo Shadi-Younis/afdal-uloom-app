@@ -56,6 +56,14 @@ void main() {
     }
   });
 
+  test('every role may open its own account page', () {
+    for (final role in UserRole.values) {
+      expect(redirectFor(signedInAs(role), '/account'), isNull);
+    }
+    expect(redirectFor(const AsyncData(null), '/account'), '/login');
+    expect(redirectFor(signedInAs(UserRole.student), '/accounts'), '/student');
+  });
+
   test('a recording still needs a session', () {
     expect(redirectFor(const AsyncData(null), '/recording/rec-02'), '/login');
     expect(redirectFor(const AsyncLoading(), '/recording/rec-02'), '/');

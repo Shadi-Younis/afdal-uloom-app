@@ -126,7 +126,10 @@ service cloud.firestore {
       allow update: if isAdmin()
         && onlyChanged(['name'])
         && isStringOfLength(request.resource.data.name, 1, 60);
-      allow delete: if isAdmin();
+
+      // Only through the deleteHalaqa function, which first checks that no
+      // student or recording still belongs to the halaqa.
+      allow delete: if false;
     }
 
     // ---- recordings -----------------------------------------------------

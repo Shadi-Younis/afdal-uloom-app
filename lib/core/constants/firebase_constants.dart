@@ -23,6 +23,9 @@ abstract final class FirebaseConstants {
   static const moveStudentFunction = 'moveStudent';
   static const changeHalaqaTeacherFunction = 'changeHalaqaTeacher';
   static const setUserDisabledFunction = 'setUserDisabled';
+  static const deleteHalaqaFunction = 'deleteHalaqa';
+  static const deleteUserFunction = 'deleteUser';
+  static const updateUserProfileFunction = 'updateUserProfile';
 
   // Emulator ports, as configured in firebase.json.
   static const authEmulatorPort = 9099;

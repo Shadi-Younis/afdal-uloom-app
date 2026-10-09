@@ -26,6 +26,12 @@ class FakeAccountsService implements AccountsService {
   final moveStudentCalls = <(String studentId, String halaqaId)>[];
   final changeTeacherCalls = <(String halaqaId, String teacherId)>[];
   final setDisabledCalls = <(String uid, bool disabled)>[];
+  final deleteHalaqaCalls = <String>[];
+  final deleteUserCalls = <String>[];
+  final updateProfileCalls = <Map<String, Object?>>[];
+
+  /// What deleteUser returns as the number of deleted recordings.
+  int recordingsDeleted = 0;
 
   @override
   Future<String> createUser({
@@ -102,6 +108,47 @@ class FakeAccountsService implements AccountsService {
     await _call();
     final user = users?.users[uid];
     if (user != null) users!.put(user.copyWith(disabled: disabled));
+  }
+
+  @override
+  Future<void> deleteHalaqa(String halaqaId) async {
+    deleteHalaqaCalls.add(halaqaId);
+    await _call();
+    halaqat?.remove(halaqaId);
+  }
+
+  @override
+  Future<int> deleteUser(String uid) async {
+    deleteUserCalls.add(uid);
+    await _call();
+    users?.remove(uid);
+    return recordingsDeleted;
+  }
+
+  @override
+  Future<void> updateUserProfile({
+    required String uid,
+    String? fullName,
+    String? username,
+    String? studentCode,
+  }) async {
+    updateProfileCalls.add({
+      'uid': uid,
+      'fullName': ?fullName,
+      'username': ?username,
+      'studentCode': ?studentCode,
+    });
+    await _call();
+    final user = users?.users[uid];
+    if (user != null) {
+      users!.put(
+        user.copyWith(
+          fullName: fullName,
+          username: username,
+          studentCode: studentCode,
+        ),
+      );
+    }
   }
 
   Future<void> _call() async {

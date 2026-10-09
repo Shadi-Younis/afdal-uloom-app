@@ -3,7 +3,7 @@ import {requireRole} from "../lib/auth_checks.js";
 import {callable} from "../lib/callable.js";
 import {F} from "../lib/constants.js";
 import {permissionDenied} from "../lib/errors.js";
-import {getHalaqa, getUserDoc} from "../lib/lookups.js";
+import {getUserDoc, teacherOwnsStudent} from "../lib/lookups.js";
 import {asObject, readId, readPassword} from "../lib/validation.js";
 
 /**
@@ -34,16 +34,3 @@ export const resetPassword = callable(async (request) => {
   await auth.revokeRefreshTokens(uid);
   return null;
 });
-
-async function teacherOwnsStudent(teacherId: string, uid: string): Promise<boolean> {
-  try {
-    const student = await getUserDoc(uid);
-    if (student[F.role] !== "student" || typeof student[F.halaqaId] !== "string") {
-      return false;
-    }
-    const halaqa = await getHalaqa(student[F.halaqaId]);
-    return halaqa[F.teacherId] === teacherId;
-  } catch {
-    return false;
-  }
-}

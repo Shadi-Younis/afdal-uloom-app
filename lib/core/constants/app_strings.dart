@@ -192,6 +192,82 @@ abstract final class AppStrings {
   static const accountDisabled = 'تم إيقاف الحساب';
   static const accountEnabled = 'تمت إعادة تفعيل الحساب';
 
+  // My account
+  static const myAccount = 'حسابي';
+  static const myInfo = 'بياناتي';
+  static const roleLabel = 'الدور';
+  static const roleNameAdmin = 'مدير';
+  static const roleNameTeacher = 'معلم';
+  static const roleNameStudent = 'طالب';
+  static const currentPasswordLabel = 'كلمة السر الحالية';
+  static const newPasswordLabel = 'كلمة السر الجديدة';
+  static const confirmPasswordLabel = 'تأكيد كلمة السر الجديدة';
+  static const currentPasswordRequired = 'أدخل كلمة السر الحالية';
+  static const passwordsDontMatch = 'كلمتا السر غير متطابقتين';
+  static const changePasswordHint =
+      'تبقى مسجّلاً على هذا الجهاز، وتُغلق جلساتك على الأجهزة الأخرى.';
+
+  // Editing accounts
+  static const editProfile = 'تعديل البيانات';
+  static String editProfileTitle(String name) => 'تعديل بيانات $name';
+  static const usernameChangeHint =
+      'تغيير اسم المستخدم يغيّر اسم الدخول. أخبر صاحب الحساب بالاسم الجديد.';
+  static const profileUpdated = 'تم حفظ التعديلات';
+
+  // Admins
+  static const adminsTitle = 'المديرون';
+  static const addAdmin = 'إضافة مدير';
+  static const newAdminTitle = 'مدير جديد';
+  static const adminCreated = 'تمت إضافة المدير';
+  static const adminInfo = 'بيانات المدير';
+  static const adminsHint =
+      'مدير ثانٍ احتياطي يستطيع الدخول إذا تعذّر على المدير الأول.';
+
+  // Deleting
+  static const ok = 'حسناً';
+  static const dangerZone = 'الحذف';
+  static const deleteHalaqa = 'حذف الحلقة';
+  static const deleteHalaqaHint = 'تُحذف الحلقة فقط إذا لم يبقَ فيها طلاب.';
+  static String deleteHalaqaConfirm(String name) =>
+      'ستُحذف $name نهائياً. لا يمكن التراجع عن ذلك.';
+  static const halaqaDeleted = 'تم حذف الحلقة';
+  static const cannotDeleteHalaqa = 'لا يمكن حذف الحلقة';
+
+  /// [count] arrives in Arabic-Indic digits.
+  static String halaqaHasStudents(String count) =>
+      'انقل طلاب الحلقة أولاً إلى حلقة أخرى، ومنهم الموقوفون، ثم احذفها.\n'
+      'عدد طلابها الآن: $count';
+  static const showStudents = 'عرض الطلاب';
+  static const deleteTeacher = 'حذف المعلم';
+  static const deleteTeacherHint = 'يُحذف المعلم فقط إذا لم تبقَ له حلقات.';
+  static String deleteTeacherConfirm(String name) =>
+      'سيُحذف حساب $name نهائياً ولن يستطيع الدخول. '
+      'تبقى ملاحظاته على التسجيلات باسم «$formerTeacher». '
+      'لا يمكن التراجع عن ذلك.';
+  static const teacherDeleted = 'تم حذف المعلم';
+  static const cannotDeleteTeacher = 'لا يمكن حذف المعلم';
+  static const teacherHasHalaqat =
+      'انقل حلقات المعلم لمعلم آخر أولاً: افتح كل حلقة واضغط «$changeTeacher».';
+  static const deleteStudent = 'حذف نهائي';
+  static const deleteStudentHint =
+      'الإيقاف يمنع الدخول ويحفظ كل البيانات، ويمكن التراجع عنه.\n'
+      'الحذف النهائي يحذف الحساب وكل تسجيلاته وملاحظاتها، '
+      'ولا يمكن التراجع عنه.';
+  static String deleteStudentTitle(String name) => 'حذف $name نهائياً';
+  static const deleteStudentWarning =
+      'سيُحذف حساب الطالب وكل تسجيلاته وملفاتها وملاحظات المعلم عليها. '
+      'لا يمكن التراجع عن ذلك.';
+
+  /// [count] arrives in Arabic-Indic digits.
+  static String recordingsToDelete(String count) =>
+      'عدد التسجيلات التي ستُحذف: $count';
+  static String typeCodeToConfirm(String code) =>
+      'للتأكيد، اكتب رقم الطالب: $code';
+  static const studentDeleted = 'تم حذف الطالب نهائياً';
+
+  /// The author of a note whose teacher account was deleted.
+  static const formerTeacher = 'معلم سابق';
+
   // Credentials sheet
   static const credentialsTitle = 'بيانات الدخول';
   static const credentialsWarning =
@@ -259,6 +335,14 @@ abstract final class AppStrings {
   static const errorStudentCodeTaken = 'رقم الطالب مستخدم من قبل';
   static const errorFailedPrecondition =
       'لا يمكن تنفيذ هذا الإجراء على هذا العنصر.';
+  static const errorHalaqaHasStudents = 'انقل طلاب الحلقة أولاً';
+  static const errorHalaqaHasRecordings =
+      'ما زالت في الحلقة تسجيلات، انقل طلابها أولاً';
+  static const errorTeacherOwnsHalaqat = 'انقل حلقات المعلم لمعلم آخر أولاً';
+  static const errorLastAdmin =
+      'لا يمكن إيقاف آخر مدير مفعّل. أضف مديراً آخر أولاً.';
+  static const errorWrongPassword = 'كلمة السر الحالية غير صحيحة';
+  static const errorWeakPassword = 'كلمة السر الجديدة ضعيفة، اختر أطول منها';
 
   /// The limit is AudioFormats.maxUploadBytes (100 MiB).
   static const errorFileTooLarge = 'الملف أكبر من ١٠٠ ميغابايت.';

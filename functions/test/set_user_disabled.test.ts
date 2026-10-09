@@ -1,6 +1,17 @@
 import {beforeEach, describe, expect, test} from "vitest";
 
-import {PASSWORD, auth, callAs, db, emailFor, resetFixture, signIn} from "./helpers.js";
+import {
+  PASSWORD,
+  addSecondAdmin,
+  auth,
+  call,
+  callAs,
+  db,
+  emailFor,
+  resetFixture,
+  signIn,
+  tokenOf,
+} from "./helpers.js";
 
 beforeEach(resetFixture);
 
@@ -41,6 +52,33 @@ describe("setUserDisabled", () => {
     });
     expect((await auth.getUser("admin")).disabled).toBe(false);
     expect(await disabledField("admin")).toBe(false);
+  });
+
+  test("an admin disables and enables another admin", async () => {
+    await addSecondAdmin();
+
+    expect(await callAs("admin", "setUserDisabled", {uid: "admin2", disabled: true})).toMatchObject({
+      ok: true,
+    });
+    expect(await disabledField("admin2")).toBe(true);
+    expect(await callAs("admin", "setUserDisabled", {uid: "admin2", disabled: false})).toMatchObject({
+      ok: true,
+    });
+  });
+
+  test("the last active admin cannot be disabled (reason lastAdmin)", async () => {
+    await addSecondAdmin();
+    // The caller was disabled meanwhile, but their ID token still works.
+    const token = await tokenOf("admin");
+    await db.doc("users/admin").update({disabled: true});
+
+    expect(await call("setUserDisabled", {uid: "admin2", disabled: true}, token)).toMatchObject({
+      ok: false,
+      code: "failed-precondition",
+      details: {reason: "lastAdmin"},
+    });
+    expect(await disabledField("admin2")).toBe(false);
+    expect((await auth.getUser("admin2")).disabled).toBe(false);
   });
 
   test("unknown user -> not-found; non-boolean -> invalid-argument", async () => {

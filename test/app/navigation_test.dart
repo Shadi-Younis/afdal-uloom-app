@@ -163,9 +163,13 @@ void main() {
       '/admin/halaqat/h1/students/s1': '/admin/halaqat/h1',
       '/admin/teachers/new': '/admin/teachers',
       '/admin/teachers/t1': '/admin/teachers',
+      '/admin/teachers/new-admin': '/admin/teachers',
+      '/admin/teachers/admin/a2': '/admin/teachers',
       '/admin/students/new': '/admin/students',
       '/admin/students/s1': '/admin/students',
       '/recording/r1': '/',
+      '/account': '/',
+      '/admin/students?halaqa=h1': null,
     };
     for (final MapEntry(key: route, value: parent) in parents.entries) {
       expect(AppRoutes.parentOf(route), parent, reason: route);

@@ -20,4 +20,15 @@ abstract class AuthService {
 
   /// Signs out. Never throws for a user who is already signed out.
   Future<void> signOut();
+
+  /// Changes the signed-in user's own password after checking
+  /// [currentPassword]; the user stays signed in. [newPassword]: 6..64
+  /// characters (checked by the caller).
+  ///
+  /// Throws [AppException] with `wrongPassword`, `weakPassword`,
+  /// `tooManyAttempts`, `network`, or `permissionDenied` when signed out.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }

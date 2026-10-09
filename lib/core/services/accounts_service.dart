@@ -7,7 +7,7 @@ import '../models/user_role.dart';
 /// Every method throws [AppException]: `permissionDenied` (caller not
 /// allowed), `invalidData` (input rejected), `notFound`, `usernameTaken`,
 /// `studentCodeTaken`, `failedPrecondition` (e.g. the target is not a
-/// student) or `network`.
+/// student), one of the refusals documented on the method, or `network`.
 abstract class AccountsService {
   /// Creates an account and returns its uid.
   ///
@@ -48,6 +48,31 @@ abstract class AccountsService {
   });
 
   /// Disables (or enables again) an account; no data is deleted. Admin
-  /// only, never on themselves.
+  /// only, never on themselves. Throws `lastAdmin` for the only active
+  /// admin.
   Future<void> setUserDisabled({required String uid, required bool disabled});
+
+  /// Deletes an empty halaqa. Admin only. Throws `halaqaHasStudents` while
+  /// a student (even a disabled one) belongs to it, `halaqaHasRecordings`
+  /// while a recording still points to it.
+  Future<void> deleteHalaqa(String halaqaId);
+
+  /// Deletes a teacher or a student for good and returns how many
+  /// recordings were deleted with it (always 0 for a teacher). A student
+  /// loses every recording, its audio and its feedback. Admin only; admin
+  /// accounts can never be deleted (`permissionDenied`). Throws
+  /// `teacherOwnsHalaqat` while the teacher teaches a halaqa.
+  Future<int> deleteUser(String uid);
+
+  /// Changes the given fields of [uid]'s profile; null fields stay as they
+  /// are, and at least one must be given. Admin: any user, themselves
+  /// included. Teacher: only the [fullName] of their own students.
+  /// [username] also changes the sign-in name (`usernameTaken` if used);
+  /// [studentCode] is for students only (`studentCodeTaken` if used).
+  Future<void> updateUserProfile({
+    required String uid,
+    String? fullName,
+    String? username,
+    String? studentCode,
+  });
 }

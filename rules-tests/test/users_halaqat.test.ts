@@ -143,12 +143,17 @@ describe("halaqat", () => {
     await assertFails(updateDoc(doc(db, "halaqat/h1"), { name: "جديد" }));
   });
 
-  test("admin creates, renames and deletes halaqat", async () => {
+  test("admin creates and renames halaqat", async () => {
     const db = as(env, "admin", "admin");
     await assertSucceeds(getDocs(query(collection(db, "halaqat"), orderBy("name"))));
     await assertSucceeds(addDoc(collection(db, "halaqat"), { name: "حلقة المغرب", teacherId: "t2" }));
     await assertSucceeds(updateDoc(doc(db, "halaqat/h1"), { name: "حلقة الضحى" }));
-    await assertSucceeds(deleteDoc(doc(db, "halaqat/h2")));
+  });
+
+  test("nobody deletes a halaqa from the client (deleteHalaqa function only)", async () => {
+    await assertFails(deleteDoc(doc(as(env, "admin", "admin"), "halaqat/h2")));
+    await assertFails(deleteDoc(doc(as(env, "t2", "teacher"), "halaqat/h2")));
+    await assertFails(deleteDoc(doc(as(env, "s3", "student"), "halaqat/h2")));
   });
 
   test("the client cannot change a halaqa's teacher (changeHalaqaTeacher function only)", async () => {

@@ -86,6 +86,8 @@ void main() {
     expect(school.accounts.setDisabledCalls.single, ('t01', true));
 
     // A halaqa opens in the halaqat section.
+    await tester.ensureVisible(find.text('حلقة الفجر'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('حلقة الفجر'));
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/admin/halaqat/halaqa-fajr');
