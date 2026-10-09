@@ -1,10 +1,12 @@
 # Runs the Cloud Functions tests (functions/test/) against fresh Auth,
-# Firestore and Functions emulators, which start and stop with the tests:
+# Firestore, Storage and Functions emulators, which start and stop with the
+# tests:
 #
 #   powershell -ExecutionPolicy Bypass -File tool/test_functions.ps1
 #
-# The tests call the real callables over HTTP. Stop tool/emulators.ps1
-# first: both use the same ports.
+# The tests call the real callables over HTTP and let the Firestore
+# triggers run in the Functions emulator. Stop tool/emulators.ps1 first:
+# both use the same ports.
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -35,7 +37,7 @@ try {
     npm --prefix functions run build
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    firebase emulators:exec --only auth,firestore,functions "npm --prefix functions test"
+    firebase emulators:exec --only auth,firestore,storage,functions "npm --prefix functions test"
     exit $LASTEXITCODE
 }
 finally {

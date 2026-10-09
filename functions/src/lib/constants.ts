@@ -7,6 +7,13 @@ export const REGION = "me-west1";
 /** Usernames become `${username}@${EMAIL_DOMAIN}`. App: FirebaseConstants.emailDomain. */
 export const EMAIL_DOMAIN = "afdal-uloom.app";
 
+/**
+ * The default bucket, as in lib/firebase_options.dart (storageBucket). Named
+ * explicitly: the emulators would otherwise guess `<project>.appspot.com`,
+ * another bucket than the one the app uploads to. App: FirebaseConstants.storageBucket.
+ */
+export const STORAGE_BUCKET = "afdal-al-uloom.firebasestorage.app";
+
 export const ROLES = ["admin", "teacher", "student"] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -25,6 +32,8 @@ export const BATCH_LIMIT = 500;
 export const USERS = "users";
 export const HALAQAT = "halaqat";
 export const RECORDINGS = "recordings";
+/** Subcollection of a recording. */
+export const FEEDBACK = "feedback";
 export const F = {
   username: "username",
   fullName: "fullName",
@@ -36,7 +45,15 @@ export const F = {
   disabled: "disabled",
   teacherId: "teacherId",
   studentId: "studentId",
+  storagePath: "storagePath",
 } as const;
+
+/** A recording whose audio file is still missing this long after createdAt is a failed upload. */
+export const STALLED_UPLOAD_AGE_MS = 24 * 60 * 60 * 1000;
+
+/** cleanupStalledUploads runs daily at 00:00 UTC, the middle of the school's night. */
+export const CLEANUP_SCHEDULE = "0 0 * * *";
+export const CLEANUP_TIME_ZONE = "Etc/UTC";
 
 export function emailFor(username: string): string {
   return `${username}@${EMAIL_DOMAIN}`;

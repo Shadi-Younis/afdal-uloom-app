@@ -22,3 +22,12 @@ export async function updateInBatches(updates: Update[]): Promise<void> {
     await batch.commit();
   }
 }
+
+/** Deletes [refs] in batches of at most 500, in order. Deleting a missing document is not an error. */
+export async function deleteInBatches(refs: DocumentReference[]): Promise<void> {
+  for (let start = 0; start < refs.length; start += BATCH_LIMIT) {
+    const batch = db.batch();
+    for (const ref of refs.slice(start, start + BATCH_LIMIT)) batch.delete(ref);
+    await batch.commit();
+  }
+}

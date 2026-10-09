@@ -7,3 +7,5 @@ export {resetPassword} from "./accounts/reset_password.js";
 export {moveStudent} from "./accounts/move_student.js";
 export {changeHalaqaTeacher} from "./accounts/change_halaqa_teacher.js";
 export {setUserDisabled} from "./accounts/set_user_disabled.js";
+export {onRecordingDeleted} from "./recordings/on_recording_deleted.js";
+export {cleanupStalledUploads} from "./recordings/cleanup_stalled_uploads.js";
