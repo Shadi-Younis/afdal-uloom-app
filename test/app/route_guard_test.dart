@@ -50,6 +50,24 @@ void main() {
     });
   }
 
+  test('every role may open a recording; its data is up to the rules', () {
+    for (final role in UserRole.values) {
+      expect(redirectFor(signedInAs(role), '/recording/rec-02'), isNull);
+    }
+  });
+
+  test('a recording still needs a session', () {
+    expect(redirectFor(const AsyncData(null), '/recording/rec-02'), '/login');
+    expect(redirectFor(const AsyncLoading(), '/recording/rec-02'), '/');
+  });
+
+  test('look-alikes of the recording route are not opened', () {
+    final student = signedInAs(UserRole.student);
+    expect(redirectFor(student, '/recording'), '/student');
+    expect(redirectFor(student, '/recordings/rec-02'), '/student');
+    expect(redirectFor(student, '/admin/recording/x'), '/student');
+  });
+
   test('a look-alike path is not the home', () {
     expect(redirectFor(signedInAs(UserRole.admin), '/administrator'), '/admin');
   });

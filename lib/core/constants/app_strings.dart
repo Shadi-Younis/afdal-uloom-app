@@ -90,7 +90,7 @@ abstract final class AppStrings {
   static const newHalaqaTitle = 'حلقة جديدة';
   static const noHalaqat = 'لا توجد حلقات بعد';
   static String halaqaTeacher(String name) => 'المعلم: $name';
-  static String studentCount(int count) => 'عدد الطلاب: $count';
+  static String studentCount(String count) => 'عدد الطلاب: $count';
   static const unknownTeacher = 'غير معروف';
   static const noActiveTeachers = 'لا يوجد معلم مفعّل. أضف معلماً أولاً.';
   static const halaqaCreated = 'تم إنشاء الحلقة';
@@ -129,8 +129,7 @@ abstract final class AppStrings {
   static const statusLabel = 'الحالة';
   static const statusActive = 'مفعّل';
   static const recordingsTitle = 'التسجيلات';
-  static const recordingsPlaceholder =
-      'ستظهر هنا تسجيلات الطالب في تحديث قادم.';
+  static const noRecordings = 'لا توجد تسجيلات بعد';
   static const moveStudent = 'نقل إلى حلقة أخرى';
   static const chooseHalaqaTitle = 'اختر الحلقة الجديدة';
   static const noOtherHalaqa = 'لا توجد حلقة أخرى.';
@@ -175,6 +174,36 @@ abstract final class AppStrings {
       '$usernameLabel: $username\n'
       '$passwordLabel: $password';
 
+  // Recording screen
+  static const home = 'الرئيسية';
+  static const recordingScreenTitle = 'التسجيل';
+  static const typeOfficial = 'رسمي';
+  static const typePractice = 'تدريب';
+  static const recordedAtLabel = 'تاريخ التسجيل';
+  static const uploadedByLabel = 'رُفع بواسطة';
+  static const unreadFeedback = 'ملاحظة جديدة لم يقرأها الطالب';
+  static const feedbackTitle = 'ملاحظات المعلم';
+  static const noFeedback = 'لا توجد ملاحظات بعد';
+
+  /// A note about a moment of the recording, e.g. "عند ٠١:٢٣".
+  static String atTime(String clock) => 'عند $clock';
+  static String ratingOf(String stars, String max) => 'التقييم: $stars من $max';
+
+  // Recording player
+  static const playerLoading = 'جارٍ تحميل التسجيل';
+  static const play = 'تشغيل';
+  static const pause = 'إيقاف مؤقت';
+  static String skipBack(String seconds) => 'رجوع $seconds ثوانٍ';
+  static String skipForward(String seconds) => 'تقديم $seconds ثوانٍ';
+  static const playbackPosition = 'موضع التشغيل';
+  static const playbackSpeed = 'سرعة التشغيل';
+
+  // Recording titles. The numbers arrive already in Arabic-Indic digits.
+  static String recordingTitle(String surah, String from, String to) =>
+      '$surah: الآيات $from–$to';
+  static String recordingTitleOneAyah(String surah, String ayah) =>
+      '$surah: الآية $ayah';
+
   // Errors, one per AppErrorCode
   static const errorPermissionDenied = 'ليست لديك صلاحية لهذا الإجراء.';
   static const errorNotFound = 'العنصر المطلوب غير موجود.';
@@ -188,5 +217,10 @@ abstract final class AppStrings {
   static const errorStudentCodeTaken = 'رقم الطالب مستخدم من قبل';
   static const errorFailedPrecondition =
       'لا يمكن تنفيذ هذا الإجراء على هذا العنصر.';
+
+  /// The limit is AudioFormats.maxUploadBytes (100 MiB).
+  static const errorFileTooLarge = 'الملف أكبر من ١٠٠ ميغابايت.';
+  static const errorUnsupportedFile = 'نوع الملف غير مدعوم. اختر ملفاً صوتياً.';
+  static const errorUploadCancelled = 'تم إلغاء الرفع.';
   static const errorUnknown = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
 }

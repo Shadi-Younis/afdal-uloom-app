@@ -36,6 +36,16 @@ enum AppErrorCode {
   /// not a student.
   failedPrecondition,
 
+  /// An audio file at or over AudioFormats.maxUploadBytes.
+  fileTooLarge,
+
+  /// Not an audio file the app accepts (see AudioFormats.contentTypes), or
+  /// an empty one.
+  unsupportedFile,
+
+  /// The user cancelled an upload.
+  uploadCancelled,
+
   /// Anything else.
   unknown,
 }

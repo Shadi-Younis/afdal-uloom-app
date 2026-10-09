@@ -8,8 +8,13 @@
 import {getApps, initializeApp} from "firebase-admin/app";
 import {getAuth} from "firebase-admin/auth";
 import {getFirestore, Timestamp} from "firebase-admin/firestore";
+import {getStorage} from "firebase-admin/storage";
 
-const required = ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"];
+const required = [
+  "FIRESTORE_EMULATOR_HOST",
+  "FIREBASE_AUTH_EMULATOR_HOST",
+  "FIREBASE_STORAGE_EMULATOR_HOST",
+];
 for (const name of required) {
   if (!process.env[name]) {
     throw new Error(`${name} is not set: run these tests through tool/test_functions.ps1.`);
@@ -24,6 +29,8 @@ const functionsHost = process.env.FUNCTIONS_EMULATOR_HOST ?? "127.0.0.1:5001";
 if (getApps().length === 0) initializeApp({projectId});
 export const auth = getAuth();
 export const db = getFirestore();
+/** The bucket the app and the functions use (STORAGE_BUCKET). */
+export const bucket = getStorage().bucket("afdal-al-uloom.firebasestorage.app");
 
 export const PASSWORD = "password1";
 export const emailFor = (username: string) => `${username}@afdal-uloom.app`;

@@ -48,8 +48,8 @@ void main() {
     expect(find.text('أهلاً بك'), findsOneWidget);
     expect(find.text('شادي'), findsOneWidget);
     // 2 halaqat, 2 active teachers (t03 disabled), 3 active students.
-    expect(find.text('2'), findsNWidgets(2));
-    expect(find.text('3'), findsOneWidget);
+    expect(find.text('٢'), findsNWidgets(2));
+    expect(find.text('٣'), findsOneWidget);
     expect(find.text('إضافة طالب'), findsOneWidget);
     expect(find.text('إضافة معلم'), findsOneWidget);
     expect(find.text('إنشاء حلقة'), findsOneWidget);
@@ -60,7 +60,7 @@ void main() {
     );
 
     // A card opens its section.
-    await tester.tap(find.text('3'));
+    await tester.tap(find.text('٣'));
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/admin/students');
   });

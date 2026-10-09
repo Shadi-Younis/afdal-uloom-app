@@ -1,11 +1,61 @@
 rules_version = '2';
 
-// DENY ALL for now. The real rules for recordings come in the data-layer
-// task, together with their emulator tests.
+// Recording audio files. Each object belongs to a recordings/{id} document
+// (docs/PROJECT_PLAN.md section 3), read here through cross-service rules:
+// on deploy, accept granting Storage access to Firestore
+// (docs/DEPLOY_NOTES.md). Roles come only from the `role` custom claim.
+// Clients never update or delete objects: Cloud Functions clean up.
+// Anything not allowed below is denied. After changing this file run
+// tool/test_rules.ps1.
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if false;
+
+    // Largest upload, in bytes (100 MiB). Must match
+    // AudioFormats.maxUploadBytes in lib/core/constants/audio_formats.dart.
+    // Long studio sessions as MP3 can pass 30 MB.
+    function maxUploadBytes() {
+      return 100 * 1024 * 1024;
+    }
+
+    function role() {
+      return request.auth.token.get('role', '');
+    }
+
+    match /recordings/{studentId}/{fileName} {
+      // fileName is `{recordingId}.{ext}`; Firestore ids contain no dots.
+      function recordingPath() {
+        return /databases/(default)/documents/recordings/$(fileName.split('\\.')[0]);
+      }
+
+      function recording() {
+        return firestore.get(recordingPath()).data;
+      }
+
+      // The document points at exactly this object.
+      function isRecordingFile() {
+        return recording().storagePath == 'recordings/' + studentId + '/' + fileName;
+      }
+
+      allow read: if request.auth != null
+        && (role() == 'admin'
+            || (isRecordingFile()
+                && ((role() == 'teacher' && recording().teacherId == request.auth.uid)
+                    || recording().studentId == request.auth.uid)));
+
+      // The flow (RecordingRepository): create the document, then upload
+      // to its storagePath. Only the uploader of that document may, once:
+      // `resource == null` refuses writing over an existing file (the
+      // emulator evaluates such an overwrite as a create, not an update).
+      allow create: if request.auth != null
+        && resource == null
+        && firestore.exists(recordingPath())
+        && isRecordingFile()
+        && recording().uploadedBy == request.auth.uid
+        && request.resource.contentType.matches('audio/.*')
+        && request.resource.size > 0
+        && request.resource.size < maxUploadBytes();
+
+      allow update, delete: if false;
     }
   }
 }

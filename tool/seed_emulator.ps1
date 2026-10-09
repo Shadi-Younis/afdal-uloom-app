@@ -1,11 +1,12 @@
-# Fills the running Auth and Firestore emulators with test data
-# (tool/seed/src/data.ts). Start tool/emulators.ps1 first, in another
-# terminal; the data then persists in .emulator-data.
+# Fills the running Auth, Firestore and Storage emulators with test data
+# (tool/seed/src/data.ts), including a generated WAV file for every
+# recording. Start tool/emulators.ps1 first, in another terminal; the data
+# then persists in .emulator-data.
 #
 #   powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1
 #
 # Safe to run again: accounts and documents have fixed ids and are
-# overwritten. Every account's password is test1234.
+# overwritten (audio files too). Every account's password is test1234.
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -15,8 +16,9 @@ $root = Split-Path -Parent $PSScriptRoot
 # these, so it can never write to the real project.
 if (-not $env:FIRESTORE_EMULATOR_HOST) { $env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080' }
 if (-not $env:FIREBASE_AUTH_EMULATOR_HOST) { $env:FIREBASE_AUTH_EMULATOR_HOST = '127.0.0.1:9099' }
+if (-not $env:FIREBASE_STORAGE_EMULATOR_HOST) { $env:FIREBASE_STORAGE_EMULATOR_HOST = '127.0.0.1:9199' }
 
-foreach ($hostPort in @($env:FIRESTORE_EMULATOR_HOST, $env:FIREBASE_AUTH_EMULATOR_HOST)) {
+foreach ($hostPort in @($env:FIRESTORE_EMULATOR_HOST, $env:FIREBASE_AUTH_EMULATOR_HOST, $env:FIREBASE_STORAGE_EMULATOR_HOST)) {
     $emulatorHost, $port = $hostPort -split ':'
     $client = New-Object System.Net.Sockets.TcpClient
     try {

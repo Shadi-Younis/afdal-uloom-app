@@ -10,7 +10,7 @@ import 'widgets/admin_page.dart';
 import 'widgets/student_details_view.dart';
 
 /// One student: account, halaqa, password reset, move, disable / enable,
-/// and (in a later task) their recordings.
+/// and their recordings.
 class StudentDetailsScreen extends ConsumerWidget {
   const StudentDetailsScreen({super.key, required this.studentId});
 

@@ -9,7 +9,7 @@ import 'disable_account_button.dart';
 import 'info_row.dart';
 import 'move_student_button.dart';
 import 'reset_password_button.dart';
-import 'section_card.dart';
+import 'student_recordings_section.dart';
 
 /// The content of the student details page.
 class StudentDetailsView extends StatelessWidget {
@@ -45,11 +45,7 @@ class StudentDetailsView extends StatelessWidget {
                 DisableAccountButton(user: student),
               ],
             ),
-            // Placeholder: the recordings list comes in a later task.
-            const SectionCard(
-              title: AppStrings.recordingsTitle,
-              child: Text(AppStrings.recordingsPlaceholder),
-            ),
+            StudentRecordingsSection(studentId: student.id),
           ],
         ),
       ),

@@ -5,7 +5,8 @@
 //           حلقة المغرب (t01, 2 students).
 // s012 has no recordings (empty state). 25 recordings: 19 official,
 // 6 practice (4 not reviewed); 4 with unread feedback; notes on 8
-// recordings, rec-09 has 3.
+// recordings, rec-09 has 3. Every recording gets a generated WAV file of
+// 20, 30 or 40 s (audio.ts); "at second" notes stay inside 20 s.
 
 export type Role = "admin" | "teacher" | "student";
 
@@ -43,6 +44,8 @@ export interface SeedNote {
 }
 
 export const emailDomain = "afdal-uloom.app";
+/** The app's default bucket (lib/firebase_options.dart). */
+export const storageBucket = "afdal-al-uloom.firebasestorage.app";
 export const devPassword = "test1234";
 
 export const halaqat: SeedHalaqa[] = [
@@ -142,14 +145,14 @@ export const recordings: SeedRecording[] = rows.map(
 );
 
 export const notes: SeedNote[] = [
-  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الألف في آية ٥", atSecond: 48, rating: 4 },
+  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الألف في آية ٥", atSecond: 12, rating: 4 },
   { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في الآيات الأولى", rating: 3 },
   { id: "fb-03", recordingId: "rec-07", note: "تلاوة جميلة، بارك الله فيك", rating: 5 },
-  { id: "fb-04", recordingId: "rec-09", note: "انتبه للغنّة في النون المشدّدة", atSecond: 15 },
-  { id: "fb-05", recordingId: "rec-09", note: "الوقف هنا غير مناسب، أعد الآية", atSecond: 92 },
+  { id: "fb-04", recordingId: "rec-09", note: "انتبه للغنّة في النون المشدّدة", atSecond: 5 },
+  { id: "fb-05", recordingId: "rec-09", note: "الوقف هنا غير مناسب، أعد الآية", atSecond: 17 },
   { id: "fb-06", recordingId: "rec-09", note: "تحسّن واضح في آخر التلاوة", rating: 4 },
   { id: "fb-07", recordingId: "rec-11", note: "ممتاز، استمر على هذا", rating: 5 },
-  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة الآية ١٢ ببطء", atSecond: 130, rating: 3 },
+  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة الآية ١٢ ببطء", atSecond: 14, rating: 3 },
   { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن", rating: 5 },
-  { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام الإدغام", atSecond: 20 },
+  { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام الإدغام", atSecond: 8 },
 ];

@@ -34,13 +34,35 @@
 
 ## رفع تسجيل
 
+لا تكتب هذه الخطوات بنفسك: استخدم `recordingUploadControllerProvider` (في `lib/core/application/`)، فهو ينفّذها لتسجيل واحد ويعرض التقدّم والحالة (`RecordingUploadState`):
+
 1. `id = recordingRepository.newId()`
 2. `path = StoragePaths.recording(studentId, id, extension: 'm4a')` (الافتراضي `mp3`)
 3. `recordingRepository.create(recording)` بنفس الـ `id` و`storagePath: path`
-4. رفع الملف إلى `path` في Storage
-5. إذا فشل الرفع: `recordingRepository.delete(id)`
+4. رفع الملف إلى `path` في Storage عبر `AudioStorageService.upload` (مع التقدّم وإمكانية الإلغاء)
+5. إذا فشل الرفع أو أُلغي: `recordingRepository.delete(id)`
 
-`createdAt` يضعه السيرفر دائماً. الامتدادات المسموحة: mp3، m4a، aac، wav، ogg، webm.
+- `createdAt` يضعه السيرفر دائماً.
+- الامتدادات المسموحة ونوع المحتوى لكل منها في `AudioFormats.contentTypes`: mp3، m4a، aac، wav، ogg، webm.
+- الحد الأقصى لحجم الملف **أقل من ١٠٠ ميغابايت** (`AudioFormats.maxUploadBytes`، ونفس الرقم في `storage.rules`).
+- على الموبايل نرفع ملفاً (`FileAudioSource`)، وعلى الويب بايتات (`BytesAudioSource`).
+- إذا بقي مستند بلا ملف (انقطع التطبيق أثناء الرفع)، تحذفه الدالة `cleanupStalledUploads` بعد ٢٤ ساعة.
+
+## ملفات الصوت في Storage
+
+المسار: `recordings/{studentId}/{recordingId}.{ext}`. قواعد `storage.rules` تقرأ مستند التسجيل من Firestore:
+
+- **السماع:** المدير، أو معلم الحلقة (بدور معلم)، أو الطالب صاحب التسجيل.
+- **الرفع:** فقط `uploadedBy` في المستند، إلى نفس `storagePath` بالضبط، ملف صوتي فقط، مرة واحدة (لا كتابة فوق ملف موجود).
+- **الحذف والتعديل:** ممنوعان على التطبيق. عند حذف مستند التسجيل تحذف الدالة `onRecordingDeleted` الملف والملاحظات.
+
+## التشغيل
+
+- `AudioStorageService.getPlaybackUrl(storagePath)` يعطي رابط التحميل العادي (`getDownloadURL()`) ويحتفظ به في الذاكرة طوال الجلسة. لا نخزّن الرابط في Firestore أبداً. تفاصيل هذا القرار في [DEPLOY_NOTES.md](DEPLOY_NOTES.md).
+- المشغّل المشترك `RecordingPlayer` (في `core/widgets/common/`) ومعه `recordingPlayerControllerProvider(storagePath)`. منه تقرأ الموضع الحالي (`position`) ومنه تقفز إلى ثانية معيّنة (`seek`).
+- إذا فشل تحميل الصوت يعيد المحاولة مرة واحدة برابط جديد من نفس الموضع.
+- مشغّل واحد فقط في نفس الوقت، ويتوقف عند الخروج من الشاشة.
+- **الاتجاه:** شريط التقدّم يتبع اتجاه Material في العربية، فيمتلئ من اليمين إلى اليسار. الوقت الحالي على اليمين والمدة الكاملة على اليسار، وزر "رجوع ٥ ثوانٍ" على اليمين و"تقديم ٥ ثوانٍ" على اليسار.
 
 ## قواعد الحماية واختبارها
 
@@ -50,13 +72,15 @@
 powershell -ExecutionPolicy Bypass -File tool/test_rules.ps1
 ```
 
-السكربت يشغّل Firestore Emulator جديداً للاختبار فقط ثم يوقفه. أوقف `tool/emulators.ps1` قبله لأن الاثنين يستخدمان المنفذ 8080. الاختبارات في `rules-tests/test/`.
+السكربت يشغّل Firestore وStorage Emulators جديدة للاختبار فقط ثم يوقفها. أوقف `tool/emulators.ps1` قبله لأن الاثنين يستخدمان المنافذ 8080 و9199. الاختبارات في `rules-tests/test/` (قواعد Storage في `storage.test.ts`).
 
 ## بيانات تجريبية (Seed)
 
 1. شغّل الـ Emulators: `powershell -ExecutionPolicy Bypass -File tool/emulators.ps1`
 2. في نافذة أخرى: `powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1`
 3. البيانات تظهر في http://localhost:4001 وتبقى محفوظة في `.emulator-data`.
+
+كل تسجيل في الـ Seed له ملف صوت WAV مولَّد محلياً (نغمات بطول ٢٠ أو ٣٠ أو ٤٠ ثانية تحاكي التلاوة) مرفوع إلى Storage Emulator، فيعمل التشغيل مباشرة.
 
 يمكن تشغيل الـ Seed أكثر من مرة بأمان. كلمة السر لكل الحسابات `test1234`، والإيميل `<username>@afdal-uloom.app`:
 

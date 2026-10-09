@@ -7,6 +7,7 @@ import '../core/constants/app_routes.dart';
 import '../core/models/auth_session.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
+import '../features/recordings/presentation/recording_screen.dart';
 import '../features/student/presentation/student_home_screen.dart';
 import '../features/teacher/presentation/teacher_home_screen.dart';
 import 'admin_routes.dart';
@@ -40,6 +41,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.teacher,
         name: AppRoutes.teacherName,
         builder: (context, state) => const TeacherHomeScreen(),
+      ),
+      // Outside the role shells: every role opens it, on top of its page.
+      GoRoute(
+        path: AppRoutes.recordingPath,
+        name: AppRoutes.recordingName,
+        builder: (context, state) => RecordingScreen(
+          recordingId: state.pathParameters[AppRoutes.idParam]!,
+        ),
       ),
       GoRoute(
         path: AppRoutes.student,

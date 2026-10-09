@@ -1,10 +1,11 @@
-# Runs the Firestore security rules tests (rules-tests/) against a fresh
-# Firestore emulator, which starts and stops with the tests:
+# Runs the Firestore and Storage security rules tests (rules-tests/)
+# against fresh Firestore and Storage emulators, which start and stop with
+# the tests (the Storage rules read Firestore documents, so both run):
 #
 #   powershell -ExecutionPolicy Bypass -File tool/test_rules.ps1
 #
-# Stop tool/emulators.ps1 first: both use port 8080. Run this after every
-# change to firestore.rules.
+# Stop tool/emulators.ps1 first: both use ports 8080 and 9199. Run this
+# after every change to firestore.rules or storage.rules.
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -27,7 +28,7 @@ try {
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 
-    firebase emulators:exec --only firestore "npm --prefix rules-tests test"
+    firebase emulators:exec --only firestore,storage "npm --prefix rules-tests test"
     exit $LASTEXITCODE
 }
 finally {

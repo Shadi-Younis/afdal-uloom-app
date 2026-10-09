@@ -10,6 +10,10 @@ abstract final class FirebaseConstants {
   /// EMAIL_DOMAIN in functions/src/lib/constants.ts.
   static const emailDomain = 'afdal-uloom.app';
 
+  /// The default Storage bucket, as in firebase_options.dart. Must match
+  /// STORAGE_BUCKET in functions/src/lib/constants.ts.
+  static const storageBucket = 'afdal-al-uloom.firebasestorage.app';
+
   /// The `role` custom claim on the ID token; set only by server code.
   static const roleClaim = 'role';
 

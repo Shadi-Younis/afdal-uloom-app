@@ -7,7 +7,14 @@ abstract final class AppRoutes {
   static const teacher = '/teacher';
   static const student = '/student';
 
+  /// One recording, for every role: `/recording/{recordingId}`. Who may
+  /// open which one is decided by the security rules, not the router.
+  static const recordingBase = '/recording';
+  static const recordingPath = '$recordingBase/:$idParam';
+  static String recording(String recordingId) => '$recordingBase/$recordingId';
+
   static const splashName = 'splash';
+  static const recordingName = 'recording';
   static const loginName = 'login';
   static const adminName = 'admin';
   static const teacherName = 'teacher';

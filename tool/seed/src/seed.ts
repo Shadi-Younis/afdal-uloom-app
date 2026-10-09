@@ -1,10 +1,15 @@
-// Fills the Auth and Firestore EMULATORS with test data (see data.ts).
+// Fills the Auth, Firestore and Storage EMULATORS with test data (see
+// data.ts), including a generated audio file for every recording.
 // Run it through tool/seed_emulator.ps1 while tool/emulators.ps1 is running.
 // Safe to run again: every account and document has a fixed id.
 
 // Refuse before touching firebase-admin: without these variables the Admin
 // SDK would talk to the real project.
-const required = ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"] as const;
+const required = [
+  "FIRESTORE_EMULATOR_HOST",
+  "FIREBASE_AUTH_EMULATOR_HOST",
+  "FIREBASE_STORAGE_EMULATOR_HOST",
+] as const;
 const missing = required.filter((name) => !process.env[name]);
 if (missing.length > 0) {
   console.error(
@@ -32,12 +37,29 @@ if (remote.length > 0) {
 const { initializeApp } = await import("firebase-admin/app");
 const { getAuth } = await import("firebase-admin/auth");
 const { getFirestore, Timestamp } = await import("firebase-admin/firestore");
+const { getStorage } = await import("firebase-admin/storage");
 const data = await import("./data.js");
+const { makeTones } = await import("./audio.js");
+// The same ayah table as the app and the functions.
+const { isValidAyahRange } = await import("../../../functions/src/lib/surahs.js");
+
+const badRange = data.recordings.find((r) => !isValidAyahRange(r.surahNumber, r.ayahFrom, r.ayahTo));
+if (badRange) {
+  console.error(`Refusing to seed: ${badRange.id} has ayat outside surah ${badRange.surahNumber}.`);
+  process.exit(1);
+}
 
 const projectId = process.env.GCLOUD_PROJECT ?? "afdal-al-uloom";
 initializeApp({ projectId });
 const auth = getAuth();
 const db = getFirestore();
+const bucket = getStorage().bucket(data.storageBucket);
+const tones = makeTones();
+
+/** The audio file of the [index]th recording: the three tones in turn. */
+const toneOf = (index: number) => tones[index % tones.length];
+const audioPathOf = (r: { id: string; studentId: string }) =>
+  `recordings/${r.studentId}/${r.id}.wav`;
 
 const usersCreatedAt = Timestamp.fromDate(new Date("2026-08-25T09:00:00Z"));
 const hour = 60 * 60 * 1000;
@@ -86,7 +108,7 @@ async function seedFirestore(): Promise<void> {
   const studentHalaqa = new Map(data.users.map((u) => [u.uid, u.halaqaId]));
   const halaqaTeacher = new Map(data.halaqat.map((h) => [h.id, h.teacherId]));
 
-  for (const r of data.recordings) {
+  data.recordings.forEach((r, index) => {
     const halaqaId = studentHalaqa.get(r.studentId)!;
     const teacherId = halaqaTeacher.get(halaqaId)!;
     const official = r.type === "official";
@@ -100,16 +122,15 @@ async function seedFirestore(): Promise<void> {
       surahNumber: r.surahNumber,
       ayahFrom: r.ayahFrom,
       ayahTo: r.ayahTo,
-      // No audio files yet; the path is what the upload will use.
-      storagePath: `recordings/${r.studentId}/${r.id}.${official ? "mp3" : "m4a"}`,
-      durationSec: (r.ayahTo - r.ayahFrom + 1) * 20,
+      storagePath: audioPathOf(r),
+      durationSec: toneOf(index).seconds,
       recordedAt: Timestamp.fromDate(recordedAt),
       // Studio files are uploaded a couple of hours after the session.
       createdAt: Timestamp.fromDate(new Date(recordedAt.getTime() + (official ? 2 * hour : 0))),
       unreadFeedback: r.unreadFeedback,
       reviewed: r.reviewed,
     });
-  }
+  });
 
   const recordingById = new Map(data.recordings.map((r) => [r.id, r]));
   data.notes.forEach((n, i) => {
@@ -128,13 +149,29 @@ async function seedFirestore(): Promise<void> {
   await batch.commit();
 }
 
+/** Uploads (or overwrites) every recording's audio file. */
+async function seedAudio(): Promise<void> {
+  await Promise.all(
+    data.recordings.map((r, index) =>
+      bucket.file(audioPathOf(r)).save(toneOf(index).wav, {
+        contentType: "audio/wav",
+        // A fixed token: getDownloadURL() needs one, and seeding again keeps
+        // the URLs the app may have cached.
+        metadata: { metadata: { firebaseStorageDownloadTokens: `seed-${r.id}` } },
+      }),
+    ),
+  );
+}
+
 await seedAccounts();
 await seedFirestore();
+await seedAudio();
 
 const count = (role: string) => data.users.filter((u) => u.role === role).length;
 console.log(
   `Seeded project ${projectId}: ${data.users.length} accounts ` +
     `(${count("admin")} admin, ${count("teacher")} teachers, ${count("student")} students), ` +
     `${data.halaqat.length} halaqat, ${data.recordings.length} recordings, ` +
-    `${data.notes.length} feedback notes. Password for every account: ${data.devPassword}`,
+    `${data.notes.length} feedback notes, ${data.recordings.length} audio files ` +
+    `(${tones.map((t) => `${t.seconds} s`).join(", ")}). Password for every account: ${data.devPassword}`,
 );

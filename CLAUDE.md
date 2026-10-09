@@ -77,7 +77,8 @@ lib/
     utils/                      small pure helpers
     widgets/common/             shared widgets (SchoolLogo, buttons,
                                 empty / error / loading states)
-  features/<feature>/           auth, admin, teacher, student
+  features/<feature>/           auth, admin, teacher, student, recordings
+                                (screens every role opens, e.g. /recording/:id)
     presentation/               <name>_screen.dart, widgets/
     application/                <name>_controller.dart
 test/                           mirrors lib/ (test/features/auth/..., test/app/...)
@@ -104,7 +105,10 @@ All in `lib/core/constants/`, as `abstract final class` with `static const`:
 | `app_durations.dart` | `AppDurations` | timeouts, animation durations |
 | `firestore_paths.dart` | `FirestorePaths`, `Fields` | collection / subcollection / field names |
 | `storage_paths.dart` | `StoragePaths` | Storage path builders |
-| `firebase_constants.dart` | `FirebaseConstants` | region, project id, function names, emulator ports and hosts |
+| `firebase_constants.dart` | `FirebaseConstants` | region, project id, bucket, function names, emulator ports and hosts |
+| `audio_formats.dart` | `AudioFormats` | accepted audio extensions, their content types, max upload size |
+| `playback_speeds.dart` | `PlaybackSpeeds` | the player's speeds |
+| `surahs.dart` | `Surah`, `surahs` | the 114 surahs with Arabic names and ayah counts |
 
 Colors and the text theme stay in `lib/app/theme.dart` (`kBrandGreen`,
 `kBrandGold`). Never use `kBrandGold` for text on white (contrast too low).
@@ -144,7 +148,15 @@ Tests may use literal values when they assert behavior (e.g. "the region is
 - Call Cloud Functions only through `regionalFunctions` (me-west1); never
   `FirebaseFunctions.instance` (that is us-central1).
 - Firestore stores the Storage path (`storagePath`), never a download URL.
-  Surahs are stored by number (1..114).
+  Surahs are stored by number (1..114); names and ayah counts come from
+  `core/constants/surahs.dart` (`functions/src/lib/surahs.ts` is generated
+  from it by `dart run tool/generate_surahs_ts.dart`).
+- Digits: every number shown in Arabic text uses Arabic-Indic digits
+  (`٠١٢٣٤٥٦٧٨٩`): counts, ayat, times (`٠١:٢٣`), dates (Material's Arabic
+  dates already do). Convert with `toArabicDigits` (core/utils) at the call
+  site; `AppStrings` functions take the converted text. Identifiers people
+  type (usernames, student codes such as `S023`, passwords) keep Latin
+  characters and digits.
 - `flutter analyze` must stay at zero issues; do not add `// ignore:` to
   silence a lint without a comment explaining why.
 
