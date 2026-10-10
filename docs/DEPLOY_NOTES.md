@@ -2,6 +2,111 @@
 
 خطوات وتنبيهات لمن ينشر على المشروع الحقيقي `afdal-al-uloom`. لا ينشر أحد إلا شادي، وبعد أن تنجح كل الاختبارات على الـ Emulators.
 
+## التطوير يبقى على الـ Emulators
+
+النشر لا يغيّر طريقة العمل اليومية: كل تطوير واختبار يكون على الـ Emulator Suite كما في `README.md` (`tool/emulators.ps1` ثم `flutter run --dart-define=USE_EMULATORS=true`). المشروع الحقيقي للاستعمال الفعلي فقط، ولا نكتب فيه بيانات تجربة من سكربتات.
+
+## قبل كل نشر
+
+- أوقف الـ Emulators (الاختبارات تشغّل Emulators خاصة بها على المنافذ نفسها).
+- انشر من `main` بعد دمج الـ PR وسحبه: `git checkout main` ثم `git pull`.
+- شغّل السكربتات **بنفسك** في نافذة PowerShell خاصة بك، لأنها تسألك وتنتظر إجابتك.
+- `firebase login:list` يجب أن يُظهر `shadiyounis7@gmail.com`.
+
+## نشر الخلفية (Backend)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_backend.ps1
+```
+
+ينشر: قواعد Firestore، وفهارس Firestore، وقواعد Storage، وكل Cloud Functions (في `me-west1`).
+
+ما يفحصه السكربت قبل أي نشر، ويتوقف عند أول فشل:
+
+1. لا توجد تعديلات غير محفوظة (`git status` نظيف).
+2. أنت على `main`، و`main` مطابق تماماً لـ `origin/main`.
+3. Firebase CLI مسجّل الدخول.
+4. `flutter analyze` و`flutter test` و`tool/test_rules.ps1` و`tool/test_functions.ps1` كلها ناجحة.
+5. يطبع ما سينشره (رقم الـ commit، والقواعد، وعدد الفهارس، وأسماء الدوال ومنطقتها) ويطلب أن تكتب `afdal-al-uloom`. أي شيء آخر يلغي النشر.
+
+ثم ينفّذ `firebase deploy --project afdal-al-uloom --only firestore:rules,firestore:indexes,storage,functions`، وفي النهاية يعرض قائمة الدوال المنشورة ومنطقة كل منها (يجب أن تكون كلها `me-west1`).
+
+أسئلة قد يطرحها Firebase أثناء النشر:
+
+- **«Cloud Storage for Firebase needs an IAM Role to use cross-service rules. Grant the new role?»**: أجب `y` (انظر «قواعد Storage تقرأ من Firestore» أدناه).
+- **«How many days do you want to keep container images before they're deleted?»** (أول نشر للدوال فقط): أجب `1`. صور الدوال القديمة في Artifact Registry تُحذف بعد يوم فلا تكلّف.
+- في أول نشر يفعّل Firebase تلقائياً واجهات: Cloud Functions وCloud Build وArtifact Registry وCloud Run وEventarc وPub/Sub وCloud Scheduler.
+
+بعد النشر: الفهارس الجديدة تحتاج بضع دقائق حتى تُبنى. تابع حالتها في Firebase Console ← Firestore ← Indexes حتى تصبح كلها **Enabled**.
+
+## نشر تطبيق الويب
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_web.ps1
+```
+
+يفحص الشروط نفسها (git نظيف، `main` مطابق لـ `origin/main`، الدخول إلى Firebase)، ويشغّل `flutter analyze` و`flutter test`، ويطلب كتابة `afdal-al-uloom`، ثم يبني `flutter build web --release` وينفّذ `firebase deploy --only hosting`.
+
+الرابط: https://afdal-al-uloom.web.app
+
+إعدادات الاستضافة في `firebase.json`:
+
+- كل المسارات تُعاد إلى `index.html` (التطبيق يتولى التنقل).
+- `index.html` وملفات `js` و`json` و`wasm`: `no-cache`. أسماء ملفات Flutter web ثابتة (بلا hash)، فلو خُزّنت طويلاً لبقي المستخدم على نسخة قديمة بعد النشر. المتصفح يتحقق في كل مرة، وإذا لم يتغير الملف يأخذه من ذاكرته.
+- الصور والخطوط: تُخزَّن 7 أيام. تغيير الشعار أو الأيقونات قد يتأخر ظهوره حتى أسبوع.
+
+## نسخة أندرويد (APK)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tool/deploy/build_release_apk.ps1
+```
+
+يبني `flutter build apk --release` بدون أي إعداد للـ Emulators (نسخة release لا تتصل بالـ Emulator أبداً)، ويطبع مسار الملف `build\app\outputs\flutter-apk\app-release.apk`.
+
+**تنبيه التوقيع:** إلى أن نجهّز مفتاح رفع حقيقياً (upload keystore) في مهمة النشر على المتجر، تُوقَّع نسخة release **بمفتاح الـ debug**. السكربت يطبع هذا التنبيه في كل مرة. معنى ذلك:
+
+- تصلح للتثبيت على هواتفنا للتجربة فقط.
+- لا يقبلها Google Play.
+- النسخة التي ستُوقَّع لاحقاً بالمفتاح الحقيقي لا تستطيع تحديث هذه النسخة: يجب حذف التطبيق من الهاتف أولاً.
+
+## التراجع (Rollback)
+
+كل نشر من `main` يُعلَّم بـ tag (مثل `v0.1.0-test`، ثم `v0.2.0`...). للرجوع إلى نسخة سابقة أعد نشر الـ tag السابق:
+
+```powershell
+git checkout main
+git pull
+git fetch --tags
+git checkout v0.1.0-test
+powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_backend.ps1 -RollbackTag v0.1.0-test
+powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_web.ps1 -RollbackTag v0.1.0-test
+git checkout main
+```
+
+مع `-RollbackTag` يقبل السكربت أن تكون على الـ tag بدل `main`، بشرط أن يكون الـ tag موجوداً على تاريخ `main` وأن يكون git نظيفاً، ثم يفحص ويختبر ويطلب التأكيد كالمعتاد.
+
+انتبه:
+
+- التراجع يرجع الكود والقواعد والدوال فقط. **البيانات لا ترجع** (الحسابات والتسجيلات المحذوفة لا تعود).
+- إذا كانت في النسخة الحالية دالة غير موجودة في الـ tag القديم، يسألك Firebase هل يحذفها. اقرأ السؤال قبل الإجابة.
+- للويب فقط يوجد طريق أسرع: Firebase Console ← Hosting ← Release history ← النسخة السابقة ← **Rollback**.
+- بعد التراجع أصلِح المشكلة على `main` في PR جديد، ثم انشر من `main` كالمعتاد.
+
+## التكاليف التي يجب مراقبتها
+
+المشروع على خطة Blaze مع **تنبيه ميزانية 8 شيكل**. التنبيه يرسل بريداً فقط ولا يوقف الصرف، فراجع الاستهلاك بعد كل نشر وكل أسبوع في البداية: Firebase Console ← Usage and billing، وGoogle Cloud Console ← Billing ← Reports.
+
+ما يُتوقع أن يكلّف (عادةً ضمن الحصة المجانية لمدرسة بحجمنا):
+
+- **Cloud Storage**: حجم ملفات التسجيلات وتنزيلها (سماعها). هذا أول ما سيكبر مع الوقت.
+- **Firestore**: القراءات والكتابات. القوائم الحيّة (streams) تقرأ عند كل تغيير.
+- **Cloud Functions وCloud Run**: عدد الاستدعاءات ووقتها. `maxInstances` محدد بـ 10 لكل دالة.
+- **Cloud Build وArtifact Registry**: عند كل نشر للدوال تُبنى صورة جديدة. سياسة الحذف بعد يوم تمنع تراكم الصور.
+- **Cloud Scheduler**: وظيفة واحدة (`cleanupStalledUploads`).
+- **Hosting**: حجم موقع الويب والتنزيل منه.
+
+إذا وصل تنبيه الميزانية: افتح Billing ← Reports وانظر أي خدمة سببت الصرف قبل أي تغيير.
+
 ## قواعد Storage تقرأ من Firestore
 
 قواعد `storage.rules` تقرأ مستند التسجيل `recordings/{id}` من Firestore لتعرف من يحق له سماع الملف أو رفعه (cross-service rules).
@@ -19,10 +124,11 @@
 - **المقابل (trade-off):** الرابط لا تنتهي صلاحيته. من يحصل عليه (مثلاً طالب ينسخه ويرسله لغيره) يستطيع سماع الملف بدون تسجيل دخول، إلى أن يُلغى رمز الملف. القواعد تحمي الحصول على الرابط، لا الرابط بعد مشاركته.
 - **لإلغاء رابط تسرّب:** الكونسول ← Storage ← افتح الملف ← في تفاصيله "Access token" ← "Revoke". يتوقف الرابط القديم فوراً، والتطبيق يطلب رابطاً جديداً تلقائياً عند الخطأ.
 
-## الدوال الجديدة (Cloud Functions)
+## الدوال (Cloud Functions)
 
 كلها في `me-west1`:
 
+- دوال الحسابات (callable، يستدعيها التطبيق): `createUser`، `resetPassword`، `moveStudent`، `changeHalaqaTeacher`، `setUserDisabled`، `deleteHalaqa`، `deleteUser`، `updateUserProfile`.
 - `onRecordingDeleted`: عند حذف مستند تسجيل يحذف ملف الصوت من Storage وكل ملاحظاته (`feedback`).
 - `cleanupStalledUploads`: كل يوم الساعة 00:00 UTC يحذف التسجيلات التي مضى عليها أكثر من 24 ساعة ولا يوجد ملفها في Storage (رفع لم يكتمل).
 

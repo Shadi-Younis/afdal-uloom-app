@@ -8,37 +8,55 @@
 
 - Node مثبّت.
 - المشروع على Firebase جاهز (Authentication بالإيميل وكلمة السر، وFirestore).
+- الخلفية منشورة (`tool/deploy/deploy_backend.ps1`، انظر `DEPLOY_NOTES.md`)، حتى تعمل القواعد والدوال عند أول دخول.
+
+> المفتاح يعطي من يملكه صلاحية كاملة على المشروع. لا تضعه داخل مجلد المشروع، ولا ترسله لأحد، ولا تلصقه في أي محادثة. وكلمة سر المدير تكتبها أنت فقط، ولا تخبر بها أحداً (ولا Claude).
 
 ## الخطوات
 
-1. **تنزيل مفتاح الخدمة (Service Account Key):**
-   Firebase Console ← Project settings ← Service accounts ← **Generate new private key**.
-   احفظ الملف **خارج مجلد المشروع**، مثلاً `C:\keys\afdal-admin.json`. لا ترسله لأحد ولا ترفعه على Git.
+1. **أنشئ مجلداً للمفاتيح خارج المشروع** (مرة واحدة):
 
-2. **افتح نافذة PowerShell جديدة** في مجلد المشروع. لا تشغّل فيها الـ Emulators. السكربت يرفض العمل إذا وجد أي متغير ينتهي بـ `_EMULATOR_HOST`.
+   ```powershell
+   New-Item -ItemType Directory -Force C:\dev\secrets
+   ```
 
-3. **ثبّت السكربت:**
+2. **نزّل مفتاح الخدمة (Service Account Key):**
+   - افتح [Firebase Console](https://console.firebase.google.com/) ← مشروع **Afdal Al-Uloom**.
+   - رمز الترس ⚙ بجانب «Project Overview» ← **Project settings** ← تبويب **Service accounts**.
+   - اضغط **Generate new private key** ← ثم **Generate key**. يُنزَّل ملف JSON.
+   - انقل الملف إلى `C:\dev\secrets\` وسمّه `afdal-al-uloom-admin.json`، أي المسار الكامل:
+     `C:\dev\secrets\afdal-al-uloom-admin.json`. احذفه من مجلد التنزيلات.
+
+3. **افتح نافذة PowerShell جديدة** في مجلد المشروع `C:\dev\afdal-uloom-app`. لا تشغّل فيها الـ Emulators. السكربت يرفض العمل إذا وجد أي متغير ينتهي بـ `_EMULATOR_HOST`.
+
+4. **ثبّت السكربت:**
 
    ```powershell
    npm --prefix tool/bootstrap_admin ci
    ```
 
-4. **شغّله** مع مسار المفتاح وتأكيد اسم المشروع:
+5. **شغّله** مع مسار المفتاح وتأكيد اسم المشروع:
 
    ```powershell
-   npm --prefix tool/bootstrap_admin run bootstrap -- C:\keys\afdal-admin.json --confirm afdal-al-uloom
+   npm --prefix tool/bootstrap_admin run bootstrap -- C:\dev\secrets\afdal-al-uloom-admin.json --confirm afdal-al-uloom
    ```
 
-5. **أجب عن الأسئلة:**
-   - اسم المستخدم: 3 إلى 20 حرفاً من `a-z` و`0-9` و`.` و`_` و`-` (مثلاً `shadi`).
+6. **أجب عن الأسئلة:**
+   - اسم المستخدم: اختره بنفسك، 3 إلى 20 حرفاً من `a-z` و`0-9` و`.` و`_` و`-` (مثلاً `shadi`).
    - الاسم الكامل بالعربي.
-   - كلمة السر مرتين (6 إلى 64 حرفاً). لا تظهر على الشاشة ولا تُحفظ في سجل الأوامر.
+   - كلمة السر مرتين (6 إلى 64 حرفاً). اختر كلمة سر قوية: 12 حرفاً أو أكثر، فيها حروف وأرقام، ولا تستعملها في أي مكان آخر. لا تظهر على الشاشة أثناء الكتابة ولا تُحفظ في سجل الأوامر. احفظها في مدير كلمات سر.
 
    السكربت يرفض إذا كان اسم المستخدم موجوداً، أو إذا كان المفتاح لمشروع آخر.
 
-6. **بعد النجاح:**
-   - احذف ملف المفتاح من جهازك.
-   - ألغِ المفتاح: Google Cloud Console ← IAM & Admin ← Service Accounts ← حساب `firebase-adminsdk` ← Keys ← احذف المفتاح الذي استخدمته.
+7. **بعد النجاح مباشرة: احذف المفتاح وألغِه.**
+   - احذف الملف (هذا الأمر لا يمر بسلة المحذوفات):
+
+     ```powershell
+     Remove-Item C:\dev\secrets\afdal-al-uloom-admin.json
+     ```
+
+   - ألغِ المفتاح في الكونسول، لأن حذف الملف وحده لا يوقفه:
+     Firebase Console ← Project settings ← Service accounts ← رابط **Manage service account permissions** (يفتح Google Cloud Console) ← الحساب `firebase-adminsdk-...@afdal-al-uloom.iam.gserviceaccount.com` ← تبويب **Keys** ← المفتاح الذي أُنشئ اليوم (انظر تاريخ الإنشاء) ← رمز سلة المهملات ← **Delete**.
    - سجّل الدخول في التطبيق باسم المستخدم وكلمة السر.
 
 ## ماذا يفعل السكربت بالضبط
@@ -52,15 +70,15 @@
 
 لا يستطيع مدير أن يغيّر كلمة سر مدير آخر من التطبيق، ومن يعرف كلمة سره يغيّرها بنفسه من صفحة «حسابي». أما إذا نسي المدير كلمة سره، فيضع شادي له كلمة سر جديدة بالسكربت نفسه، على المشروع الحقيقي فقط، وبالضمانات نفسها (مفتاح الخدمة، و`--confirm afdal-al-uloom`، ولا Emulator):
 
-1. نفّذ الخطوات 1 إلى 3 أعلاه (المفتاح خارج المشروع، ونافذة PowerShell جديدة، وتثبيت السكربت).
+1. نفّذ الخطوات 1 إلى 4 أعلاه (مفتاح جديد خارج المشروع، ونافذة PowerShell جديدة، وتثبيت السكربت).
 2. شغّله مع اسم مستخدم المدير:
 
    ```powershell
-   npm --prefix tool/bootstrap_admin run bootstrap -- C:\keys\afdal-admin.json --confirm afdal-al-uloom --reset-password shadi
+   npm --prefix tool/bootstrap_admin run bootstrap -- C:\dev\secrets\afdal-al-uloom-admin.json --confirm afdal-al-uloom --reset-password shadi
    ```
 
 3. اكتب كلمة السر الجديدة مرتين (6 إلى 64 حرفاً). لا تظهر على الشاشة ولا تُحفظ في سجل الأوامر.
-4. بعد النجاح احذف المفتاح وألغِه كما في الخطوة 6، ثم سجّل الدخول بكلمة السر الجديدة.
+4. بعد النجاح احذف المفتاح وألغِه كما في الخطوة 7، ثم سجّل الدخول بكلمة السر الجديدة.
 
 ماذا يفعل هذا الوضع:
 
