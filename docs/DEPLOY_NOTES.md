@@ -37,6 +37,22 @@ powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_backend.ps1
 - **«How many days do you want to keep container images before they're deleted?»** (أول نشر للدوال فقط): أجب `1`. صور الدوال القديمة في Artifact Registry تُحذف بعد يوم فلا تكلّف.
 - في أول نشر يفعّل Firebase تلقائياً واجهات: Cloud Functions وCloud Build وArtifact Registry وCloud Run وEventarc وPub/Sub وCloud Scheduler.
 
+ما حدث فعلاً في أول نشر (10 أكتوبر 2026، الـ commit `84d93cc`)، للرجوع إليه إذا تكرر في مشروع جديد:
+
+1. **المحاولة 1** توقفت بالرسالة «Failed to verify the project has the correct IAM bindings … We failed to modify the IAM policy for the project» قبل نشر أي شيء، وطبعت ثلاثة أوامر `gcloud`. نفّذها شادي (مالك المشروع) في Cloud Shell:
+
+   ```bash
+   gcloud projects add-iam-policy-binding afdal-al-uloom --member=serviceAccount:service-650399473840@gcp-sa-pubsub.iam.gserviceaccount.com --role=roles/iam.serviceAccountTokenCreator --condition=None
+   gcloud projects add-iam-policy-binding afdal-al-uloom --member=serviceAccount:650399473840-compute@developer.gserviceaccount.com --role=roles/run.invoker --condition=None
+   gcloud projects add-iam-policy-binding afdal-al-uloom --member=serviceAccount:650399473840-compute@developer.gserviceaccount.com --role=roles/eventarc.eventReceiver --condition=None
+   ```
+
+   نفّذ الأوامر التي يطبعها Firebase أنت، لا هذه النسخة، إذا اختلف المشروع.
+2. **المحاولة 2** نشرت القواعد والفهارس و9 دوال، وفشلت `onRecordingDeleted` بخطأ Eventarc «Permission denied while using the Eventarc Service Agent … may take a few minutes». هنا ظهر سؤالا الـ IAM (y) وأيام الصور (1).
+3. **المحاولة 3** (بعد نحو 25 دقيقة) بلا أسئلة: نُشرت `onRecordingDeleted` وتخطى Firebase الباقي لأنه لم يتغير.
+
+انتبه: إذا فشل `firebase deploy` في منتصفه يطبع السكربت «Nothing was deployed»، مع أن بعض الأهداف ربما نُشرت. اقرأ مخرجات Firebase نفسها، ثم تحقق بـ `firebase functions:list --project afdal-al-uloom`. إعادة تشغيل السكربت آمنة: ما لم يتغير يُتخطّى.
+
 بعد النشر: الفهارس الجديدة تحتاج بضع دقائق حتى تُبنى. تابع حالتها في Firebase Console ← Firestore ← Indexes حتى تصبح كلها **Enabled**.
 
 ## نشر تطبيق الويب
