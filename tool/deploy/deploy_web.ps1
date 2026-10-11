@@ -32,7 +32,7 @@ try {
     Confirm-Deploy
 
     Invoke-Checked 'flutter build web --release' { flutter build web --release }
-    Invoke-Checked 'firebase deploy --only hosting' {
+    Invoke-FirebaseDeploy 'firebase deploy --only hosting' {
         firebase deploy --project $ProjectId --only hosting
     }
 

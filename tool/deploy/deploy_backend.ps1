@@ -50,7 +50,7 @@ try {
     Write-Host '  - how many days to keep container images: answer 1'
     Confirm-Deploy
 
-    Invoke-Checked "firebase deploy --only $targets" {
+    Invoke-FirebaseDeploy "firebase deploy --only $targets" {
         firebase deploy --project $ProjectId --only $targets
     }
 
