@@ -308,8 +308,48 @@ abstract final class AppStrings {
   static const recordedAtLabel = 'تاريخ التسجيل';
   static const uploadedByLabel = 'رُفع بواسطة';
   static const unreadFeedback = 'ملاحظة جديدة لم يقرأها الطالب';
-  static const feedbackTitle = 'ملاحظات المعلم';
+  static const feedbackTitle = 'ملاحظات الشيخ';
   static const noFeedback = 'لا توجد ملاحظات بعد';
+
+  // The sheikh's voice markers and notes (Task 09).
+  static const voiceNote = 'ملاحظة صوتية من الشيخ';
+
+  /// A span of the recording, e.g. "٠١:٢٣–٠١:٣١"; the clocks arrive
+  /// formatted.
+  static String timeRange(String from, String to) => '$from–$to';
+  static const analysisPending = 'جاري تحليل التسجيل…';
+  static const analysisMono =
+      'لم نجد قناة الشيخ منفصلة في هذا الملف (صُدِّر بدون يسار/يمين)، '
+      'يمكن إضافة الملاحظات يدوياً';
+  static const analysisFailed =
+      'تعذّر تحليل التسجيل، يمكن إضافة الملاحظات يدوياً';
+  static const nextMarker = 'التالي';
+  static const previousMarker = 'السابق';
+  static const addNoteHere = 'إضافة ملاحظة هنا';
+  static const reviewedToggle = 'تمت المراجعة';
+  static const newNoteTitle = 'ملاحظة جديدة';
+  static const editNoteTitle = 'تعديل الملاحظة';
+  static const addTextToVoice = 'إضافة نص';
+  static const editNote = 'تعديل';
+  static const deleteNote = 'حذف الملاحظة';
+  static const deleteNoteConfirm = 'ستُحذف هذه الملاحظة نهائياً.';
+  static const noteLabel = 'الملاحظة';
+  static const noteRequired = 'اكتب الملاحظة';
+  /// [max] arrives in Arabic-Indic digits.
+  static String noteTooLong(String max) => 'الملاحظة $max حرفاً على الأكثر';
+  static const ratingOptional = 'التقييم (اختياري)';
+  static const clearRating = 'بلا تقييم';
+
+  /// [stars] arrives in Arabic-Indic digits.
+  static String rateStars(String stars) => 'تقييم $stars';
+  static const noteSaved = 'تم حفظ الملاحظة';
+  static const noteDeleted = 'تم حذف الملاحظة';
+  static const markersLabel = 'مواضع ملاحظات الشيخ';
+
+  /// [count] arrives in Arabic-Indic digits.
+  static String markerCount(String count) => 'الملاحظات: $count';
+  static const reviewedChip = 'تمت مراجعته';
+  static const notReviewedChip = 'بانتظار المراجعة';
 
   /// A note about a moment of the recording, e.g. "عند ٠١:٢٣".
   static String atTime(String clock) => 'عند $clock';

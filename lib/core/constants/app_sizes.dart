@@ -91,4 +91,13 @@ abstract final class AppSizes {
 
   /// The back / forward 5 s icons.
   static const skipIcon = 30.0;
+
+  /// A marker of the sheikh on the seek bar (IslamicStar), the lane of
+  /// markers above the bar, and the gold band of a voice marker's span.
+  static const markerStar = 18.0;
+  static const markerLane = 26.0;
+  static const markerBand = 14.0;
+
+  /// The tappable width around a marker's star.
+  static const markerHitWidth = 32.0;
 }

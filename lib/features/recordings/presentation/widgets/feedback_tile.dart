@@ -11,13 +11,97 @@ import '../../../../core/widgets/islamic/app_card.dart';
 import '../../application/recording_details_providers.dart';
 import 'rating_stars.dart';
 
-/// One teacher note, as a white card with a gold bar on its start side:
-/// the teacher and the date, "عند ٠١:٢٣" when it is about a moment of the
-/// recording (tapping it calls [onSeek]), the stars when rated, the text.
-/// Students see "المعلم" instead of the teacher's name (they may not read
-/// teachers' profiles); a deleted teacher shows as "معلم سابق".
+/// One note, as a white card with a gold bar on its start side.
+///
+/// A voice marker (the sheikh spoke there): «ملاحظة صوتية من الشيخ ·
+/// ٠١:٢٣–٠١:٣١», then the text the teacher added, if any; tapping the card
+/// plays from there ([onSeek]). A written note: the teacher and the date,
+/// "عند ٠١:٢٣" when it is about a moment (tapping it calls [onSeek]), the
+/// stars when rated, the text. Students see "المعلم" instead of the
+/// teacher's name (they may not read teachers' profiles); a deleted
+/// teacher shows as "معلم سابق". [actions] (edit, delete) go at the end of
+/// the first line.
 class FeedbackTile extends ConsumerWidget {
-  const FeedbackTile({super.key, required this.note, required this.onSeek});
+  const FeedbackTile({
+    super.key,
+    required this.note,
+    required this.onSeek,
+    this.actions,
+  });
+
+  final FeedbackNote note;
+  final ValueChanged<Duration> onSeek;
+  final Widget? actions;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final atSecond = note.atSecond;
+    final rating = note.rating;
+    final header = note.isVoice
+        ? _VoiceHeader(note: note)
+        : _TextHeader(note: note, onSeek: onSeek);
+    return AppCard(
+      accent: true,
+      onTap: note.isVoice && atSecond != null
+          ? () => onSeek(Duration(seconds: atSecond))
+          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(child: header),
+              ?actions,
+            ],
+          ),
+          if (note.isVoice && rating != null) RatingStars(rating: rating),
+          if (note.note.isNotEmpty) ...[
+            const SizedBox(height: AppSizes.spaceXS),
+            Text(note.note, style: theme.textTheme.bodyLarge),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// «ملاحظة صوتية من الشيخ · ٠١:٢٣–٠١:٣١».
+class _VoiceHeader extends StatelessWidget {
+  const _VoiceHeader({required this.note});
+
+  final FeedbackNote note;
+
+  @override
+  Widget build(BuildContext context) {
+    final start = Duration(seconds: note.atSecond ?? 0);
+    final end = note.endSecond;
+    final time = end == null
+        ? formatClock(start)
+        : AppStrings.timeRange(
+            formatClock(start),
+            formatClock(Duration(seconds: end)),
+          );
+    return Row(
+      children: [
+        const Icon(Icons.record_voice_over_outlined, color: AppColors.goldDark),
+        const SizedBox(width: AppSizes.spaceXS),
+        Flexible(
+          child: Text(
+            '${AppStrings.voiceNote}${AppStrings.detailSeparator}$time',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: AppColors.goldDark,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The teacher and the date, "عند ٠١:٢٣" and the stars.
+class _TextHeader extends ConsumerWidget {
+  const _TextHeader({required this.note, required this.onSeek});
 
   final FeedbackNote note;
   final ValueChanged<Duration> onSeek;
@@ -30,46 +114,36 @@ class FeedbackTile extends ConsumerWidget {
     final author =
         ref.watch(personNameProvider(noteAuthor(note.teacherId))).value ??
         AppStrings.roleTeacher;
-    return AppCard(
-      accent: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Wrap(
-            spacing: AppSizes.spaceS,
-            runSpacing: AppSizes.spaceXS,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                '$author${AppStrings.detailSeparator}${formatDay(note.createdAt)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (atSecond != null)
-                ActionChip(
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: AppColors.goldTint,
-                  side: BorderSide.none,
-                  avatar: const Icon(
-                    Icons.play_circle_outline,
-                    color: AppColors.goldDark,
-                  ),
-                  label: Text(
-                    AppStrings.atTime(formatClock(Duration(seconds: atSecond))),
-                  ),
-                  labelStyle: theme.textTheme.labelMedium?.copyWith(
-                    color: AppColors.goldDark,
-                  ),
-                  onPressed: () => onSeek(Duration(seconds: atSecond)),
-                ),
-              if (rating != null) RatingStars(rating: rating),
-            ],
+    return Wrap(
+      spacing: AppSizes.spaceS,
+      runSpacing: AppSizes.spaceXS,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          '$author${AppStrings.detailSeparator}${formatDay(note.createdAt)}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppSizes.spaceXS),
-          Text(note.note, style: theme.textTheme.bodyLarge),
-        ],
-      ),
+        ),
+        if (atSecond != null)
+          ActionChip(
+            visualDensity: VisualDensity.compact,
+            backgroundColor: AppColors.goldTint,
+            side: BorderSide.none,
+            avatar: const Icon(
+              Icons.play_circle_outline,
+              color: AppColors.goldDark,
+            ),
+            label: Text(
+              AppStrings.atTime(formatClock(Duration(seconds: atSecond))),
+            ),
+            labelStyle: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.goldDark,
+            ),
+            onPressed: () => onSeek(Duration(seconds: atSecond)),
+          ),
+        if (rating != null) RatingStars(rating: rating),
+      ],
     );
   }
 }

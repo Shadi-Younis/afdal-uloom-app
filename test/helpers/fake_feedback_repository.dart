@@ -39,6 +39,13 @@ class FakeFeedbackRepository implements FeedbackRepository {
     yield* _changed.stream.map((_) => _read(recordingId));
   }
 
+  /// Replaces the notes of [recordingId], as the server or another device
+  /// would; every open stream emits again.
+  void put(String recordingId, List<FeedbackNote> list) {
+    notes[recordingId] = [...list];
+    _changed.add(null);
+  }
+
   List<FeedbackNote> _read(String recordingId) =>
       List.unmodifiable(notes[recordingId] ?? const <FeedbackNote>[]);
 

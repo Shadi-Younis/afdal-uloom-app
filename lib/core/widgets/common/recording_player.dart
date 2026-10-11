@@ -10,18 +10,30 @@ import '../islamic/app_card.dart';
 import '../islamic/error_state.dart';
 import 'playback_speed_selector.dart';
 import 'player_controls.dart';
+import 'player_marker.dart';
 import 'player_seek_bar.dart';
 
-/// Plays the recording stored at [storagePath]: seek bar with times,
-/// back / play-pause / forward, and the speed. Shows loading and Arabic
-/// errors (with retry). Stops when it leaves the screen.
+/// Plays the recording stored at [storagePath]: seek bar with times and
+/// [markers], back / play-pause / forward, the speed, and [footer] (e.g.
+/// buttons that jump between markers). Tapping a marker jumps there and
+/// plays. Shows loading and Arabic errors (with retry). Stops when it
+/// leaves the screen.
 ///
 /// To seek from outside (e.g. a note's "at ٠١:٢٣"), or to read the current
 /// position, use `recordingPlayerControllerProvider(storagePath)`.
 class RecordingPlayer extends ConsumerWidget {
-  const RecordingPlayer({super.key, required this.storagePath});
+  const RecordingPlayer({
+    super.key,
+    required this.storagePath,
+    this.markers = const [],
+    this.footer,
+  });
 
   final String storagePath;
+  final List<PlayerMarker> markers;
+
+  /// Shown under the controls once the audio is loaded.
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,6 +54,11 @@ class RecordingPlayer extends ConsumerWidget {
               position: state.position,
               duration: state.duration,
               onSeek: controller.seek,
+              markers: markers,
+              onMarkerTap: (marker) async {
+                await controller.seek(marker.start);
+                await controller.play();
+              },
             ),
             const SizedBox(height: AppSizes.spaceS),
             PlayerControls(
@@ -56,6 +73,10 @@ class RecordingPlayer extends ConsumerWidget {
               speed: state.speed,
               onChanged: controller.setSpeed,
             ),
+            if (footer case final footer?) ...[
+              const SizedBox(height: AppSizes.spaceS),
+              footer,
+            ],
           ],
         ),
       },
