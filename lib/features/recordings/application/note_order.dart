@@ -46,10 +46,7 @@ Duration? nextMarkerAfter(Duration position, List<PlayerMarker> markers) {
 
 /// Where «السابق» goes from [position]: the last marker before it (just
 /// past a marker's start, the one before that), or null before the first.
-Duration? previousMarkerBefore(
-  Duration position,
-  List<PlayerMarker> markers,
-) {
+Duration? previousMarkerBefore(Duration position, List<PlayerMarker> markers) {
   for (final marker in markers.reversed) {
     if (marker.start < position - AppDurations.previousMarkerTolerance) {
       return marker.start;

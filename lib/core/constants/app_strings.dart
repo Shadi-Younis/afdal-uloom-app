@@ -335,6 +335,7 @@ abstract final class AppStrings {
   static const deleteNoteConfirm = 'ستُحذف هذه الملاحظة نهائياً.';
   static const noteLabel = 'الملاحظة';
   static const noteRequired = 'اكتب الملاحظة';
+
   /// [max] arrives in Arabic-Indic digits.
   static String noteTooLong(String max) => 'الملاحظة $max حرفاً على الأكثر';
   static const ratingOptional = 'التقييم (اختياري)';

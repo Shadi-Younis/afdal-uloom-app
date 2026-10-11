@@ -26,9 +26,8 @@ class ReviewedToggle extends ConsumerWidget {
         selected: recording.reviewed,
         onSelected: busy
             ? null
-            : (reviewed) => ref
-                  .read(provider.notifier)
-                  .setReviewed(reviewed: reviewed),
+            : (reviewed) =>
+                  ref.read(provider.notifier).setReviewed(reviewed: reviewed),
       ),
     );
   }

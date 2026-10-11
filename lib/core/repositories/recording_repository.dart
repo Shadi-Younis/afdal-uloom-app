@@ -31,10 +31,7 @@ abstract class RecordingRepository {
   /// markers the sheikh has not checked, practice ones not listened to.
   ///
   /// Allowed for: the teacher themself and admins.
-  Stream<List<Recording>> watchUnreviewed(
-    String teacherId,
-    RecordingType type,
-  );
+  Stream<List<Recording>> watchUnreviewed(String teacherId, RecordingType type);
 
   /// The recordings of [teacherId] recorded at [since] or later, newest
   /// `recordedAt` first.

@@ -20,10 +20,7 @@ class AnalysisBanner extends StatelessWidget {
     final (icon, text) = switch (notice) {
       AnalysisNotice.pending => (null, AppStrings.analysisPending),
       AnalysisNotice.mono => (Icons.info_outline, AppStrings.analysisMono),
-      AnalysisNotice.failed => (
-        Icons.error_outline,
-        AppStrings.analysisFailed,
-      ),
+      AnalysisNotice.failed => (Icons.error_outline, AppStrings.analysisFailed),
     };
     return AppCard(
       margin: const EdgeInsets.only(bottom: AppSizes.spaceS),

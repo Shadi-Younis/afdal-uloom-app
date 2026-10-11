@@ -46,7 +46,8 @@ class NoteActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final busy = ref.watch(recordingManageControllerProvider(recordingId))
+    final busy = ref
+        .watch(recordingManageControllerProvider(recordingId))
         .isLoading;
     final addText = note.isVoice && note.note.isEmpty;
     return Row(

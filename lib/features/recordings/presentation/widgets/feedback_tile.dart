@@ -89,9 +89,8 @@ class _VoiceHeader extends StatelessWidget {
         Flexible(
           child: Text(
             '${AppStrings.voiceNote}${AppStrings.detailSeparator}$time',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppColors.goldDark,
-            ),
+            style: Theme.of(context).textTheme.labelLarge
+                ?.copyWith(color: AppColors.goldDark),
           ),
         ),
       ],
