@@ -32,9 +32,15 @@ abstract final class AppSizes {
   /// Forms and details pages stay this narrow on wide screens.
   static const contentMaxWidth = 640.0;
 
+  /// Material's floating action button: its height (also extended) and its
+  /// distance from the bottom of the page.
+  static const fabHeight = 56.0;
+  static const fabMargin = 16.0;
+
   /// Room under a list so the floating action button never hides its last
-  /// item.
-  static const fabClearance = 88.0;
+  /// item: the button, its margin and a clear gap above it (its shadow
+  /// alone made the last card look covered).
+  static const fabClearance = fabHeight + fabMargin + spaceL;
 
   /// The icon of an empty state.
   static const emptyIcon = 56.0;
