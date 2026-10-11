@@ -4,7 +4,7 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../application/student_summary.dart';
 import 'account_info.dart';
-import 'content_width.dart';
+import '../../../../core/widgets/common/content_width.dart';
 import 'danger_section.dart';
 import 'delete_student_button.dart';
 import 'disable_account_button.dart';

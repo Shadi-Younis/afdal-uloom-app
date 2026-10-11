@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/models/app_user.dart';
+import '../../constants/app_strings.dart';
+import '../../models/app_user.dart';
 import 'disabled_chip.dart';
 
 /// A student in a list: name, code and (unless [halaqaName] is null) the

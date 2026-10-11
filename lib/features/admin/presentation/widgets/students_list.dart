@@ -9,7 +9,7 @@ import '../../../../core/widgets/islamic/app_card.dart';
 import '../../../../core/widgets/islamic/empty_state.dart';
 import '../../application/students_filter_controller.dart';
 import 'admin_async_view.dart';
-import 'student_tile.dart';
+import '../../../../core/widgets/common/student_tile.dart';
 
 /// The students that match the search and halaqa filter.
 class StudentsList extends ConsumerWidget {

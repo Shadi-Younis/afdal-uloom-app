@@ -6,7 +6,7 @@ import '../../../core/widgets/islamic/home_header.dart';
 import '../../../core/widgets/islamic/islamic_pattern_background.dart';
 import '../../../core/widgets/islamic/ornament_divider.dart';
 import '../../../core/widgets/islamic/ornate_header.dart';
-import 'widgets/content_width.dart';
+import '../../../core/widgets/common/content_width.dart';
 import 'widgets/home_shortcuts.dart';
 import 'widgets/overview_cards.dart';
 

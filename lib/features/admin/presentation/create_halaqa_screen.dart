@@ -11,7 +11,7 @@ import '../application/admin_data_providers.dart';
 import 'widgets/admin_async_view.dart';
 import '../../../core/widgets/islamic/app_card.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
-import 'widgets/content_width.dart';
+import '../../../core/widgets/common/content_width.dart';
 import 'widgets/halaqa_form.dart';
 
 /// Creates a halaqa, then opens it (to add its students next).

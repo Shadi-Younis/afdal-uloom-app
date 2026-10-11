@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../application/teacher_summary.dart';
-import 'disabled_chip.dart';
+import '../../../../core/widgets/common/disabled_chip.dart';
 
 /// A teacher in the list: name, username, their halaqat, and "موقوف" when
 /// disabled.

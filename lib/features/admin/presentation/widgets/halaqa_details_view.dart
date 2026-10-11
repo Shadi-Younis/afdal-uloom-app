@@ -7,13 +7,13 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/arabic_digits.dart';
 import '../../application/halaqa_summary.dart';
 import 'change_teacher_button.dart';
-import 'content_width.dart';
+import '../../../../core/widgets/common/content_width.dart';
 import 'danger_section.dart';
 import 'delete_halaqa_button.dart';
 import 'info_row.dart';
 import 'rename_halaqa_button.dart';
 import 'section_card.dart';
-import 'student_tile.dart';
+import '../../../../core/widgets/common/student_tile.dart';
 
 /// The content of the halaqa details page.
 class HalaqaDetailsView extends StatelessWidget {

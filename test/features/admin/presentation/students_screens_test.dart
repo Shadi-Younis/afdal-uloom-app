@@ -1,7 +1,7 @@
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/common/confirm_dialog.dart';
 import 'package:afdal_uloom_tilawat/features/admin/presentation/widgets/credentials_sheet.dart';
-import 'package:afdal_uloom_tilawat/features/admin/presentation/widgets/student_tile.dart';
+import 'package:afdal_uloom_tilawat/core/widgets/common/student_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
