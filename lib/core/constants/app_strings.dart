@@ -95,7 +95,7 @@ abstract final class AppStrings {
   // Admin navigation
   static const adminNavHome = 'الرئيسية';
   static const adminNavHalaqat = 'الحلقات';
-  static const adminNavTeachers = 'المعلمون';
+  static const adminNavTeachers = 'المعلمين';
   static const adminNavStudents = 'الطلاب';
 
   // Admin home
@@ -223,7 +223,7 @@ abstract final class AppStrings {
   static const profileUpdated = 'تم حفظ التعديلات';
 
   // Admins
-  static const adminsTitle = 'المديرون';
+  static const adminsTitle = 'المدراء';
   static const addAdmin = 'إضافة مدير';
   static const newAdminTitle = 'مدير جديد';
   static const adminCreated = 'تمت إضافة المدير';

@@ -93,7 +93,7 @@ void main() {
         200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('المديرون'), findsOneWidget);
+      expect(find.text('المدراء'), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       await tester.tap(find.text('شادي'));

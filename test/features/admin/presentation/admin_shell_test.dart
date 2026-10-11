@@ -29,7 +29,7 @@ void main() {
 
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
-    for (final label in ['الرئيسية', 'الحلقات', 'المعلمون', 'الطلاب']) {
+    for (final label in ['الرئيسية', 'الحلقات', 'المعلمين', 'الطلاب']) {
       expect(
         find.descendant(
           of: find.byType(NavigationBar),
@@ -53,7 +53,7 @@ void main() {
 
     for (final (label, screen, path) in [
       ('الحلقات', HalaqatScreen, '/admin/halaqat'),
-      ('المعلمون', TeachersScreen, '/admin/teachers'),
+      ('المعلمين', TeachersScreen, '/admin/teachers'),
       ('الطلاب', StudentsScreen, '/admin/students'),
       ('الرئيسية', AdminHomeScreen, '/admin'),
     ]) {
@@ -79,7 +79,7 @@ void main() {
     expect(tester.getRect(rail).left, greaterThan(1280 / 2));
 
     await tester.tap(
-      find.descendant(of: rail, matching: find.text('المعلمون')),
+      find.descendant(of: rail, matching: find.text('المعلمين')),
     );
     await tester.pumpAndSettle();
     expect(find.byType(TeachersScreen), findsOneWidget);
