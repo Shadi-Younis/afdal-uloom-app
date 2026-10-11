@@ -48,8 +48,32 @@ class FakeRecordingRepository implements RecordingRepository {
   );
 
   @override
-  Stream<List<Recording>> watchPendingPractice(String teacherId) =>
-      throw UnimplementedError();
+  Stream<List<Recording>> watchUnreviewed(
+    String teacherId,
+    RecordingType type,
+  ) => _live(
+    () =>
+        recordings.values
+            .where(
+              (r) => r.teacherId == teacherId && r.type == type && !r.reviewed,
+            )
+            .toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+  );
+
+  @override
+  Stream<List<Recording>> watchForTeacherSince(
+    String teacherId,
+    DateTime since,
+  ) => _live(
+    () =>
+        recordings.values
+            .where(
+              (r) => r.teacherId == teacherId && !r.recordedAt.isBefore(since),
+            )
+            .toList()
+          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt)),
+  );
 
   @override
   Stream<Recording?> watch(String id) => _live(() => recordings[id]);
@@ -83,8 +107,15 @@ class FakeRecordingRepository implements RecordingRepository {
   @override
   Future<void> markFeedbackRead(String id) => throw UnimplementedError();
 
+  /// Every setReviewed call, in order.
+  final reviewedCalls = <(String id, bool reviewed)>[];
+
   @override
-  Future<void> markReviewed(String id) => throw UnimplementedError();
+  Future<void> setReviewed(String id, {required bool reviewed}) async {
+    reviewedCalls.add((id, reviewed));
+    final recording = recordings[id];
+    if (recording != null) put(recording.copyWith(reviewed: reviewed));
+  }
 
   @override
   Future<void> delete(String id) async {

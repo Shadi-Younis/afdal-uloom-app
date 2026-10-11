@@ -12,4 +12,8 @@ void main() {
       'recordings/s1/r1.m4a',
     );
   });
+
+  test('the playback copy sits next to the recording', () {
+    expect(StoragePaths.playback('s1', 'r1'), 'recordings/s1/r1.play.mp3');
+  });
 }

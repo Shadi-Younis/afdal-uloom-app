@@ -1,4 +1,6 @@
+import 'package:afdal_uloom_tilawat/core/models/analysis_status.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording.dart';
+import 'package:afdal_uloom_tilawat/core/models/recording_analysis.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -53,6 +55,37 @@ void main() {
     expect(Recording.fromMap('r1', recording.toMap()), recording);
     final noDuration = build(durationSec: null);
     expect(Recording.fromMap('r1', noDuration.toMap()), noDuration);
+  });
+
+  test('analysis and playbackPath: absent until the server writes them', () {
+    final uploaded = build();
+    expect(uploaded.analysis, isNull);
+    expect(uploaded.playablePath, 'recordings/s1/r1.mp3');
+
+    final analysed = uploaded.copyWith(
+      analysis: RecordingAnalysis(status: AnalysisStatus.done, segmentCount: 2),
+      playbackPath: 'recordings/s1/r1.play.mp3',
+    );
+    expect(analysed.playablePath, 'recordings/s1/r1.play.mp3');
+    expect(analysed.toMap()['analysis'], {'status': 'done', 'segmentCount': 2});
+    expect(Recording.fromMap('r1', analysed.toMap()), analysed);
+    expect(analysed, isNot(uploaded));
+
+    final failed = uploaded.copyWith(
+      analysis: RecordingAnalysis(
+        status: AnalysisStatus.failed,
+        error: 'decode',
+      ),
+    );
+    expect(Recording.fromMap('r1', failed.toMap()), failed);
+  });
+
+  test('an unknown analysis status throws FormatException', () {
+    final map = {
+      ...build().toMap(),
+      'analysis': {'status': 'thinking'},
+    };
+    expect(() => Recording.fromMap('r1', map), throwsFormatException);
   });
 
   test('missing required field throws FormatException', () {

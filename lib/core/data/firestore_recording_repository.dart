@@ -31,12 +31,29 @@ class FirestoreRecordingRepository implements RecordingRepository {
   }
 
   @override
-  Stream<List<Recording>> watchPendingPractice(String teacherId) => _watchList(
+  Stream<List<Recording>> watchUnreviewed(
+    String teacherId,
+    RecordingType type,
+  ) => _watchList(
     _recordings
         .where(Fields.teacherId, isEqualTo: teacherId)
-        .where(Fields.type, isEqualTo: RecordingType.practice.value)
+        .where(Fields.type, isEqualTo: type.value)
         .where(Fields.reviewed, isEqualTo: false)
         .orderBy(Fields.createdAt),
+  );
+
+  @override
+  Stream<List<Recording>> watchForTeacherSince(
+    String teacherId,
+    DateTime since,
+  ) => _watchList(
+    _recordings
+        .where(Fields.teacherId, isEqualTo: teacherId)
+        .where(
+          Fields.recordedAt,
+          isGreaterThanOrEqualTo: Timestamp.fromDate(since),
+        )
+        .orderBy(Fields.recordedAt, descending: true),
   );
 
   @override
@@ -65,8 +82,8 @@ class FirestoreRecordingRepository implements RecordingRepository {
       guard(() => _doc(id).update({Fields.unreadFeedback: false}));
 
   @override
-  Future<void> markReviewed(String id) =>
-      guard(() => _doc(id).update({Fields.reviewed: true}));
+  Future<void> setReviewed(String id, {required bool reviewed}) =>
+      guard(() => _doc(id).update({Fields.reviewed: reviewed}));
 
   @override
   Future<void> delete(String id) => guard(() => _doc(id).delete());

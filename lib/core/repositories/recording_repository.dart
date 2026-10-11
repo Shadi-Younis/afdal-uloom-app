@@ -1,5 +1,6 @@
 import '../errors/app_exception.dart';
 import '../models/recording.dart';
+import '../models/recording_type.dart';
 
 /// Reads and manages recordings (`recordings/{id}`). The audio file itself
 /// lives in Storage and is handled by a separate service.
@@ -25,11 +26,24 @@ abstract class RecordingRepository {
     String? teacherId,
   });
 
-  /// Practice recordings for [teacherId] that are not reviewed yet, oldest
-  /// `createdAt` first (the review queue).
+  /// The recordings of [type] for [teacherId] that are not reviewed yet,
+  /// oldest `createdAt` first (the review queue): official ones whose voice
+  /// markers the sheikh has not checked, practice ones not listened to.
   ///
   /// Allowed for: the teacher themself and admins.
-  Stream<List<Recording>> watchPendingPractice(String teacherId);
+  Stream<List<Recording>> watchUnreviewed(
+    String teacherId,
+    RecordingType type,
+  );
+
+  /// The recordings of [teacherId] recorded at [since] or later, newest
+  /// `recordedAt` first.
+  ///
+  /// Allowed for: the teacher themself and admins.
+  Stream<List<Recording>> watchForTeacherSince(
+    String teacherId,
+    DateTime since,
+  );
 
   /// The recording [id], then every change; null once it does not exist
   /// (only when the server confirms it, never from the offline cache).
@@ -50,9 +64,9 @@ abstract class RecordingRepository {
   /// [newId]. `createdAt` is set to the server time; the value in
   /// [recording] is ignored.
   ///
-  /// Allowed for: a teacher (official, for a student in their halaqa,
-  /// `reviewed: true`), a student (practice, for themself,
-  /// `reviewed: false`) and admins. Both start with `unreadFeedback: false`.
+  /// Allowed for: a teacher (official, for a student in their halaqa), a
+  /// student (practice, for themself) and admins; both start
+  /// `reviewed: false`. Both start with `unreadFeedback: false`.
   /// The halaqaId and teacherId must match the student's halaqa, and the
   /// storagePath must be `recordings/{studentId}/{id}.{ext}`, otherwise
   /// `AppErrorCode.permissionDenied`.
@@ -64,10 +78,10 @@ abstract class RecordingRepository {
   /// admins).
   Future<void> markFeedbackRead(String id);
 
-  /// Sets `reviewed` to true.
+  /// Sets `reviewed` («تمت المراجعة»), both ways.
   ///
   /// Allowed for: the teacher of the recording and admins.
-  Future<void> markReviewed(String id);
+  Future<void> setReviewed(String id, {required bool reviewed});
 
   /// Deletes the document only. The audio file and the feedback
   /// subcollection are cleaned up by a Cloud Function (later task).
