@@ -101,6 +101,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('after a change every field is empty and hidden again', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await openFromHome(tester);
+    const labels = [
+      'كلمة السر الحالية',
+      'كلمة السر الجديدة',
+      'تأكيد كلمة السر الجديدة',
+    ];
+    // Show all three passwords first.
+    for (final label in labels) {
+      final eye = find.descendant(
+        of: field(label),
+        matching: find.byTooltip('إظهار كلمة السر'),
+      );
+      await tester.ensureVisible(eye);
+      await tester.tap(eye);
+      await tester.pump();
+    }
+    expect(find.byTooltip('إظهار كلمة السر'), findsNothing);
+
+    await fill(tester, 'test1234', 'new-pass-1');
+
+    for (final label in labels) {
+      final input = tester.widget<TextField>(field(label));
+      expect(input.controller!.text, isEmpty, reason: label);
+      expect(input.obscureText, isTrue, reason: label);
+    }
+    expect(find.byTooltip('إظهار كلمة السر'), findsNWidgets(3));
+    expect(find.byTooltip('إخفاء كلمة السر'), findsNothing);
+  });
+
   testWidgets('a wrong current password: under that field', (tester) async {
     school.auth.changePasswordError = const AppException(
       AppErrorCode.wrongPassword,

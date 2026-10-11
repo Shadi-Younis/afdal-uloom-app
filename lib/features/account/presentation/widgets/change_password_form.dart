@@ -14,8 +14,8 @@ import '../../application/change_password_state.dart';
 import 'account_password_field.dart';
 
 /// "تغيير كلمة السر" for the signed-in user: current password, new one and
-/// its confirmation. On success the fields empty and a SnackBar confirms;
-/// the user stays signed in.
+/// its confirmation. On success the fields empty, every one hidden again,
+/// and a SnackBar confirms; the user stays signed in.
 class ChangePasswordForm extends ConsumerStatefulWidget {
   const ChangePasswordForm({super.key});
 
@@ -27,6 +27,10 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
   final _current = TextEditingController();
   final _next = TextEditingController();
   final _confirm = TextEditingController();
+
+  // Bumped after a successful change: the fields get new keys, so each
+  // one's show / hide toggle starts hidden again.
+  var _generation = 0;
 
   ChangePasswordController get _controller =>
       ref.read(changePasswordControllerProvider.notifier);
@@ -47,9 +51,12 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
       confirm: _confirm.text,
     );
     if (!changed || !mounted) return;
-    for (final c in [_current, _next, _confirm]) {
-      c.clear();
-    }
+    setState(() {
+      for (final c in [_current, _next, _confirm]) {
+        c.clear();
+      }
+      _generation++;
+    });
     showAppSnackBar(context, AppStrings.passwordReset);
   }
 
@@ -63,6 +70,7 @@ class _ChangePasswordFormState extends ConsumerState<ChangePasswordForm> {
       TextEditingController controller,
       String label,
     ) => AccountPasswordField(
+      key: ValueKey((input, _generation)),
       controller: controller,
       label: label,
       enabled: enabled,
