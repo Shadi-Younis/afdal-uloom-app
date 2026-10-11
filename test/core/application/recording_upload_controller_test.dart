@@ -90,7 +90,8 @@ void main() {
       expect(doc.storagePath, 'recordings/s001/new-1.mp3');
       expect(doc.uploadedBy, 't01');
       expect(doc.studentId, 's001');
-      expect(doc.reviewed, isTrue);
+      // Waits for the sheikh to check its voice markers.
+      expect(doc.reviewed, isFalse);
       expect(doc.unreadFeedback, isFalse);
       final upload = storage.lastUpload;
       expect(upload.storagePath, 'recordings/s001/new-1.mp3');

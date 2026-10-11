@@ -137,6 +137,8 @@ service cloud.firestore {
     match /recordings/{recordingId} {
       // Checks for every create, whoever the caller: shape, ranges, path,
       // and that studentId / halaqaId / teacherId agree with each other.
+      // `analysis` and `playbackPath` are not among the keys: only the
+      // server (onRecordingUploaded) writes them.
       function isValidNewRecording(data) {
         let required = ['studentId', 'halaqaId', 'teacherId', 'uploadedBy',
           'type', 'surahNumber', 'ayahFrom', 'ayahTo', 'storagePath',
@@ -168,12 +170,14 @@ service cloud.firestore {
           && get(halaqaPath(data.halaqaId)).data.teacherId == data.teacherId;
       }
 
+      // An official recording waits for the sheikh to check its voice
+      // markers («تمت المراجعة»), so it starts unreviewed.
       function isTeacherUpload(data) {
         return isTeacher()
           && data.teacherId == request.auth.uid
           && data.type == 'official'
           && data.unreadFeedback == false
-          && data.reviewed == true;
+          && data.reviewed == false;
       }
 
       function isStudentPractice(data) {
@@ -219,28 +223,49 @@ service cloud.firestore {
           return get(/databases/$(database)/documents/recordings/$(recordingId)).data;
         }
 
+        // The recording's teacher (also after a halaqa changed teacher:
+        // the notes keep their author) and admins manage every note.
+        function canManage() {
+          return isAdmin() || (isTeacher() && recording().teacherId == request.auth.uid);
+        }
+
+        function isValidRating(data) {
+          return data.get('rating', null) == null || isIntInRange(data.rating, 1, 5);
+        }
+
+        // A written note. Voice markers (kind 'voice') come only from the
+        // server, which finds them in the sheikh's channel.
         function isValidNote(data) {
-          return data.keys().hasAll(['teacherId', 'note', 'createdAt'])
-            && data.keys().hasOnly(['teacherId', 'note', 'atSecond', 'rating', 'createdAt'])
+          return data.keys().hasAll(['teacherId', 'note', 'kind', 'createdAt'])
+            && data.keys().hasOnly(['teacherId', 'note', 'kind', 'atSecond', 'rating', 'createdAt'])
             && data.teacherId == request.auth.uid
+            && data.kind == 'text'
             && isStringOfLength(data.note, 1, 2000)
             && (data.get('atSecond', null) == null || isIntInRange(data.atSecond, 0, 36000))
-            && (data.get('rating', null) == null || isIntInRange(data.rating, 1, 5))
+            && isValidRating(data)
             && data.createdAt == request.time;
+        }
+
+        // Text and rating only. A voice marker's text may be emptied again;
+        // a written note keeps at least one character.
+        function isValidEdit(data) {
+          return onlyChanged(['note', 'rating', 'updatedAt'])
+            && (isStringOfLength(data.note, 1, 2000)
+                || (resource.data.get('kind', 'text') == 'voice'
+                    && isStringOfLength(data.note, 0, 2000)))
+            && isValidRating(data)
+            && data.updatedAt == request.time;
         }
 
         allow read: if isAdmin()
           || (isTeacher() && recording().teacherId == request.auth.uid)
           || (signedIn() && recording().studentId == request.auth.uid);
 
-        allow create: if isTeacher()
-          && recording().teacherId == request.auth.uid
-          && isValidNote(request.resource.data);
+        allow create: if canManage() && isValidNote(request.resource.data);
 
-        allow update: if false;
+        allow update: if canManage() && isValidEdit(request.resource.data);
 
-        allow delete: if isAdmin()
-          || (isTeacher() && resource.data.teacherId == request.auth.uid);
+        allow delete: if canManage();
       }
     }
   }

@@ -27,12 +27,24 @@ afterAll(() => env.cleanup());
 function note(over: Record<string, unknown> = {}) {
   return {
     teacherId: "t1",
+    kind: "text",
     note: "انتبه لأحكام المدّ",
     atSecond: 42,
     rating: 4,
     createdAt: serverTimestamp(),
     ...over,
   };
+}
+
+/** What FeedbackRepository.update sends: text, rating, updatedAt and unreadFeedback, in one batch. */
+function editNote(db: Firestore, recordingId: string, id: string, data: Record<string, unknown>) {
+  const batch = writeBatch(db);
+  batch.update(doc(db, `recordings/${recordingId}/feedback/${id}`), {
+    updatedAt: serverTimestamp(),
+    ...data,
+  });
+  batch.update(doc(db, `recordings/${recordingId}`), { unreadFeedback: true });
+  return batch.commit();
 }
 
 /** What FeedbackRepository.add sends: the note and unreadFeedback, in one batch. */
@@ -82,25 +94,87 @@ describe("writing feedback", () => {
     await assertFails(addNote(db, "r-s2", note({ teacherId: "t2" })));
     await assertFails(addNote(db, "r-s2", note({ createdAt: Timestamp.now() })));
     await assertFails(addNote(db, "r-s2", note({ extra: true })));
+    await assertFails(addNote(db, "r-s2", note({ updatedAt: serverTimestamp() })));
+  });
+
+  test("only written notes: a voice marker or a note without kind is refused", async () => {
+    const db = as(env, "t1", "teacher");
+    await assertFails(addNote(db, "r-s2", note({ kind: "voice", note: "", endSecond: 50 })));
+    await assertFails(addNote(db, "r-s2", note({ kind: "voice" })));
+    const { kind: _kind, ...withoutKind } = note();
+    await assertFails(addNote(db, "r-s2", withoutKind));
+  });
+
+  test("admin adds a note, as its author", async () => {
+    const db = as(env, "admin", "admin");
+    await assertSucceeds(addNote(db, "r-s3", note({ teacherId: "admin" })));
+    await assertFails(addNote(db, "r-s3", note({ teacherId: "t2" })));
   });
 
   test("students cannot write feedback", async () => {
     await assertFails(addNote(as(env, "s1", "student"), "r-s1", note({ teacherId: "s1" })));
   });
 
-  test("nobody edits a note; the author or an admin deletes it", async () => {
+  test("students cannot edit or delete feedback", async () => {
+    const db = as(env, "s1", "student");
+    await assertFails(editNote(db, "r-s1", "v1", { note: "x" }));
+    await assertFails(updateDoc(doc(db, "recordings/r-s1/feedback/f1"), { note: "x" }));
+    await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/f1")));
+    await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/v1")));
+  });
+
+  test("the recording's teacher edits text and rating of either kind", async () => {
+    const db = as(env, "t1", "teacher");
+    await assertSucceeds(editNote(db, "r-s1", "v1", { note: "المدّ ست حركات", rating: 3 }));
+    await assertSucceeds(editNote(db, "r-s1", "f1", { note: "أحسنت جداً", rating: null }));
+    // A note by a former teacher of this halaqa too.
+    await assertSucceeds(editNote(db, "r-s1", "f-old", { note: "راجع الآية الخامسة" }));
+  });
+
+  test("a voice marker's text may be emptied, a written note's not", async () => {
+    const db = as(env, "t1", "teacher");
+    await assertSucceeds(editNote(db, "r-s1", "v1", { note: "x" }));
+    await assertSucceeds(editNote(db, "r-s1", "v1", { note: "" }));
+    await assertFails(editNote(db, "r-s1", "f1", { note: "" }));
+    await assertFails(editNote(db, "r-s1", "f1", { note: "x".repeat(2001) }));
+  });
+
+  test("an edit changes nothing but text, rating and updatedAt", async () => {
+    const db = as(env, "t1", "teacher");
+    await assertFails(editNote(db, "r-s1", "v1", { atSecond: 1 }));
+    await assertFails(editNote(db, "r-s1", "v1", { endSecond: 99 }));
+    await assertFails(editNote(db, "r-s1", "v1", { kind: "text", note: "x" }));
+    await assertFails(editNote(db, "r-s1", "f1", { teacherId: "t2" }));
+    await assertFails(editNote(db, "r-s1", "f1", { rating: 6 }));
+    await assertFails(editNote(db, "r-s1", "f1", { note: "x", updatedAt: Timestamp.now() }));
     await assertFails(
-      updateDoc(doc(as(env, "t1", "teacher"), "recordings/r-s1/feedback/f1"), { note: "x" }),
+      updateDoc(doc(db, "recordings/r-s1/feedback/f1"), { note: "x" }),
     );
-    await assertFails(deleteDoc(doc(as(env, "s1", "student"), "recordings/r-s1/feedback/f1")));
-    await assertFails(deleteDoc(doc(as(env, "t2", "teacher"), "recordings/r-s1/feedback/f1")));
-    await assertSucceeds(deleteDoc(doc(as(env, "t1", "teacher"), "recordings/r-s1/feedback/f1")));
+  });
+
+  test("another teacher cannot edit or delete", async () => {
+    const db = as(env, "t2", "teacher");
+    await assertFails(editNote(db, "r-s1", "v1", { note: "x" }));
+    await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/f1")));
+    await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/v1")));
+  });
+
+  test("the recording's teacher deletes any note on it, voice markers too", async () => {
+    const db = as(env, "t1", "teacher");
+    await assertSucceeds(deleteDoc(doc(db, "recordings/r-s1/feedback/v1")));
+    await assertSucceeds(deleteDoc(doc(db, "recordings/r-s1/feedback/f-old")));
+    await assertSucceeds(deleteDoc(doc(db, "recordings/r-s1/feedback/f1")));
+  });
+
+  test("admin edits any note", async () => {
+    await assertSucceeds(editNote(as(env, "admin", "admin"), "r-s1", "v1", { note: "ملاحظة" }));
   });
 
   test("a demoted teacher can no longer read, add or delete notes", async () => {
     const db = as(env, "t1", "student");
     await assertFails(getDoc(doc(db, "recordings/r-s1/feedback/f1")));
     await assertFails(addNote(db, "r-s1", note()));
+    await assertFails(editNote(db, "r-s1", "v1", { note: "x" }));
     await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/f1")));
   });
 

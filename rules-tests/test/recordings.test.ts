@@ -34,6 +34,11 @@ function newRecording(id: string, over: Record<string, unknown> = {}) {
   });
 }
 
+/** An official recording as the upload page sends it: unreviewed. */
+function official(id: string, over: Record<string, unknown> = {}) {
+  return newRecording(id, { reviewed: false, ...over });
+}
+
 /** A practice recording s1 records on the phone. */
 function practice(id: string, over: Record<string, unknown> = {}) {
   return newRecording(id, {
@@ -143,53 +148,45 @@ describe("teacher t1", () => {
     await assertFails(getDocs(query(collection(db, "recordings"), ...base)));
   });
 
-  test("lists own pending practice (watchPendingPractice), not t2's", async () => {
+  test("lists own unreviewed recordings of either type (watchUnreviewed), not t2's", async () => {
     const db = as(env, "t1", "teacher");
-    const pending = (teacherId: string) =>
+    const pending = (teacherId: string, type: string) =>
       query(
         collection(db, "recordings"),
         where("teacherId", "==", teacherId),
-        where("type", "==", "practice"),
+        where("type", "==", type),
         where("reviewed", "==", false),
         orderBy("createdAt"),
       );
-    await assertSucceeds(getDocs(pending("t1")));
-    await assertFails(getDocs(pending("t2")));
+    await assertSucceeds(getDocs(pending("t1", "practice")));
+    await assertSucceeds(getDocs(pending("t1", "official")));
+    await assertFails(getDocs(pending("t2", "official")));
   });
 
-  test("creates an official recording for s1, not for s3", async () => {
+  test("lists own recordings of this week (watchForTeacherSince), not t2's", async () => {
     const db = as(env, "t1", "teacher");
-    await assertSucceeds(create(db, "n1", newRecording("n1")));
-    await assertFails(
-      create(
-        db,
-        "n2",
-        newRecording("n2", { studentId: "s3", halaqaId: "h2", storagePath: "recordings/s3/n2.mp3" }),
-      ),
-    );
-    await assertFails(
-      create(
-        db,
-        "n3",
-        newRecording("n3", {
-          studentId: "s3",
-          halaqaId: "h2",
-          teacherId: "t2",
-          storagePath: "recordings/s3/n3.mp3",
-        }),
-      ),
-    );
+    const since = (teacherId: string) =>
+      query(
+        collection(db, "recordings"),
+        where("teacherId", "==", teacherId),
+        where("recordedAt", ">=", Timestamp.fromDate(new Date("2026-10-10T00:00:00Z"))),
+        orderBy("recordedAt", "desc"),
+      );
+    await assertSucceeds(getDocs(since("t1")));
+    await assertFails(getDocs(since("t2")));
   });
 
-  test("cannot create practice or an unreviewed official recording", async () => {
+  test("cannot create practice, or an official recording marked reviewed", async () => {
     const db = as(env, "t1", "teacher");
-    await assertFails(create(db, "n1", newRecording("n1", { type: "practice", reviewed: false })));
-    await assertFails(create(db, "n1", newRecording("n1", { reviewed: false })));
+    await assertFails(create(db, "n1", official("n1", { type: "practice" })));
+    await assertFails(create(db, "n1", official("n1", { reviewed: true })));
   });
 
-  test("marks reviewed, but cannot change other fields", async () => {
+  test("toggles reviewed both ways, but cannot change other fields", async () => {
     const db = as(env, "t1", "teacher");
     await assertSucceeds(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
+    await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false }));
+    await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: true }));
     await assertFails(updateDoc(doc(db, "recordings/r-s1"), { surahNumber: 3 }));
     await assertFails(updateDoc(doc(db, "recordings/r-s3"), { reviewed: true }));
   });
@@ -198,6 +195,61 @@ describe("teacher t1", () => {
     const db = as(env, "t1", "teacher");
     await assertSucceeds(deleteDoc(doc(db, "recordings/r-s2")));
     await assertFails(deleteDoc(doc(db, "recordings/r-s3")));
+  });
+});
+
+describe("official uploads (Task 09)", () => {
+  test("a teacher uploads for a student of a halaqa he owns", async () => {
+    await assertSucceeds(create(as(env, "t1", "teacher"), "n1", official("n1")));
+    await assertSucceeds(
+      create(
+        as(env, "t1", "teacher"),
+        "n2",
+        official("n2", { studentId: "s2", storagePath: "recordings/s2/n2.wav" }),
+      ),
+    );
+  });
+
+  test("a teacher cannot upload for another teacher's student", async () => {
+    const db = as(env, "t1", "teacher");
+    const forS3 = { studentId: "s3", halaqaId: "h2", storagePath: "recordings/s3/n1.mp3" };
+    await assertFails(create(db, "n1", official("n1", forS3)));
+    await assertFails(create(db, "n1", official("n1", { ...forS3, teacherId: "t2" })));
+  });
+
+  test("a student cannot upload an official recording", async () => {
+    const db = as(env, "s1", "student");
+    await assertFails(create(db, "n1", official("n1", { uploadedBy: "s1" })));
+    await assertFails(create(db, "n1", official("n1", { uploadedBy: "s1", reviewed: true })));
+  });
+
+  test("the admin uploads for any student", async () => {
+    const forS3 = { studentId: "s3", halaqaId: "h2", teacherId: "t2", uploadedBy: "admin" };
+    await assertSucceeds(
+      create(as(env, "admin", "admin"), "n1", official("n1", { ...forS3, storagePath: "recordings/s3/n1.mp3" })),
+    );
+  });
+});
+
+describe("server-only fields: analysis and playbackPath", () => {
+  const analysis = { status: "done", segmentCount: 2 };
+  const playbackPath = "recordings/s1/n1.play.mp3";
+
+  test("no client creates a recording with them, the admin included", async () => {
+    await assertFails(create(as(env, "t1", "teacher"), "n1", official("n1", { analysis })));
+    await assertFails(create(as(env, "t1", "teacher"), "n1", official("n1", { playbackPath })));
+    await assertFails(
+      create(as(env, "admin", "admin"), "n1", official("n1", { uploadedBy: "admin", analysis })),
+    );
+  });
+
+  test("no client changes them later", async () => {
+    for (const [uid, role] of [["t1", "teacher"], ["admin", "admin"], ["s1", "student"]] as const) {
+      const ref = doc(as(env, uid, role), "recordings/r-s1");
+      await assertFails(updateDoc(ref, { analysis }));
+      await assertFails(updateDoc(ref, { playbackPath: "recordings/s1/r-s1.play.mp3" }));
+      await assertFails(updateDoc(ref, { durationSec: 12 }));
+    }
   });
 });
 
