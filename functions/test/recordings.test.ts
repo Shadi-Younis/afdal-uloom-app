@@ -75,8 +75,38 @@ describe("onRecordingDeleted", () => {
     await eventually(async () => (await feedbackCount("del-2")) === 0, "feedback deleted");
   });
 
+  test("removes the playback copy too", async () => {
+    const path = await addRecording("del-play");
+    const copy = "recordings/s1/del-play.play.mp3";
+    await uploadFile(path);
+    await uploadFile(copy);
+
+    await db.doc("recordings/del-play").delete();
+
+    await eventually(async () => !(await fileExists(copy)), "playback copy deleted");
+    await eventually(async () => !(await fileExists(path)), "file deleted");
+  });
+
   test("never deletes a file that is not the recording's own", async () => {
+    // A real recording of s2 (practice: never analysed), so the upload
+    // trigger keeps its file.
     const other = "recordings/s2/someone-else.mp3";
+    await db.doc("recordings/someone-else").set({
+      studentId: "s2",
+      halaqaId: "h1",
+      teacherId: "t1",
+      uploadedBy: "s2",
+      type: "practice",
+      surahNumber: 1,
+      ayahFrom: 1,
+      ayahTo: 7,
+      storagePath: other,
+      durationSec: null,
+      recordedAt: Timestamp.now(),
+      createdAt: Timestamp.now(),
+      unreadFeedback: false,
+      reviewed: false,
+    });
     await uploadFile(other);
     await addRecording("del-3");
     await db.doc("recordings/del-3").update({storagePath: other});

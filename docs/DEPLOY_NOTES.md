@@ -119,7 +119,8 @@ git checkout main
 
 - **Cloud Storage**: حجم ملفات التسجيلات وتنزيلها (سماعها). هذا أول ما سيكبر مع الوقت.
 - **Firestore**: القراءات والكتابات. القوائم الحيّة (streams) تقرأ عند كل تغيير.
-- **Cloud Functions وCloud Run**: عدد الاستدعاءات ووقتها. `maxInstances` محدد بـ 10 لكل دالة.
+- **Cloud Functions وCloud Run**: عدد الاستدعاءات ووقتها. `maxInstances` محدد بـ 10 لكل دالة. `onRecordingUploaded` أثقلها (1 GiB، تفك الصوت وتعيد ترميزه)، لكنها تعمل مرة لكل تسجيل رسمي.
+- **نسخة السماع** `{id}.play.mp3` تضيف ملفاً ثانياً لكل تسجيل رسمي (MP3 أحادي 128 kbps، أي نحو 1 ميغابايت للدقيقة).
 - **Cloud Build وArtifact Registry**: عند كل نشر للدوال تُبنى صورة جديدة. سياسة الحذف بعد يوم تمنع تراكم الصور.
 - **Cloud Scheduler**: وظيفة واحدة (`cleanupStalledUploads`).
 - **Hosting**: حجم موقع الويب والتنزيل منه.
@@ -148,10 +149,19 @@ git checkout main
 كلها في `me-west1`:
 
 - دوال الحسابات (callable، يستدعيها التطبيق): `createUser`، `resetPassword`، `moveStudent`، `changeHalaqaTeacher`، `setUserDisabled`، `deleteHalaqa`، `deleteUser`، `updateUserProfile`.
-- `onRecordingDeleted`: عند حذف مستند تسجيل يحذف ملف الصوت من Storage وكل ملاحظاته (`feedback`).
+- `onRecordingDeleted`: عند حذف مستند تسجيل يحذف ملف الصوت من Storage ونسخة السماع `{id}.play.mp3` وكل ملاحظاته (`feedback`).
+- `onRecordingUploaded` (حدث Storage على الـ bucket الافتراضي، ذاكرة 1 GiB، مهلة 300 ثانية، `maxInstances` 10): عند رفع ملف تسجيل رسمي يحدد مواضع كلام الشيخ (القناة اليمنى) ويكتبها ملاحظات صوتية، ويصنع نسخة السماع المتوسطة، ويملأ `analysis` و`playbackPath` و`durationSec`. يستعمل `ffmpeg-static` (برنامج ffmpeg ينزّله `npm ci` أثناء البناء في Cloud Build).
 - `cleanupStalledUploads`: كل يوم الساعة 00:00 UTC يحذف التسجيلات التي مضى عليها أكثر من 24 ساعة ولا يوجد ملفها في Storage (رفع لم يكتمل).
 
 عند النشر:
 
 - أول دالة مجدولة تحتاج Cloud Scheduler API؛ إذا سأل Firebase عن تفعيلها فوافق.
 - أول نشر لدالة تعمل على أحداث Firestore قد يفشل برسالة تطلب الانتظار بضع دقائق لإكمال إعداد الصلاحيات (Eventarc). انتظر ثم أعد النشر نفسه.
+- **أول نشر لـ `onRecordingUploaded`** (أول دالة على أحداث Storage) يحتاج أن يكون لحساب خدمة Cloud Storage صلاحية **Pub/Sub Publisher** (`roles/pubsub.publisher`). عادةً يمنحها Firebase CLI بنفسه. إذا فشل النشر وطبع أوامر `gcloud` (كما في المهمة 8)، ينفّذها شادي في Cloud Shell كما هي، ثم يعيد النشر نفسه. الأمر يشبه هذا (رقم المشروع `650399473840`):
+
+  ```bash
+  gcloud projects add-iam-policy-binding afdal-al-uloom --member=serviceAccount:service-650399473840@gs-project-accounts.iam.gserviceaccount.com --role=roles/pubsub.publisher
+  ```
+
+  نفّذ ما يطبعه Firebase، لا هذه النسخة، إذا اختلف.
+- بعد النشر: ارفع تسجيلاً رسمياً تجريبياً وتأكد في Firebase Console ← Functions ← Logs أن «Recording analysed» ظهرت، وأن نسخة `{id}.play.mp3` موجودة في Storage.

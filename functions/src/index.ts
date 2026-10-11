@@ -11,4 +11,5 @@ export {deleteHalaqa} from "./accounts/delete_halaqa.js";
 export {deleteUser} from "./accounts/delete_user.js";
 export {updateUserProfile} from "./accounts/update_user_profile.js";
 export {onRecordingDeleted} from "./recordings/on_recording_deleted.js";
+export {onRecordingUploaded} from "./recordings/on_recording_uploaded.js";
 export {cleanupStalledUploads} from "./recordings/cleanup_stalled_uploads.js";

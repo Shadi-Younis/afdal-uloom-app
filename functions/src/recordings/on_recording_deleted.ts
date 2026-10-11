@@ -3,12 +3,13 @@ import {onDocumentDeleted} from "firebase-functions/v2/firestore";
 
 import {bucket, db} from "../lib/admin.js";
 import {F, FEEDBACK, RECORDINGS} from "../lib/constants.js";
-import {isRecordingFilePath} from "../lib/recording_files.js";
+import {isRecordingFilePath, playbackPathFor} from "../lib/recording_files.js";
 
 /**
  * onRecordingDeleted: when `recordings/{recordingId}` is deleted (by its
- * teacher, an admin or cleanupStalledUploads), deletes its audio file and
- * its feedback notes. Clients cannot delete either themselves.
+ * teacher, an admin or cleanupStalledUploads), deletes its audio file, its
+ * centred copy `{recordingId}.play.mp3` and its feedback notes. Clients
+ * cannot delete any of them themselves.
  *
  * Safe to run twice (triggers are delivered at least once): a missing file
  * or an empty subcollection is not an error.
@@ -30,5 +31,11 @@ async function deleteAudio(recordingId: string, storagePath: unknown): Promise<v
     });
     return;
   }
-  await bucket.file(storagePath).delete({ignoreNotFound: true});
+  // The copy sits next to the original (see onRecordingUploaded); it may
+  // not exist (practice, or not analysed yet).
+  const studentId = storagePath.split("/")[1];
+  await Promise.all([
+    bucket.file(storagePath).delete({ignoreNotFound: true}),
+    bucket.file(playbackPathFor(studentId, recordingId)).delete({ignoreNotFound: true}),
+  ]);
 }

@@ -4,9 +4,13 @@
 #
 #   powershell -ExecutionPolicy Bypass -File tool/test_functions.ps1
 #
-# The tests call the real callables over HTTP and let the Firestore
-# triggers run in the Functions emulator. Stop tool/emulators.ps1 first:
-# both use the same ports.
+# The tests call the real callables over HTTP and let the Firestore and
+# Storage triggers run in the Functions emulator. Stop tool/emulators.ps1
+# first: both use the same ports.
+#
+# The recording analysis tests (functions/test/analysis.test.ts) need the
+# audio fixtures built by tool/test_audio/build_fixtures.ps1 (outside the
+# repo); without them they are skipped with a message.
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot

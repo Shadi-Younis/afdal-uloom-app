@@ -1,9 +1,37 @@
-// The pure helpers behind onRecordingDeleted and cleanupStalledUploads, and
-// the generated surah table.
+// The pure helpers behind onRecordingDeleted, onRecordingUploaded and
+// cleanupStalledUploads, and the generated surah table.
 import {describe, expect, test} from "vitest";
 
-import {findStalledRecordings, isRecordingFilePath} from "../src/lib/recording_files.js";
+import {
+  findStalledRecordings,
+  isRecordingFilePath,
+  parseRecordingUpload,
+  playbackPathFor,
+} from "../src/lib/recording_files.js";
 import {AYAH_COUNTS, isValidAyahRange} from "../src/lib/surahs.js";
+
+describe("parseRecordingUpload and playbackPathFor", () => {
+  test("an uploaded recording names its student and recording", () => {
+    expect(parseRecordingUpload("recordings/s1/r1.mp3")).toEqual({studentId: "s1", recordingId: "r1"});
+    expect(parseRecordingUpload("recordings/s1/r1.wav")).toEqual({studentId: "s1", recordingId: "r1"});
+    expect(parseRecordingUpload("recordings/s1/r1.webm")).toEqual({studentId: "s1", recordingId: "r1"});
+  });
+
+  test("the playback copy and anything else are ignored", () => {
+    expect(parseRecordingUpload("recordings/s1/r1.play.mp3")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/r1.exe")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/r1.MP3")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/r1")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/sub/r1.mp3")).toBeNull();
+    expect(parseRecordingUpload("recordings//r1.mp3")).toBeNull();
+    expect(parseRecordingUpload("other/s1/r1.mp3")).toBeNull();
+    expect(parseRecordingUpload(undefined)).toBeNull();
+  });
+
+  test("the playback copy sits next to the original", () => {
+    expect(playbackPathFor("s1", "r1")).toBe("recordings/s1/r1.play.mp3");
+  });
+});
 
 describe("isRecordingFilePath", () => {
   test("accepts recordings/{studentId}/{recordingId}.{ext}", () => {
