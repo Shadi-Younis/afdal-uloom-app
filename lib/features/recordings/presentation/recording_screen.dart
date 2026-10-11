@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../../core/widgets/common/deleted_item_guard.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import '../../../core/widgets/islamic/error_state.dart';
 import '../../../core/widgets/islamic/loading_state.dart';
@@ -36,19 +37,23 @@ class RecordingScreen extends ConsumerWidget {
       title: student == null || student.isEmpty
           ? AppStrings.recordingScreenTitle
           : AppStrings.recordingOf(student),
-      body: switch (recording) {
-        AsyncData(value: final recording?) => RecordingDetailsView(
-          recording: recording,
-        ),
-        AsyncData() => const ErrorState(
-          error: AppException(AppErrorCode.notFound),
-        ),
-        AsyncError(:final error) => ErrorState(
-          error: error,
-          onRetry: () => ref.invalidate(recordingDetailsProvider(recordingId)),
-        ),
-        _ => const LoadingState(),
-      },
+      body: DeletedItemGuard(
+        item: recording,
+        child: switch (recording) {
+          AsyncData(value: final recording?) => RecordingDetailsView(
+            recording: recording,
+          ),
+          AsyncData() => const ErrorState(
+            error: AppException(AppErrorCode.notFound),
+          ),
+          AsyncError(:final error) => ErrorState(
+            error: error,
+            onRetry: () =>
+                ref.invalidate(recordingDetailsProvider(recordingId)),
+          ),
+          _ => const LoadingState(),
+        },
+      ),
     );
   }
 }

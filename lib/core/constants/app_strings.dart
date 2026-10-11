@@ -83,6 +83,9 @@ abstract final class AppStrings {
   static const disabledChip = 'موقوف';
   static const noResults = 'لا توجد نتائج';
 
+  /// A details page whose item was deleted elsewhere while it was open.
+  static const itemDeleted = 'تم حذف هذا العنصر';
+
   /// Between the items of a list in running text: "حلقة الفجر، حلقة المغرب".
   static const listSeparator = '، ';
 

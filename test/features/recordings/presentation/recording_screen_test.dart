@@ -44,11 +44,11 @@ void main() {
   }
 
   testWidgets('loading: the shared spinner', (tester) async {
-    school.recordings.getGate = Completer<void>();
+    school.recordings.watchGate = Completer<void>();
     await pumpRecording(tester, 'rec-02', settle: false);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('التسجيل'), findsOneWidget);
-    school.recordings.getGate!.complete();
+    school.recordings.watchGate!.complete();
     await tester.pumpAndSettle();
     expect(find.text('سورة البقرة'), findsOneWidget);
   });
@@ -127,7 +127,7 @@ void main() {
   testWidgets('another student\'s recording: the permission message', (
     tester,
   ) async {
-    school.recordings.getError = const AppException(
+    school.recordings.watchError = const AppException(
       AppErrorCode.permissionDenied,
     );
     await pumpRecording(
