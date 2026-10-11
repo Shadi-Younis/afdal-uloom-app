@@ -33,6 +33,23 @@ Map<String, dynamic> toFirestore(Map<String, dynamic> map) => {
     key: value is DateTime ? Timestamp.fromDate(value) : value,
 };
 
+/// The document at [ref], parsed by [parse], then every change; null once
+/// it does not exist.
+///
+/// "Does not exist" is only reported when the server says so: offline, the
+/// local cache answers "missing" for any document it never saw, which
+/// would sign a user out (their profile) or close a page as deleted. Such
+/// a snapshot is skipped and the stream waits for the server.
+Stream<T?> watchDocument<T>(
+  DocumentReference<Map<String, dynamic>> ref,
+  T Function(String id, Map<String, dynamic> map) parse,
+) => guardStream(
+  ref
+      .snapshots()
+      .where((doc) => doc.exists || !doc.metadata.isFromCache)
+      .map((doc) => doc.exists ? parse(doc.id, readDocument(doc)) : null),
+);
+
 /// Runs [action] and rethrows any error as an AppException.
 Future<T> guard<T>(Future<T> Function() action) async {
   try {

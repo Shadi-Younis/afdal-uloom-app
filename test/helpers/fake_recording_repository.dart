@@ -52,6 +52,16 @@ class FakeRecordingRepository implements RecordingRepository {
       throw UnimplementedError();
 
   @override
+  Stream<Recording?> watch(String id) => _live(() => recordings[id]);
+
+  /// Adds or replaces [recording], as another device or a function would;
+  /// every open stream emits again.
+  void put(Recording recording) {
+    recordings[recording.id] = recording;
+    _changed.add(null);
+  }
+
+  @override
   Future<Recording?> get(String id) async {
     await getGate?.future;
     if (getError case final error?) throw error;

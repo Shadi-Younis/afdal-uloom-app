@@ -23,15 +23,8 @@ class FirestoreHalaqaRepository implements HalaqaRepository {
   );
 
   @override
-  Stream<Halaqa?> watch(String halaqaId) => guardStream(
-    _db
-        .doc(FirestorePaths.halaqa(halaqaId))
-        .snapshots()
-        .map(
-          (doc) =>
-              doc.exists ? Halaqa.fromMap(doc.id, readDocument(doc)) : null,
-        ),
-  );
+  Stream<Halaqa?> watch(String halaqaId) =>
+      watchDocument(_db.doc(FirestorePaths.halaqa(halaqaId)), Halaqa.fromMap);
 
   @override
   Future<String> create({required String name, required String teacherId}) =>

@@ -31,6 +31,12 @@ abstract class RecordingRepository {
   /// Allowed for: the teacher themself and admins.
   Stream<List<Recording>> watchPendingPractice(String teacherId);
 
+  /// The recording [id], then every change; null once it does not exist
+  /// (only when the server confirms it, never from the offline cache).
+  ///
+  /// Allowed for: an admin, its teacher and its student.
+  Stream<Recording?> watch(String id);
+
   /// The recording [id], or null if it does not exist.
   ///
   /// Allowed for: an admin, its teacher and its student.
