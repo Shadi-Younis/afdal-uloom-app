@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/application/sign_out_notice_controller.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../application/login_controller.dart';
 import 'login_error_text.dart';
 import 'login_submit_button.dart';
+import 'sign_out_notice_text.dart';
 import 'password_field.dart';
 import 'username_field.dart';
 
@@ -40,6 +42,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
   Widget build(BuildContext context) {
     final state = ref.watch(loginControllerProvider);
     final loading = state.isLoading;
+    final notice = ref.watch(signOutNoticeProvider);
     return AutofillGroup(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -61,6 +64,9 @@ class _LoginFormState extends ConsumerState<LoginForm> {
           if (state case AsyncError(:final error) when !loading) ...[
             const SizedBox(height: AppSizes.spaceS),
             LoginErrorText(error),
+          ] else if (notice != null) ...[
+            const SizedBox(height: AppSizes.spaceS),
+            SignOutNoticeText(notice),
           ],
         ],
       ),

@@ -61,6 +61,11 @@ abstract final class AppStrings {
   static const usernameRequired = 'أدخل اسم المستخدم';
   static const passwordRequired = 'أدخل كلمة السر';
 
+  /// After the app signed out an account that was deleted or disabled
+  /// while it was signed in.
+  static const accountNoLongerActive =
+      'لم يعد هذا الحساب فعّالاً. تواصل مع إدارة الدار.';
+
   // Role home screens
   static const teacherComingSoon =
       'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
