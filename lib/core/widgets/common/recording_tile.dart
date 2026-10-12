@@ -4,20 +4,30 @@ import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
 import '../../constants/surahs.dart';
 import '../../models/recording.dart';
+import '../../utils/arabic_digits.dart';
 import '../../utils/date_format.dart';
 import 'recording_type_chip.dart';
+import 'reviewed_chip.dart';
 
 /// A recording in a list: title (surah and ayat), recorded date, type, and
-/// a dot when it has feedback the student has not read.
+/// a dot when it has feedback the student has not read. For the teacher
+/// also [markerCount] (the notes about a moment) and, with [showReviewed],
+/// whether it was reviewed.
 class RecordingTile extends StatelessWidget {
   const RecordingTile({
     super.key,
     required this.recording,
     required this.onTap,
+    this.markerCount,
+    this.showReviewed = false,
   });
 
   final Recording recording;
   final VoidCallback onTap;
+
+  /// Null: not shown (unknown yet, or not for this viewer).
+  final int? markerCount;
+  final bool showReviewed;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +36,21 @@ class RecordingTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       leading: const CircleAvatar(child: Icon(Icons.graphic_eq)),
       title: Text(formatRecordingTitle(r.surahNumber, r.ayahFrom, r.ayahTo)),
-      subtitle: Text(formatDay(r.recordedAt)),
+      subtitle: Wrap(
+        spacing: AppSizes.spaceS,
+        runSpacing: AppSizes.spaceXS,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            [
+              formatDay(r.recordedAt),
+              if (markerCount case final count?)
+                AppStrings.markerCount(toArabicDigits(count)),
+            ].join(AppStrings.detailSeparator),
+          ),
+          if (showReviewed) ReviewedChip(reviewed: r.reviewed),
+        ],
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

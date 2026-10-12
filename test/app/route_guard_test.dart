@@ -64,6 +64,17 @@ void main() {
     expect(redirectFor(signedInAs(UserRole.student), '/accounts'), '/student');
   });
 
+  test('the upload pages: teacher and admin each their own', () {
+    final teacher = signedInAs(UserRole.teacher);
+    final admin = signedInAs(UserRole.admin);
+    final student = signedInAs(UserRole.student);
+    expect(redirectFor(teacher, '/teacher/upload'), isNull);
+    expect(redirectFor(admin, '/admin/upload'), isNull);
+    expect(redirectFor(teacher, '/admin/upload'), '/teacher');
+    expect(redirectFor(student, '/teacher/upload'), '/student');
+    expect(redirectFor(student, '/admin/upload'), '/student');
+  });
+
   test('a recording still needs a session', () {
     expect(redirectFor(const AsyncData(null), '/recording/rec-02'), '/login');
     expect(redirectFor(const AsyncLoading(), '/recording/rec-02'), '/');

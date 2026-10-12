@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../application/student_summary.dart';
@@ -50,6 +52,18 @@ class StudentDetailsView extends StatelessWidget {
                 DisableAccountButton(user: student),
               ],
             ),
+            // An upload needs the student's halaqa (firestore.rules).
+            if (summary.halaqa != null)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSizes.spaceS),
+                child: FilledButton.icon(
+                  onPressed: () => context.push(
+                    AppRoutes.adminUpload(studentId: student.id),
+                  ),
+                  icon: const Icon(Icons.upload_file_outlined),
+                  label: const Text(AppStrings.uploadForStudent),
+                ),
+              ),
             StudentRecordingsSection(studentId: student.id),
             DangerSection(
               hint: AppStrings.deleteStudentHint,

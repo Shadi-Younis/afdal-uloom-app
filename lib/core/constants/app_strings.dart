@@ -67,8 +67,6 @@ abstract final class AppStrings {
       'لم يعد هذا الحساب فعّالاً. تواصل مع إدارة الدار.';
 
   // Role home screens
-  static const teacherComingSoon =
-      'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
   static const studentComingSoon =
       'ستظهر هنا تسجيلاتك وملاحظات معلمك قريباً، إن شاء الله.';
 
@@ -91,6 +89,51 @@ abstract final class AppStrings {
 
   /// Between two details on one line: "S001 · حلقة الفجر".
   static const detailSeparator = ' · ';
+
+  // Teacher home and pages
+  static const myStudents = 'طلابي';
+  static const thisWeekRecordings = 'تسجيلات هذا الأسبوع';
+  static const pendingReview = 'بانتظار المراجعة';
+  static const myHalaqat = 'حلقاتي';
+  static const noTeacherHalaqat = 'لا توجد لك حلقة بعد. تواصل مع إدارة الدار.';
+  static const uploadRecordings = 'رفع تسجيلات';
+  static const uploadForStudent = 'رفع تسجيل لهذا الطالب';
+
+  // Upload page (studio recordings)
+  static const pickFiles = 'اختيار ملفات';
+  static const uploadHint =
+      'اختر ملفات التسجيل التي صدّرتها من Studio One. '
+      'اسم الملف مثل S014_002_001-020.mp3 يملأ الطالب والسورة والآيات.';
+  static const dropHint = 'أو اسحب الملفات وأفلتها هنا';
+  static const dropNow = 'أفلت الملفات هنا';
+  static const studentFieldLabel = 'الطالب';
+  static const surahLabel = 'السورة';
+  static const searchSurah = 'ابحث باسم السورة أو رقمها';
+  static const ayahFromLabel = 'من آية';
+  static const ayahToLabel = 'إلى آية';
+  static const ayatNotInSurah = 'الآيات ليست في هذه السورة';
+  static const completeTheRow = 'أكمل بيانات هذا الملف';
+  static const uploadAll = 'رفع الكل';
+  static const removeFile = 'إزالة الملف';
+  static const openRecording = 'فتح التسجيل';
+  static const uploadWaiting = 'في الانتظار';
+  static const uploadDone = 'تم الرفع';
+  static const uploadCancelled = 'أُلغي الرفع';
+  static const studentNotYours = 'اختر طالباً من القائمة';
+
+  /// [percent] arrives in Arabic-Indic digits.
+  static String uploading(String percent) => 'جارٍ الرفع… $percent٪';
+
+  /// [megabytes] arrives in Arabic-Indic digits.
+  static String fileSize(String megabytes) => '$megabytes ميغابايت';
+
+  /// [done] and [total] arrive in Arabic-Indic digits.
+  static String uploadedOf(String done, String total) =>
+      'تم رفع $done من $total';
+  static const leaveUploadTitle = 'الرفع لم ينتهِ';
+  static const leaveUploadMessage =
+      'إذا خرجت الآن يتوقف رفع الملف الحالي ولا تُرفع الملفات الباقية.';
+  static const leave = 'خروج';
 
   // Admin navigation
   static const adminNavHome = 'الرئيسية';
