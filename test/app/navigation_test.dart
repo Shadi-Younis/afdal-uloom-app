@@ -173,6 +173,8 @@ void main() {
       '/teacher/upload?student=s1': '/teacher',
       '/teacher/halaqat/h1': '/teacher',
       '/teacher/halaqat/h1/students/s1': '/teacher/halaqat/h1',
+      '/teacher/review': '/teacher',
+      '/student/practice': '/student',
       '/recording/r1': '/',
       '/account': '/',
       '/admin/students?halaqa=h1': null,

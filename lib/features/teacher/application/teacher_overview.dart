@@ -13,8 +13,8 @@ class TeacherOverview {
   /// school week («تسجيلات هذا الأسبوع»).
   final int thisWeek;
 
-  /// Official recordings whose voice markers the teacher has not reviewed
-  /// yet («بانتظار المراجعة»).
+  /// Recordings the teacher has not reviewed yet («بانتظار المراجعة»):
+  /// official ones (their voice markers) and practice ones.
   final int pendingReview;
 
   @override

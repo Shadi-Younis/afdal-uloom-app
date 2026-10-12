@@ -98,6 +98,8 @@ abstract final class AppStrings {
   static const noTeacherHalaqat = 'لا توجد لك حلقة بعد. تواصل مع إدارة الدار.';
   static const uploadRecordings = 'رفع تسجيلات';
   static const uploadForStudent = 'رفع تسجيل لهذا الطالب';
+  static const noPendingReview =
+      'لا توجد تسجيلات بانتظار المراجعة. بارك الله فيك.';
 
   // Upload page (studio recordings)
   static const pickFiles = 'اختيار ملفات';

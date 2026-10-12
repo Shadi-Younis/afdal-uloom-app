@@ -5,7 +5,6 @@ import '../../../core/application/session_providers.dart';
 import '../../../core/models/app_user.dart';
 import '../../../core/models/halaqa.dart';
 import '../../../core/models/recording.dart';
-import '../../../core/models/recording_type.dart';
 import '../../../core/providers/clock_provider.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/utils/async_value_combine.dart';
@@ -28,11 +27,10 @@ final thisWeekRecordingsProvider = StreamProvider.autoDispose<List<Recording>>(
       ),
 );
 
-/// Official recordings of the teacher not reviewed yet, oldest first.
+/// The teacher's review queue «بانتظار المراجعة»: his recordings not
+/// reviewed yet, official and practice, oldest first.
 final pendingReviewProvider = StreamProvider.autoDispose<List<Recording>>(
-  (ref) => ref
-      .watch(recordingRepositoryProvider)
-      .watchUnreviewed(_uid(ref), type: RecordingType.official),
+  (ref) => ref.watch(recordingRepositoryProvider).watchUnreviewed(_uid(ref)),
 );
 
 /// The counts of the teacher's home.

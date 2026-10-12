@@ -64,6 +64,18 @@ void main() {
     expect(redirectFor(signedInAs(UserRole.student), '/accounts'), '/student');
   });
 
+  test("the review queue is the teacher's, the recorder the student's", () {
+    final teacher = signedInAs(UserRole.teacher);
+    final admin = signedInAs(UserRole.admin);
+    final student = signedInAs(UserRole.student);
+    expect(redirectFor(teacher, '/teacher/review'), isNull);
+    expect(redirectFor(student, '/teacher/review'), '/student');
+    expect(redirectFor(admin, '/teacher/review'), '/admin');
+    expect(redirectFor(student, '/student/practice'), isNull);
+    expect(redirectFor(teacher, '/student/practice'), '/teacher');
+    expect(redirectFor(admin, '/student/practice'), '/admin');
+  });
+
   test('the upload pages: teacher and admin each their own', () {
     final teacher = signedInAs(UserRole.teacher);
     final admin = signedInAs(UserRole.admin);

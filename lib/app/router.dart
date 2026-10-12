@@ -13,6 +13,7 @@ import '../features/recordings/presentation/upload_screen.dart';
 import '../features/student/presentation/student_home_screen.dart';
 import '../features/teacher/presentation/teacher_halaqa_screen.dart';
 import '../features/teacher/presentation/teacher_home_screen.dart';
+import '../features/teacher/presentation/teacher_review_screen.dart';
 import '../features/teacher/presentation/teacher_student_screen.dart';
 import 'admin_routes.dart';
 import 'route_guard.dart';
@@ -66,6 +67,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => UploadScreen(
               studentId: state.uri.queryParameters[AppRoutes.studentQuery],
             ),
+          ),
+          GoRoute(
+            path: AppRoutes.reviewSegment,
+            name: AppRoutes.teacherReviewName,
+            builder: (context, state) => const TeacherReviewScreen(),
           ),
           GoRoute(
             path: AppRoutes.teacherHalaqaPath,
