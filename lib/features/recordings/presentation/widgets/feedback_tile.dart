@@ -82,17 +82,22 @@ class _VoiceHeader extends StatelessWidget {
             formatClock(start),
             formatClock(Duration(seconds: end)),
           );
-    return Row(
+    final style = Theme.of(context).textTheme.labelLarge
+        ?.copyWith(color: AppColors.goldDark);
+    // Two pieces that never break inside: on a phone the time moves to
+    // the next line as a whole instead of splitting the range.
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        const Icon(Icons.record_voice_over_outlined, color: AppColors.goldDark),
-        const SizedBox(width: AppSizes.spaceXS),
-        Flexible(
-          child: Text(
-            '${AppStrings.voiceNote}${AppStrings.detailSeparator}$time',
-            style: Theme.of(context).textTheme.labelLarge
-                ?.copyWith(color: AppColors.goldDark),
+        const Padding(
+          padding: EdgeInsetsDirectional.only(end: AppSizes.spaceXS),
+          child: Icon(
+            Icons.record_voice_over_outlined,
+            color: AppColors.goldDark,
           ),
         ),
+        Text(AppStrings.voiceNote, style: style),
+        Text('${AppStrings.detailSeparator}$time', style: style),
       ],
     );
   }

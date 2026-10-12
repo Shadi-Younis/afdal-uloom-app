@@ -177,8 +177,9 @@ void main() {
       for (final tile in tiles) (tile.widget as FeedbackTile).note.id,
     ];
     expect(order, ['v1', 'fb-01', 'v2', 'fb-02']);
-    expect(find.text('ملاحظة صوتية من الشيخ · ٠٠:٠٥–٠٠:٠٩'), findsOneWidget);
-    expect(find.text('ملاحظة صوتية من الشيخ · ٠٠:٢٠–٠٠:٢٤'), findsOneWidget);
+    expect(find.text('ملاحظة صوتية من الشيخ'), findsNWidgets(2));
+    expect(find.text(' · ٠٠:٠٥–٠٠:٠٩'), findsOneWidget);
+    expect(find.text(' · ٠٠:٢٠–٠٠:٢٤'), findsOneWidget);
     expect(find.text('المدّ هنا ست حركات'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -427,7 +428,7 @@ void main() {
     expect(find.byTooltip('حذف الملاحظة'), findsNothing);
     expect(find.byTooltip('إضافة نص'), findsNothing);
     expect(find.byTooltip('تعديل'), findsNothing);
-    expect(find.text('ملاحظة صوتية من الشيخ · ٠٠:٠٥–٠٠:٠٩'), findsOneWidget);
+    expect(find.text(' · ٠٠:٠٥–٠٠:٠٩'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
