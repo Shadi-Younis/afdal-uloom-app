@@ -13,7 +13,9 @@
 //   left / right template).
 // - manifest.json: the files and where the sheikh speaks, for the tests.
 //
-// Also imported by the seed (tool/seed), which uploads the stereo file.
+// Also imported by the seed (tool/seed), which uploads the stereo file and
+// builds its practice recordings with buildPracticeM4a (practice_*.m4a:
+// one recitation in one channel, as the phone app records).
 import {execFileSync} from "node:child_process";
 import {existsSync, mkdirSync, writeFileSync} from "node:fs";
 import {createRequire} from "node:module";
@@ -165,6 +167,36 @@ function buildMono(output) {
     ],
     {stdio: ["ignore", "inherit", "inherit"]},
   );
+}
+
+/**
+ * A practice recording as the phone app makes it: al-Minshawi's [clipFile]
+ * in ONE channel, AAC in an .m4a (the recorder's format on Android / iOS),
+ * written to [fixturesDir] once and reused. Returns its path and duration.
+ */
+export function buildPracticeM4a(clipFile) {
+  const source = join(minshawiDir, clipFile);
+  if (!existsSync(source)) {
+    throw new Error(
+      `${source} is missing. Download the recitations first: ` +
+        "powershell -ExecutionPolicy Bypass -File tool/seed/download_test_audio.ps1",
+    );
+  }
+  mkdirSync(fixturesDir, {recursive: true});
+  const output = join(fixturesDir, `practice_${clipFile.replace(/\.mp3$/, "")}.m4a`);
+  if (!existsSync(output)) {
+    execFileSync(
+      ffmpeg(),
+      [
+        "-hide_banner", "-loglevel", "error", "-y",
+        "-i", source,
+        "-ac", "1", "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart",
+        output,
+      ],
+      {stdio: ["ignore", "inherit", "inherit"]},
+    );
+  }
+  return {path: output, durationSec: durationOf(output)};
 }
 
 /** Builds every fixture into [fixturesDir] and returns the manifest. */

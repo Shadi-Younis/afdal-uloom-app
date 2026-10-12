@@ -2,17 +2,23 @@
 // documents and accounts instead of adding new ones.
 //
 // Halaqat:  حلقة الفجر (t01, 5 students), حلقة العصر (t02, 5 students),
-//           حلقة المغرب (t01, 2 students).
-// s012 has no recordings (empty state). 26 recordings: 20 official
-// (4 waiting for review), 6 practice (4 not reviewed); 4 with unread
-// feedback; notes on 8 recordings, rec-09 has 3. Every recording plays a
+//           حلقة المغرب (t01, 2 students); each with its teacher's name
+//           (teacherName), as the app writes it.
+// s012 has no recordings (empty state). 27 recordings: 20 official
+// (4 waiting for review), 7 practice (4 not reviewed); 5 with unread
+// feedback; notes on 9 recordings, rec-09 has 3. Every recording plays a
 // recitation by al-Minshawi (test_audio.json): al-Fatiha, al-Ikhlas,
 // al-Falaq, an-Nas or one of al-Mulk 1..5; its surah and ayat are the
 // clip's. rec-26 (s001) is the studio template in stereo (studioClip):
-// on the emulator onRecordingUploaded finds the sheikh in it twice. The
-// other official files have one voice in the middle, so their analysis
-// says "mono". The seed refuses a note whose "at second" is past the end
-// of its recording's audio.
+// on the emulator onRecordingUploaded finds the sheikh in it twice and
+// marks it unread. The other official files have one voice in the middle,
+// so their analysis says "mono". Practice recordings are the clip in one
+// channel as an .m4a, as the phone records them (buildPracticeM4a).
+// The student s001 has every case of the student's screens: official
+// rec-26 (unread voice markers) and rec-01 (reviewed), practice rec-27
+// (reviewed, with a written note) and rec-20 (waiting for the sheikh).
+// The seed refuses a note whose "at second" is past the end of its
+// recording's audio.
 
 import { clips, studioClip } from "./test_audio.js";
 
@@ -137,7 +143,8 @@ const rows: Row[] = [
   ["rec-23", "s008", "practice", "falaq", "2026-09-23", false, false],
   ["rec-24", "s011", "practice", "mulk-2", "2026-09-24", false, false],
   ["rec-25", "s010", "practice", "mulk-5", "2026-09-25", true, false],
-  ["rec-26", "s001", "official", "studio-stereo", "2026-10-10", false, false],
+  ["rec-26", "s001", "official", "studio-stereo", "2026-10-10", false, true],
+  ["rec-27", "s001", "practice", "mulk-1", "2026-10-06", true, false],
 ];
 
 const clipById = new Map([...clips, studioClip].map((clip) => [clip.id, clip]));
@@ -173,4 +180,5 @@ export const notes: SeedNote[] = [
   { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة هذه الآية ببطء", atSecond: 14, rating: 3 },
   { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن", rating: 5 },
   { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام النون الساكنة", atSecond: 8 },
+  { id: "fb-11", recordingId: "rec-27", note: "أحسنت، اضبط الوقف على «قدير»", atSecond: 4, rating: 4 },
 ];

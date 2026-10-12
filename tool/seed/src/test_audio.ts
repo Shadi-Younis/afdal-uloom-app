@@ -68,3 +68,25 @@ export async function loadClipAudio(): Promise<Map<string, ClipAudio>> {
   audio.set(studioClip.id, { mp3, durationSec: Math.round(mp3DurationSeconds(mp3)) });
   return audio;
 }
+
+export interface PracticeAudio {
+  m4a: Buffer;
+  durationSec: number;
+}
+
+/**
+ * The practice version (mono AAC .m4a, as the phone records) of each clip in
+ * [clipIds], built once into the fixtures folder; by clip id.
+ */
+export async function loadPracticeAudio(clipIds: Iterable<string>): Promise<Map<string, PracticeAudio>> {
+  const { buildPracticeM4a } = await import("../../test_audio/build_fixtures.mjs");
+  const byId = new Map(clips.map((clip) => [clip.id, clip]));
+  const audio = new Map<string, PracticeAudio>();
+  for (const id of new Set(clipIds)) {
+    const clip = byId.get(id);
+    if (!clip) throw new Error(`no clip "${id}" in test_audio.json`);
+    const { path, durationSec } = buildPracticeM4a(clip.file);
+    audio.set(id, { m4a: readFileSync(path), durationSec: Math.round(durationSec) });
+  }
+  return audio;
+}

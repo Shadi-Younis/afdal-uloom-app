@@ -38,7 +38,7 @@ if (remote.length > 0) {
 }
 
 // Without the recitations every recording would be silent; say how to get them.
-const { audioDir, missingClips, loadClipAudio } = await import("./test_audio.js");
+const { audioDir, missingClips, loadClipAudio, loadPracticeAudio } = await import("./test_audio.js");
 const missingAudio = missingClips();
 if (missingAudio.length > 0) {
   const what = existsSync(audioDir)
@@ -66,7 +66,26 @@ if (badRange) {
 }
 
 const clipAudio = await loadClipAudio();
-const audioOf = (r: { clipId: string }) => clipAudio.get(r.clipId)!;
+const practiceAudio = await loadPracticeAudio(
+  data.recordings.filter((r) => r.type === "practice").map((r) => r.clipId),
+);
+
+/** What a recording's file is: the studio MP3, or the phone's mono .m4a for practice. */
+interface RecordingAudio {
+  bytes: Buffer;
+  durationSec: number;
+  extension: "mp3" | "m4a";
+  contentType: string;
+}
+
+function audioOf(r: { clipId: string; type: string }): RecordingAudio {
+  if (r.type === "practice") {
+    const { m4a, durationSec } = practiceAudio.get(r.clipId)!;
+    return { bytes: m4a, durationSec, extension: "m4a", contentType: "audio/mp4" };
+  }
+  const { mp3, durationSec } = clipAudio.get(r.clipId)!;
+  return { bytes: mp3, durationSec, extension: "mp3", contentType: "audio/mpeg" };
+}
 
 // A note "at second 40" on a 19-second recitation could never be reached.
 const recordingById = new Map(data.recordings.map((r) => [r.id, r]));
@@ -83,8 +102,8 @@ initializeApp({ projectId });
 const auth = getAuth();
 const db = getFirestore();
 const bucket = getStorage().bucket(data.storageBucket);
-const audioPathOf = (r: { id: string; studentId: string }) =>
-  `recordings/${r.studentId}/${r.id}.mp3`;
+const audioPathOf = (r: { id: string; studentId: string; clipId: string; type: string }) =>
+  `recordings/${r.studentId}/${r.id}.${audioOf(r).extension}`;
 
 const usersCreatedAt = Timestamp.fromDate(new Date("2026-08-25T09:00:00Z"));
 const hour = 60 * 60 * 1000;
@@ -123,10 +142,13 @@ async function seedFirestore(): Promise<void> {
     });
   }
 
+  // teacherName as the app writes it (firestore.rules: the teacher's fullName).
+  const fullNameOf = new Map(data.users.map((u) => [u.uid, u.fullName]));
   for (const halaqa of data.halaqat) {
     batch.set(db.doc(`halaqat/${halaqa.id}`), {
       name: halaqa.name,
       teacherId: halaqa.teacherId,
+      teacherName: fullNameOf.get(halaqa.teacherId)!,
     });
   }
 
@@ -175,15 +197,19 @@ async function seedFirestore(): Promise<void> {
 }
 
 /**
- * Uploads (or overwrites) every recording's audio file, after deleting the
- * generated .wav tones older seeds left in .emulator-data at the same id.
+ * Uploads (or overwrites) every recording's audio file, after deleting what
+ * older seeds left in .emulator-data at the same id under another extension
+ * (generated .wav tones; practice recordings were .mp3 before Task 10).
  */
 async function seedAudio(): Promise<void> {
   await Promise.all(
     data.recordings.map(async (r) => {
-      await bucket.file(`recordings/${r.studentId}/${r.id}.wav`).delete({ ignoreNotFound: true });
-      await bucket.file(audioPathOf(r)).save(audioOf(r).mp3, {
-        contentType: "audio/mpeg",
+      const audio = audioOf(r);
+      for (const stale of ["wav", "mp3", "m4a"].filter((ext) => ext !== audio.extension)) {
+        await bucket.file(`recordings/${r.studentId}/${r.id}.${stale}`).delete({ ignoreNotFound: true });
+      }
+      await bucket.file(audioPathOf(r)).save(audio.bytes, {
+        contentType: audio.contentType,
         // A fixed token: getDownloadURL() needs one, and seeding again keeps
         // the URLs the app may have cached.
         metadata: { metadata: { firebaseStorageDownloadTokens: `seed-${r.id}` } },
