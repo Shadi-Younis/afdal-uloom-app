@@ -86,6 +86,35 @@ void main() {
     expect(currentPath(tester), '/admin/students/s001');
   });
 
+  testWidgets('a practice opens like any recording: the admin adds a note '
+      'and marks it reviewed', (tester) async {
+    usePhoneSize(tester);
+    await pumpAdminApp(tester, school, location: '/admin/students/s001');
+    await scrollToRecordings(tester);
+
+    await tester.tap(find.text('البقرة: الآيات ٤١–٥٠'));
+    await tester.pumpAndSettle();
+    expect(find.byType(RecordingScreen), findsOneWidget);
+    expect(find.text('تدريب'), findsOneWidget);
+    expect(find.text('إضافة ملاحظة هنا'), findsOneWidget);
+    expect(find.text('حذف التدريب'), findsNothing);
+
+    await tester.tap(find.text('إضافة ملاحظة هنا'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'ركّز على المدود');
+    await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
+    await tester.pumpAndSettle();
+    final note = school.feedback.notes['rec-20']!.single;
+    expect(note.note, 'ركّز على المدود');
+    expect(note.teacherId, 'shadi');
+
+    await tester.ensureVisible(find.text('تمت المراجعة'));
+    await tester.tap(find.text('تمت المراجعة'));
+    await tester.pumpAndSettle();
+    expect(school.recordings.reviewedCalls, [('rec-20', true)]);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a student without recordings: a message', (tester) async {
     await pumpAdminApp(tester, school, location: '/admin/students/s002');
     await scrollToRecordings(tester);

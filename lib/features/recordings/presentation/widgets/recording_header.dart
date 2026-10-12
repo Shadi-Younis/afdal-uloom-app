@@ -11,7 +11,8 @@ import '../../../../core/widgets/islamic/surah_cartouche.dart';
 import '../../application/recording_details_providers.dart';
 
 /// The surah in its cartouche, then the ayat, the type and the recorded
-/// date on one line, and who uploaded it.
+/// date on one line, and who uploaded it («رُفع بواسطة: الشيخ محمود» for a
+/// student; nothing when a student may not be told).
 class RecordingHeader extends ConsumerWidget {
   const RecordingHeader({super.key, required this.recording});
 
@@ -46,7 +47,7 @@ class RecordingHeader extends ConsumerWidget {
             ),
           ],
         ),
-        if (uploader != null)
+        if (uploader != null && uploader.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: AppSizes.spaceXS),
             child: Text(

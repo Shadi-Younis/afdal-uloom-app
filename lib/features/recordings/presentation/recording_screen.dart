@@ -8,6 +8,7 @@ import '../../../core/widgets/islamic/app_page_scaffold.dart';
 import '../../../core/widgets/islamic/error_state.dart';
 import '../../../core/widgets/islamic/loading_state.dart';
 import '../application/recording_details_providers.dart';
+import '../application/recording_manage_controller.dart';
 import 'widgets/recording_details_view.dart';
 
 /// One recording, for every role: the surah in its cartouche, ayat, type,
@@ -30,6 +31,7 @@ class RecordingScreen extends ConsumerWidget {
                   uid: studentId,
                   fallback: '',
                   missing: null,
+                  forStudent: '',
                 )),
               )
               .value;
@@ -39,6 +41,9 @@ class RecordingScreen extends ConsumerWidget {
           : AppStrings.recordingOf(student),
       body: DeletedItemGuard(
         item: recording,
+        deletingHere: ref
+            .watch(recordingManageControllerProvider(recordingId))
+            .isLoading,
         child: switch (recording) {
           AsyncData(value: final recording?) => RecordingDetailsView(
             recording: recording,
