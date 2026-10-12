@@ -66,9 +66,69 @@ abstract final class AppStrings {
   static const accountNoLongerActive =
       'لم يعد هذا الحساب فعّالاً. تواصل مع إدارة الدار.';
 
-  // Role home screens
-  static const studentComingSoon =
-      'ستظهر هنا تسجيلاتك وملاحظات معلمك قريباً، إن شاء الله.';
+  // Student home
+  static const myRecordings = 'تسجيلاتي';
+  static const newNotes = 'ملاحظات جديدة';
+  static const myPracticeThisWeek = 'تدريباتي هذا الأسبوع';
+  static const recordPractice = 'سجّل تدريباً';
+  static const filterAll = 'الكل';
+  static const recordingsFilter = 'نوع التسجيلات';
+  static const noStudentRecordings =
+      'لا توجد تسجيلات بعد. سيظهر هنا ما يرفعه الشيخ وتدريباتك.';
+  static const noRecordingsOfType = 'لا توجد تسجيلات من هذا النوع';
+
+  /// The teacher as students see him: «الشيخ», or «الشيخ محمود» once
+  /// his name is known (SheikhName).
+  static const sheikh = 'الشيخ';
+  static String sheikhNamed(String name) => '$sheikh $name';
+
+  // Practice recorder (the student)
+  static const practiceTitle = 'تسجيل تدريب';
+  static const practiceWhat = 'ماذا ستتلو؟';
+  static const recorderReady = 'اضغط الزر وابدأ التلاوة';
+  static const recordingNow = 'جارٍ التسجيل';
+  static const recordingPaused = 'التسجيل متوقف مؤقتاً';
+  static const startRecording = 'ابدأ التسجيل';
+  static const pauseRecording = 'إيقاف مؤقت';
+  static const resumeRecording = 'متابعة التسجيل';
+  static const stopRecording = 'إنهاء التسجيل';
+  static const inputLevel = 'مستوى الصوت';
+
+  /// [minutes] arrives in Arabic-Indic digits.
+  static String recordingNearLimit(String minutes) =>
+      'اقترب التسجيل من حدّه ($minutes دقيقة)، وسيتوقف تلقائياً عنده.';
+
+  /// [minutes] arrives in Arabic-Indic digits.
+  static String recordingLimitReached(String minutes) =>
+      'وصل التسجيل إلى حدّه ($minutes دقيقة) فتوقف. استمع إليه ثم أرسله.';
+  static const yourRecording = 'تسجيلك';
+  static const recordAgain = 'إعادة التسجيل';
+  static const recordAgainMessage = 'سيُحذف هذا التسجيل ولن يُرسل للشيخ.';
+  static const sendToSheikh = 'إرسال للشيخ';
+  static const pickExistingFile = 'اختيار ملف';
+  static const orPickFile = 'أو أرسل ملفاً صوتياً موجوداً على جهازك';
+  static const removePickedFile = 'إلغاء اختيار الملف';
+  static const completeTheAyat = 'اختر السورة والآيات أولاً';
+  static const practiceSent = 'وصل تدريبك إلى الشيخ';
+  static const sending = 'جارٍ الإرسال';
+  static const microphoneDenied =
+      'لا يستطيع التطبيق استخدام الميكروفون. '
+      'اسمح له بالميكروفون من إعدادات الهاتف، ثم عد إلى هنا.';
+  static const microphoneDeniedWeb =
+      'المتصفح منع الميكروفون عن هذا الموقع. '
+      'اسمح به من إعدادات الموقع (رمز القفل بجانب العنوان)، ثم أعد المحاولة.';
+  static const openSettings = 'فتح الإعدادات';
+  static const leaveRecordingTitle = 'التدريب لم يُرسل';
+  static const leaveRecordingMessage =
+      'إذا خرجت الآن يضيع هذا التسجيل ولا يصل إلى الشيخ.';
+  static const leaveSendingMessage =
+      'إذا خرجت الآن يتوقف الإرسال ولا يصل التدريب إلى الشيخ.';
+
+  // Deleting a practice recording (the student)
+  static const deletePractice = 'حذف التدريب';
+  static const deletePracticeMessage =
+      'سيُحذف هذا التدريب نهائياً ولن يصل إلى الشيخ.';
+  static const practiceDeleted = 'تم حذف التدريب';
 
   // Shared actions and states
   static const cancel = 'إلغاء';

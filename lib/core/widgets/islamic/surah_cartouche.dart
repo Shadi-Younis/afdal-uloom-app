@@ -5,13 +5,22 @@ import '../../../app/app_text_styles.dart';
 
 /// The surah's name in a green frame with pointed ends, a double gold
 /// border and gold end dots, like a surah heading in a mushaf. Takes the
-/// full width; the title shrinks to fit and never overflows.
+/// full width; the title shrinks to fit and never overflows. [height]
+/// [compactHeight] makes it a list item's title.
 class SurahCartouche extends StatelessWidget {
-  const SurahCartouche({super.key, required this.title});
+  const SurahCartouche({
+    super.key,
+    required this.title,
+    this.height = defaultHeight,
+  });
 
   final String title;
+  final double height;
 
-  static const height = 74.0;
+  static const defaultHeight = 74.0;
+
+  /// A recording's title in the student's list.
+  static const compactHeight = 54.0;
 
   /// Keeps the title inside the frame's pointed ends.
   static const _titleInset = 56.0;

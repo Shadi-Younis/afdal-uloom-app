@@ -10,6 +10,7 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/recordings/presentation/recording_screen.dart';
 import '../features/recordings/presentation/upload_screen.dart';
+import '../features/student/presentation/practice_screen.dart';
 import '../features/student/presentation/student_home_screen.dart';
 import '../features/teacher/presentation/teacher_halaqa_screen.dart';
 import '../features/teacher/presentation/teacher_home_screen.dart';
@@ -110,6 +111,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.student,
         name: AppRoutes.studentName,
         builder: (context, state) => const StudentHomeScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoutes.practiceSegment,
+            name: AppRoutes.studentPracticeName,
+            builder: (context, state) => const PracticeScreen(),
+          ),
+        ],
       ),
     ],
   );
