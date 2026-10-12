@@ -1,12 +1,15 @@
 {
+    "id": "/",
     "name": "أفضل العلوم",
     "short_name": "أفضل العلوم",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#FFFFFF",
-    "theme_color": "#0B4019",
     "description": "تطبيق لحفظ تلاوات طلاب مدرسة أفضل العلوم ومتابعتها مع ملاحظات المعلمين",
-    "orientation": "portrait-primary",
+    "lang": "ar",
+    "dir": "rtl",
+    "start_url": ".",
+    "scope": ".",
+    "display": "standalone",
+    "background_color": "#FBF8F1",
+    "theme_color": "#0B4019",
     "prefer_related_applications": false,
     "icons": [
         {
