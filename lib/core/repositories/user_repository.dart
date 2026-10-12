@@ -10,7 +10,8 @@ import '../models/user_role.dart';
 /// Every method throws [AppException]; streams emit it as an error event.
 abstract class UserRepository {
   /// The profile of [uid], or null if it does not exist. Emits again on
-  /// every change.
+  /// every change. Null is only reported when the server confirms it,
+  /// never from the offline cache.
   ///
   /// Allowed for: the user themself, an admin, and the teacher of the
   /// halaqa the user (a student) belongs to. Others get

@@ -51,7 +51,10 @@ powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_backend.ps1
 2. **المحاولة 2** نشرت القواعد والفهارس و9 دوال، وفشلت `onRecordingDeleted` بخطأ Eventarc «Permission denied while using the Eventarc Service Agent … may take a few minutes». هنا ظهر سؤالا الـ IAM (y) وأيام الصور (1).
 3. **المحاولة 3** (بعد نحو 25 دقيقة) بلا أسئلة: نُشرت `onRecordingDeleted` وتخطى Firebase الباقي لأنه لم يتغير.
 
-انتبه: إذا فشل `firebase deploy` في منتصفه يطبع السكربت «Nothing was deployed»، مع أن بعض الأهداف ربما نُشرت. اقرأ مخرجات Firebase نفسها، ثم تحقق بـ `firebase functions:list --project afdal-al-uloom`. إعادة تشغيل السكربت آمنة: ما لم يتغير يُتخطّى.
+رسائل الفشل في سكربتات النشر:
+
+- «Nothing was deployed»: توقف السكربت **قبل** أن يبدأ `firebase deploy` (git، الدخول، الاختبارات، البناء، أو ألغيت أنت). لم يصل شيء إلى المشروع.
+- «Deploy failed part-way: some targets may already be live…»: فشل `firebase deploy` نفسه بعد أن بدأ، فربما نُشرت بعض الأهداف (القواعد، الفهارس، بعض الدوال) ولم يُنشر غيرها. اقرأ مخرجات Firebase فوق الرسالة، ثم تحقق بـ `firebase functions:list --project afdal-al-uloom`. إعادة تشغيل السكربت آمنة: ما لم يتغير يُتخطّى.
 
 بعد النشر: الفهارس الجديدة تحتاج بضع دقائق حتى تُبنى. تابع حالتها في Firebase Console ← Firestore ← Indexes حتى تصبح كلها **Enabled**.
 

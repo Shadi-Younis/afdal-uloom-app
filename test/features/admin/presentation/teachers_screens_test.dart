@@ -33,6 +33,32 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a long list ends clearly above the add button', (tester) async {
+    usePhoneSize(tester);
+    for (var i = 10; i < 22; i++) {
+      school.users.put(seedUser('t$i', 'معلم رقم $i', UserRole.teacher));
+    }
+    await pumpAdminApp(tester, school, location: '/admin/teachers');
+
+    final scrollable = find.descendant(
+      of: find.byType(ListView).hitTestable().first,
+      matching: find.byType(Scrollable),
+    );
+    final position = tester.state<ScrollableState>(scrollable.first).position;
+    // The extent is an estimate until the end has been laid out once.
+    for (var i = 0; i < 5; i++) {
+      position.jumpTo(position.maxScrollExtent);
+      await tester.pumpAndSettle();
+    }
+
+    final fab = tester.getRect(find.byType(FloatingActionButton));
+    final lastItem = tester.getRect(
+      find.widgetWithText(OutlinedButton, 'إضافة مدير'),
+    );
+    expect(fab.top - lastItem.bottom, greaterThanOrEqualTo(24));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('empty: a message and an add button', (tester) async {
     school = AdminFixture.empty();
     await pumpAdminApp(tester, school, location: '/admin/teachers');

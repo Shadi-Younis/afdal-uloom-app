@@ -86,6 +86,8 @@ void main() {
       expect(school.accounts.deleteHalaqaCalls, ['halaqa-maghrib']);
       expect(currentPath(tester), '/admin/halaqat');
       expect(find.text('تم حذف الحلقة'), findsOneWidget);
+      // The page's own message, not the one for a deletion elsewhere.
+      expect(find.text('تم حذف هذا العنصر'), findsNothing);
       expect(find.text('حلقة المغرب'), findsNothing);
     });
 
@@ -174,6 +176,8 @@ void main() {
       expect(school.accounts.deleteUserCalls, ['t03']);
       expect(currentPath(tester), '/admin/teachers');
       expect(find.text('تم حذف المعلم'), findsOneWidget);
+      // The page's own message, not the one for a deletion elsewhere.
+      expect(find.text('تم حذف هذا العنصر'), findsNothing);
       expect(find.text('الشيخ سعيد'), findsNothing);
     });
   });
@@ -248,6 +252,8 @@ void main() {
       expect(find.byType(DeleteStudentDialog), findsNothing);
       expect(currentPath(tester), '/admin/students');
       expect(find.text('تم حذف الطالب نهائياً'), findsOneWidget);
+      // The page's own message, not the one for a deletion elsewhere.
+      expect(find.text('تم حذف هذا العنصر'), findsNothing);
       expect(find.text('أحمد الخطيب'), findsNothing);
     });
 
@@ -266,6 +272,8 @@ void main() {
 
       expect(currentPath(tester), '/admin/halaqat/halaqa-fajr');
       expect(find.text('تم حذف الطالب نهائياً'), findsOneWidget);
+      // The page's own message, not the one for a deletion elsewhere.
+      expect(find.text('تم حذف هذا العنصر'), findsNothing);
     });
 
     testWidgets('a network error stays in the dialog', (tester) async {

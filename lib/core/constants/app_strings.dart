@@ -61,6 +61,11 @@ abstract final class AppStrings {
   static const usernameRequired = 'أدخل اسم المستخدم';
   static const passwordRequired = 'أدخل كلمة السر';
 
+  /// After the app signed out an account that was deleted or disabled
+  /// while it was signed in.
+  static const accountNoLongerActive =
+      'لم يعد هذا الحساب فعّالاً. تواصل مع إدارة الدار.';
+
   // Role home screens
   static const teacherComingSoon =
       'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
@@ -78,6 +83,9 @@ abstract final class AppStrings {
   static const disabledChip = 'موقوف';
   static const noResults = 'لا توجد نتائج';
 
+  /// A details page whose item was deleted elsewhere while it was open.
+  static const itemDeleted = 'تم حذف هذا العنصر';
+
   /// Between the items of a list in running text: "حلقة الفجر، حلقة المغرب".
   static const listSeparator = '، ';
 
@@ -87,7 +95,7 @@ abstract final class AppStrings {
   // Admin navigation
   static const adminNavHome = 'الرئيسية';
   static const adminNavHalaqat = 'الحلقات';
-  static const adminNavTeachers = 'المعلمون';
+  static const adminNavTeachers = 'المعلمين';
   static const adminNavStudents = 'الطلاب';
 
   // Admin home
@@ -215,7 +223,7 @@ abstract final class AppStrings {
   static const profileUpdated = 'تم حفظ التعديلات';
 
   // Admins
-  static const adminsTitle = 'المديرون';
+  static const adminsTitle = 'المدراء';
   static const addAdmin = 'إضافة مدير';
   static const newAdminTitle = 'مدير جديد';
   static const adminCreated = 'تمت إضافة المدير';

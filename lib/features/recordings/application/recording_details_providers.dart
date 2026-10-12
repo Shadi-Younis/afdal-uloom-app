@@ -12,11 +12,11 @@ import '../../../core/providers/repository_providers.dart';
 // spinner. The screen has a retry button.
 Duration? _noRetry(int retryCount, Object error) => null;
 
-/// The recording [id], or null when it does not exist. Fails with
+/// The recording [id], live, or null when it does not exist. Fails with
 /// permissionDenied when the rules refuse it (another student's recording).
-final recordingDetailsProvider = FutureProvider.autoDispose
+final recordingDetailsProvider = StreamProvider.autoDispose
     .family<Recording?, String>(
-      (ref, id) => ref.watch(recordingRepositoryProvider).get(id),
+      (ref, id) => ref.watch(recordingRepositoryProvider).watch(id),
       retry: _noRetry,
     );
 

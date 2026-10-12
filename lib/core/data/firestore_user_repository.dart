@@ -16,15 +16,8 @@ class FirestoreUserRepository implements UserRepository {
       _db.collection(FirestorePaths.users);
 
   @override
-  Stream<AppUser?> watchUser(String uid) => guardStream(
-    _db
-        .doc(FirestorePaths.user(uid))
-        .snapshots()
-        .map(
-          (doc) =>
-              doc.exists ? AppUser.fromMap(doc.id, readDocument(doc)) : null,
-        ),
-  );
+  Stream<AppUser?> watchUser(String uid) =>
+      watchDocument(_db.doc(FirestorePaths.user(uid)), AppUser.fromMap);
 
   @override
   Stream<List<AppUser>> watchStudentsInHalaqa(String halaqaId) =>

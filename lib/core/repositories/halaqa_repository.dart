@@ -15,7 +15,8 @@ abstract class HalaqaRepository {
   /// Allowed for: an admin, and the teacher themself.
   Stream<List<Halaqa>> watchForTeacher(String teacherId);
 
-  /// The halaqa [halaqaId], or null if it does not exist.
+  /// The halaqa [halaqaId], or null if it does not exist (only when the
+  /// server confirms it, never from the offline cache).
   ///
   /// Allowed for: an admin, its teacher, and its students.
   Stream<Halaqa?> watch(String halaqaId);

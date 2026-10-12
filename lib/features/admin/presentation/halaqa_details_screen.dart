@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../../core/widgets/common/deleted_item_guard.dart';
 import '../../../core/widgets/islamic/error_state.dart';
+import '../application/delete_halaqa_controller.dart';
 import '../application/halaqa_summary.dart';
 import 'widgets/admin_async_view.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
@@ -21,11 +23,17 @@ class HalaqaDetailsScreen extends ConsumerWidget {
     final summary = ref.watch(halaqaSummaryProvider(halaqaId));
     return AppPageScaffold(
       title: summary.value?.halaqa.name ?? AppStrings.adminNavHalaqat,
-      body: AdminAsyncView(
-        value: summary,
-        builder: (context, summary) => summary == null
-            ? const ErrorState(error: AppException(AppErrorCode.notFound))
-            : HalaqaDetailsView(summary: summary),
+      body: DeletedItemGuard(
+        item: summary,
+        deletingHere: ref
+            .watch(deleteHalaqaControllerProvider(halaqaId))
+            .isLoading,
+        child: AdminAsyncView(
+          value: summary,
+          builder: (context, summary) => summary == null
+              ? const ErrorState(error: AppException(AppErrorCode.notFound))
+              : HalaqaDetailsView(summary: summary),
+        ),
       ),
     );
   }

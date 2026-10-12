@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../../core/widgets/common/deleted_item_guard.dart';
 import '../../../core/widgets/islamic/error_state.dart';
+import '../application/delete_user_controller.dart';
 import '../application/teacher_summary.dart';
 import 'widgets/admin_async_view.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
@@ -20,11 +22,17 @@ class TeacherDetailsScreen extends ConsumerWidget {
     final summary = ref.watch(teacherSummaryProvider(teacherId));
     return AppPageScaffold(
       title: summary.value?.teacher.fullName ?? AppStrings.adminNavTeachers,
-      body: AdminAsyncView(
-        value: summary,
-        builder: (context, summary) => summary == null
-            ? const ErrorState(error: AppException(AppErrorCode.notFound))
-            : TeacherDetailsView(summary: summary),
+      body: DeletedItemGuard(
+        item: summary,
+        deletingHere: ref
+            .watch(deleteUserControllerProvider(teacherId))
+            .isLoading,
+        child: AdminAsyncView(
+          value: summary,
+          builder: (context, summary) => summary == null
+              ? const ErrorState(error: AppException(AppErrorCode.notFound))
+              : TeacherDetailsView(summary: summary),
+        ),
       ),
     );
   }

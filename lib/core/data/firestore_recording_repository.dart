@@ -40,6 +40,10 @@ class FirestoreRecordingRepository implements RecordingRepository {
   );
 
   @override
+  Stream<Recording?> watch(String id) =>
+      watchDocument(_doc(id), Recording.fromMap);
+
+  @override
   Future<Recording?> get(String id) => guard(() async {
     final doc = await _doc(id).get(estimateServerTimestamps);
     return doc.exists ? Recording.fromMap(doc.id, readDocument(doc)) : null;

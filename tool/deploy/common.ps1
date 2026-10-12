@@ -4,6 +4,7 @@
 
 $ProjectId = 'afdal-al-uloom'
 
+# For failures BEFORE `firebase deploy` starts: nothing reached the project.
 function Stop-Deploy([string]$message) {
     Write-Host ''
     Write-Host "STOPPED: $message" -ForegroundColor Red
@@ -21,6 +22,20 @@ function Invoke-Checked([string]$label, [scriptblock]$command) {
     Write-Step $label
     & $command
     if ($LASTEXITCODE -ne 0) { Stop-Deploy "$label failed (exit code $LASTEXITCODE)." }
+}
+
+# Runs `firebase deploy` itself. Once it has started, a failure can leave
+# some targets live and others not, so it never claims "Nothing was
+# deployed".
+function Invoke-FirebaseDeploy([string]$label, [scriptblock]$command) {
+    Write-Step $label
+    & $command
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ''
+        Write-Host "STOPPED: $label failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+        Write-Host 'Deploy failed part-way: some targets may already be live. Read the Firebase output above, then check with: firebase functions:list --project afdal-al-uloom' -ForegroundColor Red
+        exit 1
+    }
 }
 
 # What is deployed must be exactly a commit on origin/main: either the tip of

@@ -75,6 +75,27 @@ void main() {
     expect(await repository.get('missing'), isNull);
   });
 
+  test('watch: the recording, its changes, then null once deleted', () async {
+    final recording = build(id: 'r1', recordedAt: DateTime(2026, 9, 1));
+    await seed(recording, createdAt: DateTime(2026, 9, 1, 2));
+    final events = <Recording?>[];
+    final subscription = repository.watch('r1').listen(events.add);
+    await pumpEventQueue();
+
+    await db.doc('recordings/r1').update({'reviewed': false});
+    await pumpEventQueue();
+    await db.doc('recordings/r1').delete();
+    await pumpEventQueue();
+    await subscription.cancel();
+
+    expect(events.map((r) => r?.reviewed), [true, false, null]);
+    expect(events.first!.id, 'r1');
+  });
+
+  test('watch: a recording that never existed is null', () async {
+    expect(await repository.watch('missing').first, isNull);
+  });
+
   test('watchForStudent: only that student, newest recordedAt first', () async {
     await seed(
       build(id: 'old', recordedAt: DateTime(2026, 9, 1)),

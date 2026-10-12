@@ -6,12 +6,14 @@ import 'package:afdal_uloom_tilawat/core/repositories/user_repository.dart';
 
 /// A [UserRepository] over an in-memory map of users. Streams emit again
 /// after [put], like Firestore snapshots. [watchError], when set, is
-/// emitted instead of any data.
+/// emitted instead of any data; [watchGate], when set, holds back every
+/// stream's first value.
 class FakeUserRepository implements UserRepository {
   FakeUserRepository([Map<String, AppUser>? users]) : users = users ?? {};
 
   final Map<String, AppUser> users;
   Object? watchError;
+  Completer<void>? watchGate;
 
   final _changed = StreamController<void>.broadcast();
 
@@ -52,6 +54,7 @@ class FakeUserRepository implements UserRepository {
         ..sort((a, b) => a.fullName.compareTo(b.fullName));
 
   Stream<T> _live<T>(T Function() read) async* {
+    await watchGate?.future;
     if (watchError case final error?) throw error;
     yield read();
     yield* _changed.stream.map((_) => read());

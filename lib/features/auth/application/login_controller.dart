@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/sign_out_notice_controller.dart';
 import '../../../core/providers/service_providers.dart';
 import 'login_validation_error.dart';
 
@@ -14,6 +15,8 @@ class LoginController extends AsyncNotifier<void> {
 
   Future<void> signIn(String username, String password) async {
     if (state.isLoading) return;
+    // A new attempt: why the last session ended no longer matters.
+    ref.read(signOutNoticeProvider.notifier).clear();
     final problem = username.trim().isEmpty
         ? LoginValidationError.usernameRequired
         : password.isEmpty

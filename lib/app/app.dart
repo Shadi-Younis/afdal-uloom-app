@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/application/account_status_controller.dart';
 import '../core/constants/app_strings.dart';
 import 'app_colors.dart';
 import 'firebase_setup.dart';
@@ -17,6 +18,9 @@ class AfdalUloomApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Signs out a deleted or disabled account; watched here so it lives as
+    // long as the app.
+    ref.watch(accountStatusControllerProvider);
     return MaterialApp.router(
       title: AppStrings.appTitle,
       debugShowCheckedModeBanner: false,
