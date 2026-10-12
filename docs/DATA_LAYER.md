@@ -24,11 +24,13 @@
 |---|---|---|---|
 | `UserRepository` | كل شيء للقراءة | `watchUser` و`watchStudentsInHalaqa` لطلاب حلقاته | `watchUser` لنفسه |
 | | | `addFcmToken` / `removeFcmToken` لنفسه | `addFcmToken` / `removeFcmToken` لنفسه |
-| `HalaqaRepository` | كل الدوال (`create`، `rename`)؛ الحذف عبر الدالة `deleteHalaqa` فقط (`AccountsService`) | `watchForTeacher(uid)`، `watch` لحلقاته | `watch` لحلقته |
-| `RecordingRepository` | كل الدوال | `watch`، `watchForStudent(studentId, teacherId: uid)`، `watchUnreviewed(uid, type)`، `watchForTeacherSince(uid, since)`، `create` (رسمي)، `setReviewed`، `delete` | `watch`، `watchForStudent(uid)`، `create` (تدريب)، `markFeedbackRead` |
+| `HalaqaRepository` | كل الدوال (`create`، `rename`)؛ الحذف عبر الدالة `deleteHalaqa` فقط (`AccountsService`) | `watchForTeacher(uid)`، `watch` لحلقاته | `watch` لحلقته (ومنها اسم شيخه `teacherName`) |
+| `RecordingRepository` | كل الدوال | `watch`، `watchForStudent(studentId, teacherId: uid)`، `watchUnreviewed(uid)` (و`type:` اختياري)، `watchForTeacherSince(uid, since)`، `create` (رسمي)، `setReviewed`، `delete` | `watch`، `watchForStudent(uid)`، `create` (تدريب)، `markFeedbackRead`، `delete` لتدريبه قبل أن يراجعه الشيخ |
 | `FeedbackRepository` | كل الدوال | `watch`، و`add` و`update` و`delete` على تسجيلات حلقاته (كل الملاحظات، ومنها مواضع الشيخ الصوتية) | `watch` على تسجيلاته (قراءة فقط) |
 
 > **مهم للمعلم:** `watchForStudent` يجب أن يُستدعى مع `teacherId: uid`، وإلا ترفض قواعد الحماية الاستعلام كله.
+
+**اسم الشيخ للطالب:** الطالب لا يقرأ ملفات المعلمين (`users`)، فاسم معلم الحلقة منسوخ في `halaqat/{id}.teacherName`. يكتبه `HalaqaRepository.create` من اسم المعلم (والقواعد تتحقق أنه يساويه)، ويحدّثه السيرفر في `changeHalaqaTeacher` و`updateUserProfile`. في التطبيق: `studentHalaqaProvider` (حلقة الطالب) و`sheikhName(teacherName)` («الشيخ محمود»، أو «الشيخ» إذا لم يُعرف الاسم بعد).
 
 إنشاء الحسابات وتغيير كلمات السر ونقل الطالب بين الحلقات وتغيير معلم الحلقة وإيقاف الحسابات تتم من السيرفر (Cloud Functions) عبر `AccountsService`، وليست في الـ Repositories. التفاصيل في [ACCOUNTS.md](ACCOUNTS.md).
 
@@ -49,6 +51,8 @@
 - إذا بقي مستند بلا ملف (انقطع التطبيق أثناء الرفع)، تحذفه الدالة `cleanupStalledUploads` بعد ٢٤ ساعة.
 - التسجيل الرسمي (والتدريب) يبدأ `reviewed: false`؛ الشيخ يضغط «تمت المراجعة» بعد مراجعة مواضعه.
 
+**تدريب الطالب** (`/student/practice`، «سجّل تدريباً»): `PracticeRecorderController` يسجّل من الميكروفون عبر `AudioRecorderService` (حزمة `record`): قناة واحدة، `m4a` (AAC) على الهاتف و`webm` (Opus) في المتصفح، بحد أقصى ٣٠ دقيقة (`AppDurations.maxPracticeLength`) وتنبيه عند ٢٥. لا يُرفع شيء قبل «إرسال للشيخ»: عندها `PracticeSubmitController` يرسل التسجيل (أو ملفاً اختاره الطالب) عبر `recordingUploadControllerProvider('practice')` بـ `type: practice` و`reviewed: false`. للتجربة على المتصفح: Edge أو Chrome يسمحان بالميكروفون على `localhost`.
+
 **صفحة الرفع** (`/teacher/upload` للمعلم و`/admin/upload` للمدير، ومع `?student=` من صفحة طالب): `UploadBatchController` في `features/recordings`. لكل ملف صف: الطالب (من طلاب حلقات المعلم فقط، أو كل الطلاب للمدير: `myStudentsProvider`)، والسورة، ومن آية إلى آية، وتاريخ التسجيل. اسم الملف بصيغة الاستوديو يملأ ما يفهمه (`parseRecordingFileName`). «رفع الكل» يرفع الصفوف المكتملة واحداً بعد الآخر، كل صف عبر `recordingUploadControllerProvider(rowKey)`.
 
 ## تحليل التسجيل الرسمي (`onRecordingUploaded`)
@@ -67,7 +71,7 @@
 
 - المشغّل يشغّل `recording.playablePath`: نسخة السماع إذا وُجدت، وإلا الأصل.
 - `AudioStorageService.getPlaybackUrl(storagePath)` يعطي رابط التحميل العادي (`getDownloadURL()`) ويحتفظ به في الذاكرة طوال الجلسة. لا نخزّن الرابط في Firestore أبداً. تفاصيل هذا القرار في [DEPLOY_NOTES.md](DEPLOY_NOTES.md).
-- المشغّل المشترك `RecordingPlayer` (في `core/widgets/common/`) ومعه `recordingPlayerControllerProvider(storagePath)`. منه تقرأ الموضع الحالي (`position`) ومنه تقفز إلى ثانية معيّنة (`seek`).
+- المشغّل المشترك `RecordingPlayer` (في `core/widgets/common/`) ومعه `recordingPlayerControllerProvider(source)`، و`source` إما `StoredPlayback(storagePath)` لتسجيل في Storage أو `LocalPlayback(uri)` لتسجيل على الجهاز لم يُرسل بعد. منه تقرأ الموضع الحالي (`position`) ومنه تقفز إلى ثانية معيّنة (`seek`).
 - إذا فشل تحميل الصوت يعيد المحاولة مرة واحدة برابط جديد من نفس الموضع.
 - مشغّل واحد فقط في نفس الوقت، ويتوقف عند الخروج من الشاشة.
 - **الاتجاه:** شريط التقدّم يتبع اتجاه Material في العربية، فيمتلئ من اليمين إلى اليسار. الوقت الحالي على اليمين والمدة الكاملة على اليسار، وزر "رجوع ٥ ثوانٍ" على اليمين و"تقديم ٥ ثوانٍ" على اليسار.
@@ -89,7 +93,7 @@ powershell -ExecutionPolicy Bypass -File tool/test_rules.ps1
 3. ثم: `powershell -ExecutionPolicy Bypass -File tool/seed_emulator.ps1`
 4. البيانات تظهر في http://localhost:4001 وتبقى محفوظة في `.emulator-data`.
 
-كل تسجيل في الـ Seed يشغّل تلاوة حقيقية للشيخ محمد صديق المنشاوي (مرتّل): الفاتحة أو الإخلاص أو الفلق أو الناس أو آية من أول سورة الملك، وسورته وآياته ومدته تطابق الملف الذي يشغّله. التسجيل `rec-26` (الطالب `s001`) ملف Stereo بقالب الاستوديو (الطالب يسار والشيخ يمين، يبنيه `tool/test_audio/build_fixtures.mjs`)، فتجد له الدالة موضعين لكلام الشيخ؛ باقي التسجيلات الرسمية صوت واحد في الوسط فيظهر لها «لم نجد قناة الشيخ منفصلة». أربعة تسجيلات رسمية بانتظار المراجعة. الملفات MP3 مرفوعة إلى Storage Emulator، وتُحفظ خارج المستودع في `C:\dev\test-audio\minshawi\` ولا تُرفع إلى Git (التفاصيل في `tool/seed/README.md`). إذا لم تكن موجودة يرفض الـ Seed العمل ويذكر أمر التنزيل.
+كل تسجيل في الـ Seed يشغّل تلاوة حقيقية للشيخ محمد صديق المنشاوي (مرتّل): الفاتحة أو الإخلاص أو الفلق أو الناس أو آية من أول سورة الملك، وسورته وآياته ومدته تطابق الملف الذي يشغّله. التسجيل `rec-26` (الطالب `s001`) ملف Stereo بقالب الاستوديو (الطالب يسار والشيخ يمين، يبنيه `tool/test_audio/build_fixtures.mjs`)، فتجد له الدالة موضعين لكلام الشيخ؛ باقي التسجيلات الرسمية صوت واحد في الوسط فيظهر لها «لم نجد قناة الشيخ منفصلة». أربعة تسجيلات رسمية بانتظار المراجعة. تسجيلات التدريب ملفات `m4a` بقناة واحدة كما يسجّلها الهاتف. الطالب `s001` فيه كل حالات صفحات الطالب: `rec-26` رسمي بمواضع للشيخ لم يقرأها، و`rec-01` رسمي تمت مراجعته، و`rec-27` تدريب تمت مراجعته وعليه ملاحظة مكتوبة، و`rec-20` تدريب بانتظار الشيخ. كل حلقة فيها اسم معلمها (`teacherName`). الملفات MP3 مرفوعة إلى Storage Emulator، وتُحفظ خارج المستودع في `C:\dev\test-audio\minshawi\` ولا تُرفع إلى Git (التفاصيل في `tool/seed/README.md`). إذا لم تكن موجودة يرفض الـ Seed العمل ويذكر أمر التنزيل.
 
 يمكن تشغيل الـ Seed أكثر من مرة بأمان. كلمة السر لكل الحسابات `test1234`، والإيميل `<username>@afdal-uloom.app`:
 
