@@ -41,10 +41,12 @@ class StatCard extends StatelessWidget {
             toArabicDigits(number),
             style: AppTextStyles.of(context).statNumber,
           ),
+          // Two lines: a longer label («تسجيلات هذا الأسبوع») wraps
+          // instead of being cut on a 360 dp phone.
           Text(
             label,
             textAlign: TextAlign.center,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,

@@ -6,6 +6,7 @@ import 'package:afdal_uloom_tilawat/core/providers/clock_provider.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/common/recording_tile.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/islamic/stat_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -75,6 +76,24 @@ void main() {
     expect(find.text('حلقة الفجر'), findsOneWidget);
     expect(find.text('عدد الطلاب: ٣'), findsOneWidget);
     expect(find.text('حلقة العصر'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('360x640: every count label shows in full, cards equally tall', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await pumpTeacher(tester);
+
+    for (final label in ['طلابي', 'تسجيلات هذا الأسبوع', 'بانتظار المراجعة']) {
+      final paragraph = tester.renderObject<RenderParagraph>(find.text(label));
+      expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+    }
+    final heights = {
+      for (final card in tester.widgetList(find.byType(StatCard)))
+        tester.getSize(find.byWidget(card)).height,
+    };
+    expect(heights, hasLength(1));
     expect(tester.takeException(), isNull);
   });
 

@@ -16,30 +16,33 @@ class TeacherOverviewCards extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (ref.watch(teacherOverviewProvider)) {
-      AsyncData(value: final overview) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: StatCard(
-              number: overview.students,
-              label: AppStrings.myStudents,
+      // One height for the three cards, also when a label takes two lines.
+      AsyncData(value: final overview) => IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: StatCard(
+                number: overview.students,
+                label: AppStrings.myStudents,
+              ),
             ),
-          ),
-          const SizedBox(width: AppSizes.spaceS),
-          Expanded(
-            child: StatCard(
-              number: overview.thisWeek,
-              label: AppStrings.thisWeekRecordings,
+            const SizedBox(width: AppSizes.spaceS),
+            Expanded(
+              child: StatCard(
+                number: overview.thisWeek,
+                label: AppStrings.thisWeekRecordings,
+              ),
             ),
-          ),
-          const SizedBox(width: AppSizes.spaceS),
-          Expanded(
-            child: StatCard(
-              number: overview.pendingReview,
-              label: AppStrings.pendingReview,
+            const SizedBox(width: AppSizes.spaceS),
+            Expanded(
+              child: StatCard(
+                number: overview.pendingReview,
+                label: AppStrings.pendingReview,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       AsyncError(:final error) => ErrorState(
         error: error,
