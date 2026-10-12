@@ -65,7 +65,7 @@ if (badRange) {
   process.exit(1);
 }
 
-const clipAudio = loadClipAudio();
+const clipAudio = await loadClipAudio();
 const audioOf = (r: { clipId: string }) => clipAudio.get(r.clipId)!;
 
 // A note "at second 40" on a 19-second recitation could never be reached.
@@ -163,6 +163,7 @@ async function seedFirestore(): Promise<void> {
     const createdAt = new Date(new Date(recording.recordedAt).getTime() + (24 + i) * hour);
     batch.set(db.doc(`recordings/${n.recordingId}/feedback/${n.id}`), {
       teacherId,
+      kind: "text",
       note: n.note,
       atSecond: n.atSecond ?? null,
       rating: n.rating ?? null,

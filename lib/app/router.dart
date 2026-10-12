@@ -9,8 +9,11 @@ import '../features/account/presentation/account_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/recordings/presentation/recording_screen.dart';
+import '../features/recordings/presentation/upload_screen.dart';
 import '../features/student/presentation/student_home_screen.dart';
+import '../features/teacher/presentation/teacher_halaqa_screen.dart';
 import '../features/teacher/presentation/teacher_home_screen.dart';
+import '../features/teacher/presentation/teacher_student_screen.dart';
 import 'admin_routes.dart';
 import 'route_guard.dart';
 
@@ -43,11 +46,45 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.loginName,
         builder: (context, state) => const LoginScreen(),
       ),
+      // Before the shell: a full page without the admin's navigation bar.
+      GoRoute(
+        path: AppRoutes.adminUploadPath,
+        name: AppRoutes.adminUploadName,
+        builder: (context, state) => UploadScreen(
+          studentId: state.uri.queryParameters[AppRoutes.studentQuery],
+        ),
+      ),
       buildAdminRoutes(),
       GoRoute(
         path: AppRoutes.teacher,
         name: AppRoutes.teacherName,
         builder: (context, state) => const TeacherHomeScreen(),
+        routes: [
+          GoRoute(
+            path: AppRoutes.uploadSegment,
+            name: AppRoutes.teacherUploadName,
+            builder: (context, state) => UploadScreen(
+              studentId: state.uri.queryParameters[AppRoutes.studentQuery],
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.teacherHalaqaPath,
+            name: AppRoutes.teacherHalaqaName,
+            builder: (context, state) => TeacherHalaqaScreen(
+              halaqaId: state.pathParameters[AppRoutes.idParam]!,
+            ),
+            routes: [
+              GoRoute(
+                path: AppRoutes.halaqaStudentPath,
+                name: AppRoutes.teacherStudentName,
+                builder: (context, state) => TeacherStudentScreen(
+                  halaqaId: state.pathParameters[AppRoutes.idParam]!,
+                  studentId: state.pathParameters[AppRoutes.studentIdParam]!,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       // Outside the role shells: every role opens it, on top of its page.
       GoRoute(

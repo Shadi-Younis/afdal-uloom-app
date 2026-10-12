@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_sizes.dart';
+import '../../constants/app_sizes.dart';
 
 /// Keeps forms and details pages readable on the wide studio screen: at
 /// most [AppSizes.contentMaxWidth] wide, centered. No effect on a phone.

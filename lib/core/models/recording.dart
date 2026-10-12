@@ -1,6 +1,7 @@
 import '../constants/firestore_paths.dart';
 import '../constants/model_limits.dart';
 import '../utils/map_reader.dart';
+import 'recording_analysis.dart';
 import 'recording_type.dart';
 
 /// A recitation (`recordings/{id}`). The audio file lives in Storage at
@@ -27,6 +28,8 @@ class Recording {
     required this.createdAt,
     required this.unreadFeedback,
     required this.reviewed,
+    this.analysis,
+    this.playbackPath,
   }) {
     if (surahNumber < ModelLimits.surahMin ||
         surahNumber > ModelLimits.surahMax) {
@@ -62,6 +65,14 @@ class Recording {
     createdAt: readRequired<DateTime>(map, Fields.createdAt),
     unreadFeedback: readRequired<bool>(map, Fields.unreadFeedback),
     reviewed: readRequired<bool>(map, Fields.reviewed),
+    analysis: switch (readOptional<Map<String, dynamic>>(
+      map,
+      Fields.analysis,
+    )) {
+      final analysis? => RecordingAnalysis.fromMap(analysis),
+      null => null,
+    },
+    playbackPath: readOptional<String>(map, Fields.playbackPath),
   );
 
   /// The document id; not stored in the document.
@@ -90,8 +101,20 @@ class Recording {
   /// For the student: a teacher note they have not read yet.
   final bool unreadFeedback;
 
-  /// For the teacher: whether they reviewed this practice recording.
+  /// For the teacher: whether they reviewed this recording (an official
+  /// one's voice markers, a practice one's recitation).
   final bool reviewed;
+
+  /// The server's analysis of an official recording; null before the file
+  /// arrived, and for practice recordings (never analysed).
+  final RecordingAnalysis? analysis;
+
+  /// The centred copy for listening (StoragePaths.playback), once the
+  /// server made it.
+  final String? playbackPath;
+
+  /// What the player plays: the centred copy when there is one.
+  String get playablePath => playbackPath ?? storagePath;
 
   Map<String, dynamic> toMap() => {
     Fields.studentId: studentId,
@@ -108,6 +131,10 @@ class Recording {
     Fields.createdAt: createdAt,
     Fields.unreadFeedback: unreadFeedback,
     Fields.reviewed: reviewed,
+    // Server-written: left out while unset, so a new recording's document
+    // has only the fields a client may create (firestore.rules).
+    Fields.analysis: ?analysis?.toMap(),
+    Fields.playbackPath: ?playbackPath,
   };
 
   /// Nullable fields cannot be cleared to null through copyWith.
@@ -127,6 +154,8 @@ class Recording {
     DateTime? createdAt,
     bool? unreadFeedback,
     bool? reviewed,
+    RecordingAnalysis? analysis,
+    String? playbackPath,
   }) => Recording(
     id: id ?? this.id,
     studentId: studentId ?? this.studentId,
@@ -143,6 +172,8 @@ class Recording {
     createdAt: createdAt ?? this.createdAt,
     unreadFeedback: unreadFeedback ?? this.unreadFeedback,
     reviewed: reviewed ?? this.reviewed,
+    analysis: analysis ?? this.analysis,
+    playbackPath: playbackPath ?? this.playbackPath,
   );
 
   @override
@@ -162,10 +193,12 @@ class Recording {
       other.recordedAt == recordedAt &&
       other.createdAt == createdAt &&
       other.unreadFeedback == unreadFeedback &&
-      other.reviewed == reviewed;
+      other.reviewed == reviewed &&
+      other.analysis == analysis &&
+      other.playbackPath == playbackPath;
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     studentId,
     halaqaId,
@@ -181,7 +214,9 @@ class Recording {
     createdAt,
     unreadFeedback,
     reviewed,
-  );
+    analysis,
+    playbackPath,
+  ]);
 
   @override
   String toString() =>
@@ -190,5 +225,6 @@ class Recording {
       'surah: $surahNumber, ayat: $ayahFrom-$ayahTo, '
       'storagePath: $storagePath, durationSec: $durationSec, '
       'recordedAt: $recordedAt, createdAt: $createdAt, '
-      'unreadFeedback: $unreadFeedback, reviewed: $reviewed)';
+      'unreadFeedback: $unreadFeedback, reviewed: $reviewed, '
+      'analysis: $analysis, playbackPath: $playbackPath)';
 }

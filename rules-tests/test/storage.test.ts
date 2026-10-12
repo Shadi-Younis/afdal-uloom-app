@@ -10,6 +10,9 @@ let env: RulesTestEnvironment;
 const R_S1 = "recordings/s1/r-s1.mp3"; // official, s1, teacher t1, uploadedBy t1
 const R_S3 = "recordings/s3/r-s3.mp3"; // official, s3, teacher t2, uploadedBy t2
 const P_S1 = "recordings/s1/p-s1.m4a"; // practice, s1, teacher t1, uploadedBy s1
+// The centred copies the server makes of the official recordings.
+const PLAY_S1 = "recordings/s1/r-s1.play.mp3";
+const PLAY_S3 = "recordings/s3/r-s3.play.mp3";
 
 const MiB = 1024 * 1024;
 const audio = (size = 1024) => new Uint8Array(size).fill(7);
@@ -84,6 +87,40 @@ describe("read", () => {
   test("nothing outside recordings/ is readable, not even by the admin", async () => {
     await existingFiles("other/file.mp3");
     await assertFails(read(as("admin", "admin"), "other/file.mp3"));
+  });
+});
+
+describe("the playback copy ({id}.play.mp3)", () => {
+  beforeEach(() => existingFiles(PLAY_S1, PLAY_S3));
+
+  test("is read with the same rule as the original", async () => {
+    await assertSucceeds(read(as("s1", "student"), PLAY_S1));
+    await assertSucceeds(read(as("t1", "teacher"), PLAY_S1));
+    await assertSucceeds(read(as("admin", "admin"), PLAY_S1));
+    await assertSucceeds(read(as("t2", "teacher"), PLAY_S3));
+    await assertFails(read(as("s2", "student"), PLAY_S1));
+    await assertFails(read(as("t2", "teacher"), PLAY_S1));
+    await assertFails(read(as("t1", "student"), PLAY_S1));
+    await assertFails(read(env.unauthenticatedContext().storage(), PLAY_S1));
+  });
+
+  test("a copy in another student's folder is not readable as theirs", async () => {
+    await existingFiles("recordings/s2/r-s1.play.mp3");
+    await assertFails(read(as("s1", "student"), "recordings/s2/r-s1.play.mp3"));
+    await assertFails(read(as("s2", "student"), "recordings/s2/r-s1.play.mp3"));
+  });
+
+  test("no client creates one, not even the recording's uploader", async () => {
+    await clearAllStorage(env);
+    await assertFails(upload(as("t1", "teacher"), PLAY_S1));
+    await assertFails(upload(as("admin", "admin"), PLAY_S1));
+    await assertFails(upload(as("s1", "student"), PLAY_S1));
+  });
+
+  test("no client deletes or changes one", async () => {
+    await assertFails(as("t1", "teacher").ref(PLAY_S1).delete());
+    await assertFails(as("admin", "admin").ref(PLAY_S1).delete());
+    await assertFails(as("t1", "teacher").ref(PLAY_S1).updateMetadata({ cacheControl: "no-store" }));
   });
 });
 

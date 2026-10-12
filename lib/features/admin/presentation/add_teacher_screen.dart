@@ -8,7 +8,7 @@ import '../../../core/widgets/common/app_snack_bar.dart';
 import '../application/issued_credentials.dart';
 import '../../../core/widgets/islamic/app_card.dart';
 import '../../../core/widgets/islamic/app_page_scaffold.dart';
-import 'widgets/content_width.dart';
+import '../../../core/widgets/common/content_width.dart';
 import 'widgets/credentials_sheet.dart';
 import 'widgets/teacher_form.dart';
 

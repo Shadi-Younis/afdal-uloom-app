@@ -1,5 +1,6 @@
 import 'package:afdal_uloom_tilawat/core/data/firestore_feedback_repository.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
+import 'package:afdal_uloom_tilawat/core/models/feedback_kind.dart';
 import 'package:afdal_uloom_tilawat/core/models/feedback_note.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -36,7 +37,56 @@ void main() {
     expect(data['note'], 'انتبه للمدّ');
     expect(data['atSecond'], 42);
     expect(data['rating'], 4);
+    expect(data['kind'], 'text');
     expect(data['createdAt'], isA<Timestamp>());
+    // Only the fields a client may create (firestore.rules).
+    expect(data.keys.toSet(), {
+      'teacherId',
+      'note',
+      'kind',
+      'atSecond',
+      'rating',
+      'createdAt',
+    });
+  });
+
+  test('add refuses a voice marker: only the server makes those', () {
+    final marker = FeedbackNote(
+      id: '',
+      teacherId: 't1',
+      note: '',
+      kind: FeedbackKind.voice,
+      atSecond: 3,
+      endSecond: 5,
+      createdAt: DateTime(2000),
+    );
+    expect(() => repository.add('r1', marker), throwsArgumentError);
+  });
+
+  test('update: text, rating and updatedAt, and unreadFeedback', () async {
+    await db.doc('recordings/r1/feedback/v1').set({
+      'teacherId': 't1',
+      'note': '',
+      'kind': 'voice',
+      'atSecond': 83,
+      'endSecond': 91,
+      'rating': null,
+      'createdAt': Timestamp.fromDate(DateTime(2026, 10, 1)),
+    });
+
+    await repository.update('r1', 'v1', note: 'المدّ ست حركات', rating: 3);
+
+    final marker = (await repository.watch('r1').first).single;
+    expect(marker.kind, FeedbackKind.voice);
+    expect(marker.note, 'المدّ ست حركات');
+    expect(marker.rating, 3);
+    expect(marker.endSecond, 91);
+    expect(marker.updatedAt, isNotNull);
+    final recording = await db.doc('recordings/r1').get();
+    expect(recording.data()!['unreadFeedback'], isTrue);
+
+    await repository.update('r1', 'v1', note: 'المدّ ست حركات');
+    expect((await repository.watch('r1').first).single.rating, isNull);
   });
 
   // Atomicity itself is a server guarantee (the fake's batches are not

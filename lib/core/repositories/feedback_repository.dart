@@ -1,8 +1,9 @@
 import '../errors/app_exception.dart';
 import '../models/feedback_note.dart';
 
-/// Reads and manages teacher notes on a recording
-/// (`recordings/{recordingId}/feedback/{id}`). Notes cannot be edited.
+/// Reads and manages the notes on a recording
+/// (`recordings/{recordingId}/feedback/{id}`): the teacher's written notes
+/// and the sheikh's voice markers, which only the server creates.
 ///
 /// Every method throws [AppException]; streams emit it as an error event.
 abstract class FeedbackRepository {
@@ -12,17 +13,32 @@ abstract class FeedbackRepository {
   /// admins).
   Stream<List<FeedbackNote>> watch(String recordingId);
 
-  /// Adds [note] and sets the recording's `unreadFeedback` to true, in one
-  /// batch: both happen or neither does. `note.id` is ignored (a new id is
-  /// generated) and `createdAt` is set to the server time.
+  /// Adds the written note [note] (its kind must be text) and sets the
+  /// recording's `unreadFeedback` to true, in one batch: both happen or
+  /// neither does. `note.id` is ignored (a new id is generated) and
+  /// `createdAt` is set to the server time.
   ///
-  /// Allowed for: the recording's teacher only, with `note.teacherId` set
-  /// to their own uid. The note must be 1..2000 characters, atSecond
+  /// Allowed for: the recording's teacher and admins, with `note.teacherId`
+  /// set to their own uid. The note must be 1..2000 characters, atSecond
   /// 0..36000 and rating 1..5 when given.
   Future<void> add(String recordingId, FeedbackNote note);
 
-  /// Deletes the note [feedbackId].
+  /// Replaces the text and rating of [feedbackId] (a written note or a
+  /// voice marker), sets its `updatedAt` to the server time and the
+  /// recording's `unreadFeedback` to true, in one batch. [rating] null
+  /// removes the rating.
   ///
-  /// Allowed for: the teacher who wrote it, and admins.
+  /// Allowed for: the recording's teacher and admins. [note]: up to 2000
+  /// characters, at least one for a written note; [rating] 1..5.
+  Future<void> update(
+    String recordingId,
+    String feedbackId, {
+    required String note,
+    int? rating,
+  });
+
+  /// Deletes the note [feedbackId], of either kind.
+  ///
+  /// Allowed for: the recording's teacher and admins.
   Future<void> delete(String recordingId, String feedbackId);
 }

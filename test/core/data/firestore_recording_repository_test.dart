@@ -130,7 +130,7 @@ void main() {
   });
 
   test(
-    'watchPendingPractice: practice, not reviewed, oldest createdAt first',
+    'watchUnreviewed: that type, not reviewed, oldest createdAt first',
     () async {
       Future<void> practice(
         String id,
@@ -153,16 +153,50 @@ void main() {
       await practice('p-done', DateTime(2026, 10, 2), reviewed: true);
       await practice('p-other', DateTime(2026, 10, 2), teacherId: 't2');
       await seed(
-        build(id: 'official', recordedAt: DateTime(2026, 10, 2)),
+        build(
+          id: 'official',
+          reviewed: false,
+          recordedAt: DateTime(2026, 10, 2),
+        ),
+        createdAt: DateTime(2026, 10, 2),
+      );
+      await seed(
+        build(id: 'official-done', recordedAt: DateTime(2026, 10, 2)),
         createdAt: DateTime(2026, 10, 2),
       );
 
-      final queue = await repository.watchPendingPractice('t1').first;
-      expect(queue.map((r) => r.id), ['p-old', 'p-new']);
+      final practiceQueue = await repository
+          .watchUnreviewed('t1', RecordingType.practice)
+          .first;
+      expect(practiceQueue.map((r) => r.id), ['p-old', 'p-new']);
+      final officialQueue = await repository
+          .watchUnreviewed('t1', RecordingType.official)
+          .first;
+      expect(officialQueue.map((r) => r.id), ['official']);
     },
   );
 
-  test('markFeedbackRead, markReviewed and delete', () async {
+  test(
+    'watchForTeacherSince: that teacher, from that day, newest first',
+    () async {
+      Future<void> at(String id, DateTime day, {String teacherId = 't1'}) =>
+          seed(
+            build(id: id, teacherId: teacherId, recordedAt: day),
+            createdAt: day,
+          );
+      await at('before', DateTime(2026, 10, 9, 23));
+      await at('first', DateTime(2026, 10, 10));
+      await at('later', DateTime(2026, 10, 12, 16));
+      await at('other', DateTime(2026, 10, 12), teacherId: 't2');
+
+      final week = await repository
+          .watchForTeacherSince('t1', DateTime(2026, 10, 10))
+          .first;
+      expect(week.map((r) => r.id), ['later', 'first']);
+    },
+  );
+
+  test('markFeedbackRead, setReviewed both ways and delete', () async {
     final r = build(
       id: 'r1',
       type: RecordingType.practice,
@@ -173,10 +207,12 @@ void main() {
     await db.doc('recordings/r1').update({'unreadFeedback': true});
 
     await repository.markFeedbackRead('r1');
-    await repository.markReviewed('r1');
+    await repository.setReviewed('r1', reviewed: true);
     final updated = (await repository.get('r1'))!;
     expect(updated.unreadFeedback, isFalse);
     expect(updated.reviewed, isTrue);
+    await repository.setReviewed('r1', reviewed: false);
+    expect((await repository.get('r1'))!.reviewed, isFalse);
 
     await repository.delete('r1');
     expect(await repository.get('r1'), isNull);

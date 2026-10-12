@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/app_user.dart';
-import 'disabled_chip.dart';
+import '../../../../core/widgets/common/disabled_chip.dart';
 import 'info_row.dart';
 import 'section_card.dart';
 

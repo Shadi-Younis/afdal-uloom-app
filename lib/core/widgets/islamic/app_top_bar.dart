@@ -13,14 +13,25 @@ import 'app_back_button.dart';
 /// Back pops the page; a page opened from a link (nothing to pop) goes to
 /// its logical parent instead (AppRoutes.parentOf).
 class AppTopBar extends StatelessWidget {
-  const AppTopBar({super.key, required this.title, this.actions = const []});
+  const AppTopBar({
+    super.key,
+    required this.title,
+    this.actions = const [],
+    this.onBack,
+  });
 
   final String title;
   final List<Widget> actions;
 
+  /// Replaces what the back button does (e.g. ask first); null: the usual
+  /// [backTarget].
+  final VoidCallback? onBack;
+
   @override
   Widget build(BuildContext context) {
-    final back = backTarget(context);
+    final back = backTarget(context) == null
+        ? null
+        : onBack ?? backTarget(context);
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppSizes.spaceS,
@@ -62,6 +73,13 @@ class AppTopBar extends StatelessWidget {
     final parent = location == null ? null : AppRoutes.parentOf(location);
     if (parent == null) return null;
     return () => context.go(parent);
+  }
+
+  /// The logical parent of the page of [context] (AppRoutes.parentOf), or
+  /// null for a root page or outside the router.
+  static String? parentLocation(BuildContext context) {
+    final location = _location(context);
+    return location == null ? null : AppRoutes.parentOf(location);
   }
 
   /// The page's location, or null outside the router (e.g. a widget test

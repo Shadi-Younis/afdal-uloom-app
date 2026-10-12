@@ -63,16 +63,16 @@ void main() {
     await container.read(sessionProvider.future);
     states = [];
     container.listen(
-      recordingUploadControllerProvider,
+      recordingUploadControllerProvider('row-1'),
       (_, next) => states.add(next),
       fireImmediately: true,
     );
   }
 
   RecordingUploadController controller() =>
-      container.read(recordingUploadControllerProvider.notifier);
+      container.read(recordingUploadControllerProvider('row-1').notifier);
   RecordingUploadState state() =>
-      container.read(recordingUploadControllerProvider);
+      container.read(recordingUploadControllerProvider('row-1'));
 
   /// Lets create() finish and the upload start.
   Future<void> settle() => Future<void>.delayed(Duration.zero);
@@ -90,7 +90,8 @@ void main() {
       expect(doc.storagePath, 'recordings/s001/new-1.mp3');
       expect(doc.uploadedBy, 't01');
       expect(doc.studentId, 's001');
-      expect(doc.reviewed, isTrue);
+      // Waits for the sheikh to check its voice markers.
+      expect(doc.reviewed, isFalse);
       expect(doc.unreadFeedback, isFalse);
       final upload = storage.lastUpload;
       expect(upload.storagePath, 'recordings/s001/new-1.mp3');
@@ -238,7 +239,7 @@ void main() {
       'leaving the screen (dispose) cancels and deletes the document',
       () async {
         final sub = container.listen(
-          recordingUploadControllerProvider,
+          recordingUploadControllerProvider('row-1'),
           (_, _) {},
         );
         final result = controller().start(request());

@@ -27,6 +27,21 @@ final recordingFeedbackProvider = StreamProvider.autoDispose
       retry: _noRetry,
     );
 
+/// Whether the viewer may add, edit and delete notes on a recording of
+/// [teacherId] and mark it reviewed: its teacher (with the teacher role)
+/// and admins. firestore.rules decide; this only hides the buttons.
+final canManageRecordingProvider = Provider.autoDispose.family<bool, String>((
+  ref,
+  teacherId,
+) {
+  final viewer = ref.watch(sessionProvider).value;
+  return switch (viewer?.role) {
+    UserRole.admin => true,
+    UserRole.teacher => viewer?.uid == teacherId,
+    _ => false,
+  };
+});
+
 /// A person on the recording screen: [uid], the label to show when the
 /// viewer may not read their profile ([fallback]), and the one when the
 /// profile no longer exists ([missing]; null: the fallback), e.g. "معلم

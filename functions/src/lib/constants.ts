@@ -46,7 +46,46 @@ export const F = {
   teacherId: "teacherId",
   studentId: "studentId",
   storagePath: "storagePath",
+  type: "type",
+  durationSec: "durationSec",
+  unreadFeedback: "unreadFeedback",
+  analysis: "analysis",
+  playbackPath: "playbackPath",
+  // recordings/{id}/feedback
+  kind: "kind",
+  note: "note",
+  atSecond: "atSecond",
+  endSecond: "endSecond",
+  rating: "rating",
 } as const;
+
+/** recordings.type of a studio recording; only these are analysed. */
+export const OFFICIAL = "official";
+
+/** feedback.kind of a marker the server found in the sheikh's channel. */
+export const VOICE = "voice";
+
+/** analysis.status values (docs/PROJECT_PLAN.md section 3). */
+export const ANALYSIS_STATUS = {
+  pending: "pending",
+  done: "done",
+  mono: "mono",
+  failed: "failed",
+} as const;
+
+/**
+ * The audio extensions a recording's storagePath may have, as in
+ * firestore.rules. App: AudioFormats.contentTypes.
+ */
+export const AUDIO_EXTENSIONS = ["mp3", "m4a", "aac", "wav", "ogg", "webm"] as const;
+
+/**
+ * onRecordingUploaded: enough memory and time for a long studio session
+ * (decode, analyse, encode the playback copy).
+ */
+export const ANALYSIS_MEMORY = "1GiB";
+export const ANALYSIS_TIMEOUT_SECONDS = 300;
+export const ANALYSIS_MAX_INSTANCES = 10;
 
 /** A recording whose audio file is still missing this long after createdAt is a failed upload. */
 export const STALLED_UPLOAD_AGE_MS = 24 * 60 * 60 * 1000;

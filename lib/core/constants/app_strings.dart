@@ -67,8 +67,6 @@ abstract final class AppStrings {
       'لم يعد هذا الحساب فعّالاً. تواصل مع إدارة الدار.';
 
   // Role home screens
-  static const teacherComingSoon =
-      'ستظهر هنا حلقاتك وتسجيلات طلابك قريباً، إن شاء الله.';
   static const studentComingSoon =
       'ستظهر هنا تسجيلاتك وملاحظات معلمك قريباً، إن شاء الله.';
 
@@ -91,6 +89,51 @@ abstract final class AppStrings {
 
   /// Between two details on one line: "S001 · حلقة الفجر".
   static const detailSeparator = ' · ';
+
+  // Teacher home and pages
+  static const myStudents = 'طلابي';
+  static const thisWeekRecordings = 'تسجيلات هذا الأسبوع';
+  static const pendingReview = 'بانتظار المراجعة';
+  static const myHalaqat = 'حلقاتي';
+  static const noTeacherHalaqat = 'لا توجد لك حلقة بعد. تواصل مع إدارة الدار.';
+  static const uploadRecordings = 'رفع تسجيلات';
+  static const uploadForStudent = 'رفع تسجيل لهذا الطالب';
+
+  // Upload page (studio recordings)
+  static const pickFiles = 'اختيار ملفات';
+  static const uploadHint =
+      'اختر ملفات التسجيل التي صدّرتها من Studio One. '
+      'اسم الملف مثل S014_002_001-020.mp3 يملأ الطالب والسورة والآيات.';
+  static const dropHint = 'أو اسحب الملفات وأفلتها هنا';
+  static const dropNow = 'أفلت الملفات هنا';
+  static const studentFieldLabel = 'الطالب';
+  static const surahLabel = 'السورة';
+  static const searchSurah = 'ابحث باسم السورة أو رقمها';
+  static const ayahFromLabel = 'من آية';
+  static const ayahToLabel = 'إلى آية';
+  static const ayatNotInSurah = 'الآيات ليست في هذه السورة';
+  static const completeTheRow = 'أكمل بيانات هذا الملف';
+  static const uploadAll = 'رفع الكل';
+  static const removeFile = 'إزالة الملف';
+  static const openRecording = 'فتح التسجيل';
+  static const uploadWaiting = 'في الانتظار';
+  static const uploadDone = 'تم الرفع';
+  static const uploadCancelled = 'أُلغي الرفع';
+  static const studentNotYours = 'اختر طالباً من القائمة';
+
+  /// [percent] arrives in Arabic-Indic digits.
+  static String uploading(String percent) => 'جارٍ الرفع… $percent٪';
+
+  /// [megabytes] arrives in Arabic-Indic digits.
+  static String fileSize(String megabytes) => '$megabytes ميغابايت';
+
+  /// [done] and [total] arrive in Arabic-Indic digits.
+  static String uploadedOf(String done, String total) =>
+      'تم رفع $done من $total';
+  static const leaveUploadTitle = 'الرفع لم ينتهِ';
+  static const leaveUploadMessage =
+      'إذا خرجت الآن يتوقف رفع الملف الحالي ولا تُرفع الملفات الباقية.';
+  static const leave = 'خروج';
 
   // Admin navigation
   static const adminNavHome = 'الرئيسية';
@@ -308,8 +351,49 @@ abstract final class AppStrings {
   static const recordedAtLabel = 'تاريخ التسجيل';
   static const uploadedByLabel = 'رُفع بواسطة';
   static const unreadFeedback = 'ملاحظة جديدة لم يقرأها الطالب';
-  static const feedbackTitle = 'ملاحظات المعلم';
+  static const feedbackTitle = 'ملاحظات الشيخ';
   static const noFeedback = 'لا توجد ملاحظات بعد';
+
+  // The sheikh's voice markers and notes (Task 09).
+  static const voiceNote = 'ملاحظة صوتية من الشيخ';
+
+  /// A span of the recording, e.g. "٠١:٢٣–٠١:٣١"; the clocks arrive
+  /// formatted.
+  static String timeRange(String from, String to) => '$from–$to';
+  static const analysisPending = 'جاري تحليل التسجيل…';
+  static const analysisMono =
+      'لم نجد قناة الشيخ منفصلة في هذا الملف (صُدِّر بدون يسار/يمين)، '
+      'يمكن إضافة الملاحظات يدوياً';
+  static const analysisFailed =
+      'تعذّر تحليل التسجيل، يمكن إضافة الملاحظات يدوياً';
+  static const nextMarker = 'التالي';
+  static const previousMarker = 'السابق';
+  static const addNoteHere = 'إضافة ملاحظة هنا';
+  static const reviewedToggle = 'تمت المراجعة';
+  static const newNoteTitle = 'ملاحظة جديدة';
+  static const editNoteTitle = 'تعديل الملاحظة';
+  static const addTextToVoice = 'إضافة نص';
+  static const editNote = 'تعديل';
+  static const deleteNote = 'حذف الملاحظة';
+  static const deleteNoteConfirm = 'ستُحذف هذه الملاحظة نهائياً.';
+  static const noteLabel = 'الملاحظة';
+  static const noteRequired = 'اكتب الملاحظة';
+
+  /// [max] arrives in Arabic-Indic digits.
+  static String noteTooLong(String max) => 'الملاحظة $max حرفاً على الأكثر';
+  static const ratingOptional = 'التقييم (اختياري)';
+  static const clearRating = 'بلا تقييم';
+
+  /// [stars] arrives in Arabic-Indic digits.
+  static String rateStars(String stars) => 'تقييم $stars';
+  static const noteSaved = 'تم حفظ الملاحظة';
+  static const noteDeleted = 'تم حذف الملاحظة';
+  static const markersLabel = 'مواضع ملاحظات الشيخ';
+
+  /// [count] arrives in Arabic-Indic digits.
+  static String markerCount(String count) => 'الملاحظات: $count';
+  static const reviewedChip = 'تمت مراجعته';
+  static const notReviewedChip = 'بانتظار المراجعة';
 
   /// A note about a moment of the recording, e.g. "عند ٠١:٢٣".
   static String atTime(String clock) => 'عند $clock';

@@ -3,7 +3,9 @@
 //
 // Fixture: admin; teachers t1 (owns h1) and t2 (owns h2); students s1, s2
 // in h1 and s3 in h2; one official recording per student, one unreviewed
-// practice recording of s1 (with unread feedback), and one note on r-s1.
+// practice recording of s1 (with unread feedback). On r-s1: a written note
+// f1 by t1 (written before Task 09, so without kind), a voice marker v1
+// (the server's, author t1) and a note f-old by a former teacher.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
@@ -128,6 +130,22 @@ export async function seedFixtures(env: RulesTestEnvironment): Promise<void> {
       [
         "recordings/r-s1/feedback/f1",
         { teacherId: "t1", note: "أحسنت", atSecond: 12, rating: 5, createdAt: created },
+      ],
+      [
+        "recordings/r-s1/feedback/v1",
+        {
+          teacherId: "t1",
+          kind: "voice",
+          note: "",
+          atSecond: 83,
+          endSecond: 91,
+          rating: null,
+          createdAt: created,
+        },
+      ],
+      [
+        "recordings/r-s1/feedback/f-old",
+        { teacherId: "t-old", kind: "text", note: "راجع الآية", atSecond: null, rating: null, createdAt: created },
       ],
     ];
     for (const [path, data] of writes) {

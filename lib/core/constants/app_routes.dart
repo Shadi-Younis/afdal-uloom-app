@@ -16,6 +16,31 @@ abstract final class AppRoutes {
   /// The signed-in user's own account ("حسابي"), for every role.
   static const account = '/account';
 
+  // Teacher pages, under /teacher (the role guard protects them).
+  static const teacherHalaqatSegment = 'halaqat';
+  static const uploadSegment = 'upload';
+  static String teacherHalaqa(String halaqaId) =>
+      '$teacher/$teacherHalaqatSegment/$halaqaId';
+  static String teacherStudent(String halaqaId, String studentId) =>
+      '${teacherHalaqa(halaqaId)}/$studentsSegment/$studentId';
+  static const teacherHalaqaPath = '$teacherHalaqatSegment/:$idParam';
+
+  /// The upload page (studio recordings) of a teacher and of an admin;
+  /// [studentId] fills in the student of the first row.
+  static String teacherUpload({String? studentId}) =>
+      _withStudent('$teacher/$uploadSegment', studentId);
+  static String adminUpload({String? studentId}) =>
+      _withStudent('$admin/$uploadSegment', studentId);
+  static const adminUploadPath = '$admin/$uploadSegment';
+
+  /// Query parameter of the upload pages.
+  static const studentQuery = 'student';
+
+  static String _withStudent(String path, String? studentId) =>
+      studentId == null
+      ? path
+      : Uri(path: path, queryParameters: {studentQuery: studentId}).toString();
+
   static const splashName = 'splash';
   static const accountName = 'account';
   static const recordingName = 'recording';
@@ -103,6 +128,20 @@ abstract final class AppRoutes {
     (RegExp('^/admin/teachers/$adminSegment/[^/]+\$'), (_) => adminTeachers),
     // /admin/students/new, /admin/students/:id
     (RegExp(r'^/admin/students/[^/]+$'), (_) => adminStudents),
+    // /teacher/halaqat/:id, /teacher/upload
+    (
+      RegExp('^/teacher/($teacherHalaqatSegment/[^/]+|$uploadSegment)\$'),
+      (_) => teacher,
+    ),
+    // /teacher/halaqat/:id/students/:studentId
+    (
+      RegExp(
+        '^/teacher/$teacherHalaqatSegment/([^/]+)/$studentsSegment/[^/]+\$',
+      ),
+      (m) => teacherHalaqa(m[1]!),
+    ),
+    // /admin/upload
+    (RegExp('^/admin/$uploadSegment\$'), (_) => admin),
     // /recording/:id and /account: the role's home (the splash route
     // redirects there).
     (RegExp(r'^/recording/[^/]+$'), (_) => splash),
@@ -122,4 +161,8 @@ abstract final class AppRoutes {
   static const adminStudentsName = 'adminStudents';
   static const adminNewStudentName = 'adminNewStudent';
   static const adminStudentName = 'adminStudent';
+  static const adminUploadName = 'adminUpload';
+  static const teacherHalaqaName = 'teacherHalaqa';
+  static const teacherStudentName = 'teacherStudent';
+  static const teacherUploadName = 'teacherUpload';
 }

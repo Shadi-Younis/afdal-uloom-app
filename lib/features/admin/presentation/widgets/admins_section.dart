@@ -7,7 +7,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/widgets/islamic/app_card.dart';
 import '../../../../core/widgets/islamic/ornament_divider.dart';
-import 'disabled_chip.dart';
+import '../../../../core/widgets/common/disabled_chip.dart';
 
 /// The school's admins under the teachers list: one card each (opens their
 /// page) and "إضافة مدير" for a backup admin.

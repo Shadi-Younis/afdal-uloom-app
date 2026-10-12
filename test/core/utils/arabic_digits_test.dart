@@ -12,4 +12,13 @@ void main() {
     expect(toArabicDigits('عدد ٥ و 6'), 'عدد ٥ و ٦');
     expect(toArabicDigits(''), '');
   });
+
+  test('typed numbers: either kind of digits', () {
+    expect(fromArabicDigits('١٢:٣٤'), '12:34');
+    expect(parseTypedInt('١٢'), 12);
+    expect(parseTypedInt(' 7 '), 7);
+    expect(parseTypedInt('٢5'), 25);
+    expect(parseTypedInt(''), isNull);
+    expect(parseTypedInt('x'), isNull);
+  });
 }

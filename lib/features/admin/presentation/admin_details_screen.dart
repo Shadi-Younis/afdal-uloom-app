@@ -9,7 +9,7 @@ import '../../../core/widgets/islamic/error_state.dart';
 import '../application/admin_data_providers.dart';
 import 'widgets/account_info.dart';
 import 'widgets/admin_async_view.dart';
-import 'widgets/content_width.dart';
+import '../../../core/widgets/common/content_width.dart';
 import 'widgets/disable_account_button.dart';
 import 'widgets/edit_profile_button.dart';
 

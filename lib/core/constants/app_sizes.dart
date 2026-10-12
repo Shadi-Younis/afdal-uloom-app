@@ -32,6 +32,13 @@ abstract final class AppSizes {
   /// Forms and details pages stay this narrow on wide screens.
   static const contentMaxWidth = 640.0;
 
+  /// The upload page is wider on the studio PC: each file's fields fit in
+  /// two columns.
+  static const uploadMaxWidth = 960.0;
+
+  /// From this card width on, an uploaded file's fields go in two columns.
+  static const uploadTwoColumnsMinWidth = 560.0;
+
   /// Material's floating action button: its height (also extended) and its
   /// distance from the bottom of the page.
   static const fabHeight = 56.0;
@@ -91,4 +98,13 @@ abstract final class AppSizes {
 
   /// The back / forward 5 s icons.
   static const skipIcon = 30.0;
+
+  /// A marker of the sheikh on the seek bar (IslamicStar), the lane of
+  /// markers above the bar, and the gold band of a voice marker's span.
+  static const markerStar = 18.0;
+  static const markerLane = 26.0;
+  static const markerBand = 14.0;
+
+  /// The tappable width around a marker's star.
+  static const markerHitWidth = 32.0;
 }

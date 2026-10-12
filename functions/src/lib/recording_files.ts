@@ -1,9 +1,37 @@
 // Pure helpers about recording audio files: no Firebase calls, so they are
 // tested without emulators.
-import {RECORDINGS, STALLED_UPLOAD_AGE_MS} from "./constants.js";
+import {AUDIO_EXTENSIONS, RECORDINGS, STALLED_UPLOAD_AGE_MS} from "./constants.js";
 
 /** Prefix of every recording file in the bucket. */
 export const RECORDINGS_PREFIX = `${RECORDINGS}/`;
+
+/** What follows the recording id in the name of its centred copy. App: StoragePaths.playbackSuffix. */
+export const PLAYBACK_SUFFIX = ".play.mp3";
+
+/** `recordings/{studentId}/{recordingId}.play.mp3`. App: StoragePaths.playback. */
+export function playbackPathFor(studentId: string, recordingId: string): string {
+  return `${RECORDINGS}/${studentId}/${recordingId}${PLAYBACK_SUFFIX}`;
+}
+
+export interface RecordingUpload {
+  studentId: string;
+  recordingId: string;
+}
+
+/**
+ * The recording an uploaded object belongs to, when [name] is
+ * `recordings/{studentId}/{recordingId}.{ext}` with an accepted audio
+ * extension; null for anything else, the `.play.mp3` copies included (the
+ * server writes those itself).
+ */
+export function parseRecordingUpload(name: string | undefined): RecordingUpload | null {
+  if (!name || name.endsWith(PLAYBACK_SUFFIX)) return null;
+  const parts = name.split("/");
+  if (parts.length !== 3 || parts[0] !== RECORDINGS || parts[1] === "") return null;
+  const match = /^([^.]+)\.([a-z0-9]+)$/.exec(parts[2]);
+  if (!match || !(AUDIO_EXTENSIONS as readonly string[]).includes(match[2])) return null;
+  return {studentId: parts[1], recordingId: match[1]};
+}
 
 /**
  * Whether [storagePath] is the file of recording [recordingId]:

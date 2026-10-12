@@ -12,4 +12,17 @@ abstract final class AppDurations {
 
   /// How far the player's back / forward buttons jump.
   static const playerSkip = Duration(seconds: 5);
+
+  /// An official recording without an analysis yet shows «جاري تحليل
+  /// التسجيل…» for this long after it was created; older ones were
+  /// uploaded before the analysis existed and show nothing.
+  static const analysisPendingWindow = Duration(minutes: 30);
+
+  /// «التالي» skips a marker the player is (almost) at, so pressing it
+  /// right after a jump goes on to the following one.
+  static const nextMarkerTolerance = Duration(milliseconds: 500);
+
+  /// «السابق» this far into a marker goes to the one before it, not back
+  /// to its own start.
+  static const previousMarkerTolerance = Duration(milliseconds: 1500);
 }

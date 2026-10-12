@@ -79,7 +79,7 @@ void main() {
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('ملاحظات المعلم'), findsOneWidget);
+    expect(find.text('ملاحظات الشيخ'), findsOneWidget);
     expect(find.text('أحسنت، انتبه لمدّ الألف'), findsOneWidget);
     // Notes are cards with the gold bar, signed by the teacher.
     expect(

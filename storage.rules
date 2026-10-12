@@ -22,9 +22,14 @@ service firebase.storage {
     }
 
     match /recordings/{studentId}/{fileName} {
-      // fileName is `{recordingId}.{ext}`; Firestore ids contain no dots.
+      // fileName is `{recordingId}.{ext}`, or `{recordingId}.play.mp3` for
+      // the centred copy the server makes; Firestore ids contain no dots.
+      function recordingId() {
+        return fileName.split('\\.')[0];
+      }
+
       function recordingPath() {
-        return /databases/(default)/documents/recordings/$(fileName.split('\\.')[0]);
+        return /databases/(default)/documents/recordings/$(recordingId());
       }
 
       function recording() {
@@ -36,9 +41,19 @@ service firebase.storage {
         return recording().storagePath == 'recordings/' + studentId + '/' + fileName;
       }
 
+      function isPlaybackName() {
+        return fileName == recordingId() + '.play.mp3';
+      }
+
+      // The centred copy of this student's recording: read with exactly the
+      // same rule as the original.
+      function isPlaybackFile() {
+        return isPlaybackName() && recording().studentId == studentId;
+      }
+
       allow read: if request.auth != null
         && (role() == 'admin'
-            || (isRecordingFile()
+            || ((isRecordingFile() || isPlaybackFile())
                 && ((role() == 'teacher' && recording().teacherId == request.auth.uid)
                     || recording().studentId == request.auth.uid)));
 
@@ -46,7 +61,9 @@ service firebase.storage {
       // to its storagePath. Only the uploader of that document may, once:
       // `resource == null` refuses writing over an existing file (the
       // emulator evaluates such an overwrite as a create, not an update).
+      // Only the server (onRecordingUploaded) writes the playback copy.
       allow create: if request.auth != null
+        && !isPlaybackName()
         && resource == null
         && firestore.exists(recordingPath())
         && isRecordingFile()

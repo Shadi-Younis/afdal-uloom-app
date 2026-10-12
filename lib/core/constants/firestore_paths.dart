@@ -55,8 +55,19 @@ abstract final class Fields {
   static const unreadFeedback = 'unreadFeedback';
   static const reviewed = 'reviewed';
 
+  /// Written by the server only (onRecordingUploaded).
+  static const analysis = 'analysis';
+  static const playbackPath = 'playbackPath';
+
+  // recordings/{id}.analysis (a map)
+  static const analysisStatus = 'status';
+  static const segmentCount = 'segmentCount';
+  static const analysisError = 'error';
+
   // recordings/{recordingId}/feedback
   static const note = 'note';
   static const atSecond = 'atSecond';
   static const rating = 'rating';
+  static const kind = 'kind';
+  static const endSecond = 'endSecond';
 }

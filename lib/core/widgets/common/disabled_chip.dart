@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
+import '../../../app/app_colors.dart';
+import '../../constants/app_strings.dart';
 
 /// The red-tinted "موقوف" marker of a disabled account.
 class DisabledChip extends StatelessWidget {

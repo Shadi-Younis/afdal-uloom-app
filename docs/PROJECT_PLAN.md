@@ -79,18 +79,27 @@ recordings/{recordingId}
   ayahFrom: int
   ayahTo: int
   storagePath: string         // "recordings/{studentId}/{id}.mp3"
-  durationSec: int?
+  durationSec: int?           // يملؤه السيرفر من الصوت بعد الرفع (الرسمي)
   recordedAt: timestamp
   createdAt: timestamp
   unreadFeedback: bool        // للطالب: هل في ملاحظة جديدة؟
-  reviewed: bool              // للمعلم: هل راجع التدريب؟
+  reviewed: bool              // للمعلم: هل راجع التسجيل؟ (الرسمي يبدأ false)
+  analysis: map?              // السيرفر فقط، للتسجيل الرسمي:
+    status: "pending" | "done" | "mono" | "failed"
+    segmentCount: int?        // عدد مواضع كلام الشيخ (done)
+    error: string?            // رمز قصير للسجلات (failed)
+  playbackPath: string?       // السيرفر فقط: "recordings/{studentId}/{id}.play.mp3" (نسخة متوسطة للسماع)
 
 recordings/{recordingId}/feedback/{feedbackId}
-  teacherId: string
-  note: string
-  atSecond: int?              // ملاحظة على لحظة معيّنة من التلاوة
+  teacherId: string           // الكاتب؛ في "voice" هو معلم التسجيل
+  kind: "voice" | "text"      // voice: موضع كلام الشيخ (يكتبه السيرفر)، text: ملاحظة مكتوبة
+                              // ملاحظة بلا kind (قبل المهمة 9) تُعامل كـ "text"
+  note: string                // قد يكون فارغاً في voice
+  atSecond: int?              // ملاحظة على لحظة معيّنة من التلاوة (بداية كلام الشيخ في voice)
+  endSecond: int?             // voice فقط: أين توقف الشيخ
   rating: int?                // 1..5
   createdAt: timestamp
+  updatedAt: timestamp?       // آخر تعديل للنص أو التقييم
 ```
 
 ### قواعد ثابتة
@@ -100,16 +109,19 @@ recordings/{recordingId}/feedback/{feedbackId}
 - **في قاعدة البيانات نخزّن مسار الملف فقط** (`storagePath`) وليس رابطاً كاملاً.
 - **الواجهة لا تتعامل مع Firestore مباشرة أبداً**، بل عبر الـ Repositories في `lib/core/`.
 - **السورة تُخزَّن برقمها** (2 = البقرة)، واسمها يُعرض من قائمة ثابتة داخل التطبيق.
+- **`analysis` و`playbackPath`** لا يكتبهما إلا السيرفر (`onRecordingUploaded`). التطبيق يشغّل `playbackPath` إذا وُجد، وإلا `storagePath`. ملاحظات `voice` لا ينشئها إلا السيرفر؛ المعلم يضيف لها نصاً أو يحذفها.
 
 ### تسمية ملفات الاستوديو
 
 ```
-{رقم الطالب}_{التاريخ}_{رقم السورة}_{من آية}-{إلى آية}.mp3
-S023_2026-10-05_002_1-20.mp3
+{رقم الطالب}_{رقم السورة}_{من آية}-{إلى آية}.mp3
+S023_002_001-020.mp3        (أو S023_2_1-20.mp3)
+S023_2026-10-05_002_1-20.mp3   (مع تاريخ التسجيل، اختياري)
 ```
 
-استخدمنا رقم السورة بدل اسمها العربي لتجنّب مشاكل الأحرف العربية في أسماء الملفات بين البرامج.
-إعدادات التصدير: **MP3، Mono، 64 kbps**.
+استخدمنا رقم السورة بدل اسمها العربي لتجنّب مشاكل الأحرف العربية في أسماء الملفات بين البرامج. صفحة الرفع تقرأ هذه الأجزاء من اسم الملف وتملأ الحقول، وما لم تفهمه تتركه فارغاً.
+
+إعدادات التصدير من Studio One: **MP3 (أو WAV)، Stereo، 128 kbps**. في القالب مسار الطالب **يسار بالكامل** ومسار الشيخ **يمين بالكامل**؛ بهذا يجد السيرفر مواضع كلام الشيخ تلقائياً. الطالب يسمع نسخة متوسطة (`playbackPath`) لا يساراً ويميناً.
 
 ---
 

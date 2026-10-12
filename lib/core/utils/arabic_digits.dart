@@ -14,3 +14,17 @@ String toArabicDigits(Object value) {
   }
   return buffer.toString();
 }
+
+/// [text] with Arabic-Indic digits turned back into Western ones
+/// (`١٢` -> `12`), for numbers people type on an Arabic keyboard.
+String fromArabicDigits(String text) {
+  final buffer = StringBuffer();
+  for (final char in text.split('')) {
+    final index = _arabicIndic.indexOf(char);
+    buffer.write(index < 0 ? char : _western[index]);
+  }
+  return buffer.toString();
+}
+
+/// The whole number typed in [text] in either kind of digits, or null.
+int? parseTypedInt(String text) => int.tryParse(fromArabicDigits(text.trim()));

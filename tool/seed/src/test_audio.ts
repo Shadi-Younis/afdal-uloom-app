@@ -17,6 +17,22 @@ export interface Clip {
   ayahTo: number;
 }
 
+/**
+ * The studio recording of the seed: al-Fatiha on the LEFT (the student)
+ * and al-Ikhlas on the RIGHT (the sheikh) in two gaps, as Studio One
+ * exports the left / right template. Built from the recitations by
+ * tool/test_audio/build_fixtures.mjs (outside the repo), so the emulator's
+ * onRecordingUploaded finds two voice markers in it.
+ */
+export const studioClip: Clip = {
+  id: "studio-stereo",
+  file: "stereo_two_corrections.mp3",
+  url: "tool/test_audio/build_fixtures.mjs",
+  surahNumber: 1,
+  ayahFrom: 1,
+  ayahTo: 7,
+};
+
 export interface ClipAudio {
   mp3: Buffer;
   durationSec: number;
@@ -37,12 +53,18 @@ export function missingClips(): Clip[] {
   return clips.filter((clip) => !existsSync(join(audioDir, clip.file)));
 }
 
-/** Every clip's file and its duration in whole seconds, by clip id. */
-export function loadClipAudio(): Map<string, ClipAudio> {
-  return new Map(
-    clips.map((clip) => {
+/** Every clip's file and its duration in whole seconds, by clip id; the studio clip too. */
+export async function loadClipAudio(): Promise<Map<string, ClipAudio>> {
+  const audio = new Map(
+    clips.map((clip): [string, ClipAudio] => {
       const mp3 = readFileSync(join(audioDir, clip.file));
       return [clip.id, { mp3, durationSec: Math.round(mp3DurationSeconds(mp3)) }];
     }),
   );
+  const { buildFixtures, fixturesDir } = await import("../../test_audio/build_fixtures.mjs");
+  const studioPath = join(fixturesDir, studioClip.file);
+  if (!existsSync(studioPath)) buildFixtures();
+  const mp3 = readFileSync(studioPath);
+  audio.set(studioClip.id, { mp3, durationSec: Math.round(mp3DurationSeconds(mp3)) });
+  return audio;
 }
