@@ -20,7 +20,15 @@ import 'session_providers.dart';
 /// progress; when the upload fails or is cancelled the document is deleted
 /// again, so no recording points at a missing file. (If even that delete
 /// fails, cleanupStalledUploads removes the document after 24 h.)
+///
+/// One controller per upload key: the upload page runs one per file, one
+/// after the other.
 class RecordingUploadController extends Notifier<RecordingUploadState> {
+  RecordingUploadController(this.uploadKey);
+
+  /// Which upload this is, e.g. a row of the upload page.
+  final String uploadKey;
+
   AudioUpload? _upload;
   var _cancelRequested = false;
 
@@ -182,8 +190,7 @@ class RecordingUploadController extends Notifier<RecordingUploadState> {
   }
 }
 
-final recordingUploadControllerProvider =
-    NotifierProvider.autoDispose<
-      RecordingUploadController,
-      RecordingUploadState
-    >(RecordingUploadController.new);
+final recordingUploadControllerProvider = NotifierProvider.autoDispose
+    .family<RecordingUploadController, RecordingUploadState, String>(
+      RecordingUploadController.new,
+    );

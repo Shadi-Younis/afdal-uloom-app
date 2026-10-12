@@ -7,7 +7,9 @@ import '../data/firebase_audio_storage_service.dart';
 import '../data/firebase_auth_service.dart';
 import '../data/just_audio_player_service.dart';
 import '../data/functions_accounts_service.dart';
+import '../data/platform_audio_file_picker.dart';
 import '../services/accounts_service.dart';
+import '../services/audio_file_picker.dart';
 import '../services/audio_player_service.dart';
 import '../services/audio_storage_service.dart';
 import '../services/auth_service.dart';
@@ -48,3 +50,8 @@ final audioPlayerServiceProvider = Provider.autoDispose<AudioPlayerService>((
   ref.onDispose(player.dispose);
   return player;
 });
+
+/// The system's file picker for audio files (the upload page).
+final audioFilePickerProvider = Provider<AudioFilePicker>(
+  (ref) => const PlatformAudioFilePicker(),
+);

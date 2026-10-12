@@ -63,16 +63,16 @@ void main() {
     await container.read(sessionProvider.future);
     states = [];
     container.listen(
-      recordingUploadControllerProvider,
+      recordingUploadControllerProvider('row-1'),
       (_, next) => states.add(next),
       fireImmediately: true,
     );
   }
 
   RecordingUploadController controller() =>
-      container.read(recordingUploadControllerProvider.notifier);
+      container.read(recordingUploadControllerProvider('row-1').notifier);
   RecordingUploadState state() =>
-      container.read(recordingUploadControllerProvider);
+      container.read(recordingUploadControllerProvider('row-1'));
 
   /// Lets create() finish and the upload start.
   Future<void> settle() => Future<void>.delayed(Duration.zero);
@@ -239,7 +239,7 @@ void main() {
       'leaving the screen (dispose) cancels and deletes the document',
       () async {
         final sub = container.listen(
-          recordingUploadControllerProvider,
+          recordingUploadControllerProvider('row-1'),
           (_, _) {},
         );
         final result = controller().start(request());
