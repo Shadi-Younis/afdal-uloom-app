@@ -218,7 +218,16 @@ service cloud.firestore {
           && request.resource.data.reviewed is bool
           && request.resource.data.unreadFeedback is bool);
 
-      allow delete: if isOwningTeacher() || isAdmin();
+      // A student may take back a practice recording the sheikh has not
+      // reviewed yet; onRecordingDeleted removes its file and notes.
+      function isOwnUnreviewedPractice() {
+        return isStudent()
+          && resource.data.studentId == request.auth.uid
+          && resource.data.type == 'practice'
+          && resource.data.reviewed == false;
+      }
+
+      allow delete: if isOwningTeacher() || isAdmin() || isOwnUnreviewedPractice();
 
       // ---- recordings/{id}/feedback -------------------------------------
 

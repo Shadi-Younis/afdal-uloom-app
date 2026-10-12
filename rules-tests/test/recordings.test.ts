@@ -14,7 +14,7 @@ import {
   where,
   type Firestore,
 } from "firebase/firestore";
-import { afterAll, beforeAll, beforeEach, describe, test } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { anonymous, as, createTestEnv, recordingDoc, seedFixtures } from "./fixtures.js";
 
 let env: RulesTestEnvironment;
@@ -133,8 +133,22 @@ describe("student s1", () => {
     await assertFails(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
   });
 
-  test("cannot delete own recording", async () => {
+  test("cannot delete an official recording, even its own", async () => {
     await assertFails(deleteDoc(doc(as(env, "s1", "student"), "recordings/r-s1")));
+  });
+
+  test("deletes own practice recording while not reviewed («حذف التدريب»)", async () => {
+    await assertSucceeds(deleteDoc(doc(as(env, "s1", "student"), "recordings/p-s1")));
+  });
+
+  test("cannot delete own practice once reviewed, or another student's practice", async () => {
+    const db = as(env, "s1", "student");
+    await assertFails(deleteDoc(doc(db, "recordings/p-s1-reviewed")));
+    await assertFails(deleteDoc(doc(db, "recordings/p-s2")));
+  });
+
+  test("a student claim is required: s1's uid with another role cannot delete it", async () => {
+    await assertFails(deleteDoc(doc(as(env, "s1", "teacher"), "recordings/p-s1")));
   });
 });
 
@@ -161,6 +175,26 @@ describe("teacher t1", () => {
     await assertSucceeds(getDocs(pending("t1", "practice")));
     await assertSucceeds(getDocs(pending("t1", "official")));
     await assertFails(getDocs(pending("t2", "official")));
+  });
+
+  test("lists the whole review queue, both types (Task 10), not t2's", async () => {
+    const db = as(env, "t1", "teacher");
+    const queue = (teacherId: string) =>
+      query(
+        collection(db, "recordings"),
+        where("teacherId", "==", teacherId),
+        where("reviewed", "==", false),
+        orderBy("createdAt"),
+      );
+    const own = await assertSucceeds(getDocs(queue("t1")));
+    expect(own.docs.map((d) => d.id).sort()).toEqual(["p-s1", "p-s2"]);
+    await assertFails(getDocs(queue("t2")));
+  });
+
+  test("deletes a practice recording of its halaqa, reviewed or not", async () => {
+    const db = as(env, "t1", "teacher");
+    await assertSucceeds(deleteDoc(doc(db, "recordings/p-s1-reviewed")));
+    await assertSucceeds(deleteDoc(doc(db, "recordings/p-s2")));
   });
 
   test("lists own recordings of this week (watchForTeacherSince), not t2's", async () => {
