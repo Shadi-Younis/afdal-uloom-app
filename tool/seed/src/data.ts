@@ -3,14 +3,18 @@
 //
 // Halaqat:  حلقة الفجر (t01, 5 students), حلقة العصر (t02, 5 students),
 //           حلقة المغرب (t01, 2 students).
-// s012 has no recordings (empty state). 25 recordings: 19 official,
-// 6 practice (4 not reviewed); 4 with unread feedback; notes on 8
-// recordings, rec-09 has 3. Every recording plays a recitation by
-// al-Minshawi (test_audio.json): al-Fatiha, al-Ikhlas, al-Falaq, an-Nas or
-// one of al-Mulk 1..5; its surah and ayat are the clip's. The seed refuses
-// a note whose "at second" is past the end of its recording's audio.
+// s012 has no recordings (empty state). 26 recordings: 20 official
+// (4 waiting for review), 6 practice (4 not reviewed); 4 with unread
+// feedback; notes on 8 recordings, rec-09 has 3. Every recording plays a
+// recitation by al-Minshawi (test_audio.json): al-Fatiha, al-Ikhlas,
+// al-Falaq, an-Nas or one of al-Mulk 1..5; its surah and ayat are the
+// clip's. rec-26 (s001) is the studio template in stereo (studioClip):
+// on the emulator onRecordingUploaded finds the sheikh in it twice. The
+// other official files have one voice in the middle, so their analysis
+// says "mono". The seed refuses a note whose "at second" is past the end
+// of its recording's audio.
 
-import { clips } from "./test_audio.js";
+import { clips, studioClip } from "./test_audio.js";
 
 export type Role = "admin" | "teacher" | "student";
 
@@ -105,22 +109,23 @@ type Row = [
   unread: boolean,
 ];
 
-// Official studio recordings are reviewed by definition.
+// Official recordings wait for the sheikh to check their voice markers
+// («تمت المراجعة»); rec-02, rec-09, rec-14 and rec-26 still do.
 const rows: Row[] = [
   ["rec-01", "s001", "official", "ikhlas", "2026-09-01", true, false],
-  ["rec-02", "s001", "official", "fatiha", "2026-09-08", true, true],
+  ["rec-02", "s001", "official", "fatiha", "2026-09-08", false, true],
   ["rec-03", "s001", "official", "falaq", "2026-09-15", true, false],
   ["rec-04", "s002", "official", "mulk-1", "2026-09-02", true, true],
   ["rec-05", "s002", "official", "mulk-2", "2026-09-09", true, false],
   ["rec-06", "s003", "official", "ikhlas", "2026-09-03", true, false],
   ["rec-07", "s003", "official", "falaq", "2026-09-10", true, false],
   ["rec-08", "s004", "official", "fatiha", "2026-09-04", true, false],
-  ["rec-09", "s005", "official", "nas", "2026-09-05", true, true],
+  ["rec-09", "s005", "official", "nas", "2026-09-05", false, true],
   ["rec-10", "s006", "official", "mulk-1", "2026-09-02", true, false],
   ["rec-11", "s006", "official", "mulk-2", "2026-09-09", true, false],
   ["rec-12", "s007", "official", "ikhlas", "2026-09-03", true, false],
   ["rec-13", "s007", "official", "nas", "2026-09-10", true, false],
-  ["rec-14", "s008", "official", "fatiha", "2026-09-04", true, true],
+  ["rec-14", "s008", "official", "fatiha", "2026-09-04", false, true],
   ["rec-15", "s009", "official", "falaq", "2026-09-05", true, false],
   ["rec-16", "s010", "official", "mulk-3", "2026-09-06", true, false],
   ["rec-17", "s011", "official", "mulk-1", "2026-09-07", true, false],
@@ -132,9 +137,10 @@ const rows: Row[] = [
   ["rec-23", "s008", "practice", "falaq", "2026-09-23", false, false],
   ["rec-24", "s011", "practice", "mulk-2", "2026-09-24", false, false],
   ["rec-25", "s010", "practice", "mulk-5", "2026-09-25", true, false],
+  ["rec-26", "s001", "official", "studio-stereo", "2026-10-10", false, false],
 ];
 
-const clipById = new Map(clips.map((clip) => [clip.id, clip]));
+const clipById = new Map([...clips, studioClip].map((clip) => [clip.id, clip]));
 
 export const recordings: SeedRecording[] = rows.map(
   ([id, studentId, type, clipId, date, reviewed, unreadFeedback]) => {
