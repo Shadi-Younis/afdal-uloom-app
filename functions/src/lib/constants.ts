@@ -44,6 +44,8 @@ export const F = {
   createdAt: "createdAt",
   disabled: "disabled",
   teacherId: "teacherId",
+  /** halaqat: a copy of the teacher's fullName, for the students. */
+  teacherName: "teacherName",
   studentId: "studentId",
   storagePath: "storagePath",
   type: "type",

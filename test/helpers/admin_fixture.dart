@@ -51,6 +51,7 @@ class AdminFixture {
         Halaqa(id: 'halaqa-asr', name: 'حلقة العصر', teacherId: 't02'),
       ]) {
     accounts = FakeAccountsService(users: users, halaqat: halaqat);
+    halaqat.teacherNameOf = (id) => users.users[id]?.fullName;
   }
 
   /// No halaqat, teachers or students: only the admin.
@@ -60,6 +61,7 @@ class AdminFixture {
       }),
       halaqat = FakeHalaqaRepository() {
     accounts = FakeAccountsService(users: users, halaqat: halaqat);
+    halaqat.teacherNameOf = (id) => users.users[id]?.fullName;
   }
 
   final FakeUserRepository users;

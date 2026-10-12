@@ -12,6 +12,27 @@ void main() {
     expect(Halaqa.fromMap('h1', halaqa.toMap()), halaqa);
   });
 
+  test('teacherName: stored when known, absent before Task 10', () {
+    const named = Halaqa(
+      id: 'h1',
+      name: 'حلقة الفجر',
+      teacherId: 't1',
+      teacherName: 'محمود',
+    );
+    expect(named.toMap(), {
+      'name': 'حلقة الفجر',
+      'teacherId': 't1',
+      'teacherName': 'محمود',
+    });
+    expect(Halaqa.fromMap('h1', named.toMap()), named);
+    expect(Halaqa.fromMap('h1', halaqa.toMap()).teacherName, isNull);
+    expect(named, isNot(halaqa));
+    expect(
+      () => Halaqa.fromMap('h1', {...halaqa.toMap(), 'teacherName': 7}),
+      throwsFormatException,
+    );
+  });
+
   test('missing or mistyped field throws FormatException', () {
     expect(() => Halaqa.fromMap('h1', {'name': 'حلقة'}), throwsFormatException);
     expect(

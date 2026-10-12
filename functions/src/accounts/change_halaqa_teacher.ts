@@ -10,9 +10,12 @@ import {asObject, readId} from "../lib/validation.js";
 /**
  * changeHalaqaTeacher({halaqaId, teacherId}) -> {recordingsUpdated}
  *
- * Admin only. Gives the halaqa to another teacher and updates teacherId on
- * every recording of that halaqa (it is copied there for queries and
- * security rules). Safe to re-run if it stopped half-way.
+ * Admin only. Gives the halaqa to another teacher, with the teacher's
+ * current name (teacherName, which the students see), and updates teacherId
+ * on every recording of that halaqa (it is copied there for queries and
+ * security rules). Safe to re-run if it stopped half-way; running it with
+ * the same teacher refreshes teacherName (halaqat created before it
+ * existed have none).
  */
 export const changeHalaqaTeacher = callable(async (request) => {
   requireRole(request, "admin");
@@ -30,7 +33,10 @@ export const changeHalaqaTeacher = callable(async (request) => {
     .get();
 
   await updateInBatches([
-    {ref: db.collection(HALAQAT).doc(halaqaId), data: {[F.teacherId]: teacherId}},
+    {
+      ref: db.collection(HALAQAT).doc(halaqaId),
+      data: {[F.teacherId]: teacherId, [F.teacherName]: teacher[F.fullName]},
+    },
     ...recordings.docs.map((doc) => ({ref: doc.ref, data: {[F.teacherId]: teacherId}})),
   ]);
 

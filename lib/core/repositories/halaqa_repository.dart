@@ -21,11 +21,13 @@ abstract class HalaqaRepository {
   /// Allowed for: an admin, its teacher, and its students.
   Stream<Halaqa?> watch(String halaqaId);
 
-  /// Creates a halaqa and returns its new id.
+  /// Creates a halaqa and returns its new id. The teacher's current
+  /// `fullName` is copied into it as `teacherName`.
   ///
   /// Allowed for: admins only. [name] must be 1..60 characters and
   /// [teacherId] an existing user whose role is teacher, otherwise
-  /// `AppErrorCode.permissionDenied` (security rules).
+  /// `AppErrorCode.permissionDenied` (security rules), or
+  /// `AppErrorCode.notFound` when [teacherId] has no profile.
   Future<String> create({required String name, required String teacherId});
 
   /// Renames [halaqaId]. Same limits on [name] as [create].

@@ -83,7 +83,8 @@ export async function resetFixture(): Promise<void> {
   await addUser("admin", "admin");
   await addUser("t1", "teacher");
   await addUser("t2", "teacher");
-  await db.doc("halaqat/h1").set({name: "h1", teacherId: "t1"});
+  await db.doc("halaqat/h1").set({name: "h1", teacherId: "t1", teacherName: "name t1"});
+  // Created before Task 10: no teacherName.
   await db.doc("halaqat/h2").set({name: "h2", teacherId: "t2"});
   await addUser("s1", "student", "h1");
   await addUser("s2", "student", "h1");

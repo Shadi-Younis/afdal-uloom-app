@@ -42,7 +42,7 @@ describe("changeHalaqaTeacher", () => {
     const result = await callAs("admin", "changeHalaqaTeacher", {halaqaId: "h1", teacherId: "t2"});
     expect(result).toEqual({ok: true, data: {recordingsUpdated: 3}});
 
-    expect((await db.doc("halaqat/h1").get()).data()!.teacherId).toBe("t2");
+    expect((await db.doc("halaqat/h1").get()).data()).toMatchObject({teacherId: "t2", teacherName: "name t2"});
     for (const id of ["r1", "r2", "r3"]) {
       expect(await recording(id)).toMatchObject({halaqaId: "h1", teacherId: "t2"});
     }
@@ -58,6 +58,14 @@ describe("changeHalaqaTeacher", () => {
     expect(
       await callAs("admin", "changeHalaqaTeacher", {halaqaId: "h1", teacherId: "nobody"}),
     ).toMatchObject({ok: false, code: "not-found"});
-    expect((await db.doc("halaqat/h1").get()).data()!.teacherId).toBe("t1");
+    expect((await db.doc("halaqat/h1").get()).data()).toMatchObject({teacherId: "t1", teacherName: "name t1"});
+  });
+
+  test("the same teacher again fills in teacherName of a halaqa from before Task 10", async () => {
+    expect((await db.doc("halaqat/h2").get()).data()!.teacherName).toBeUndefined();
+    const result = await callAs("admin", "changeHalaqaTeacher", {halaqaId: "h2", teacherId: "t2"});
+    expect(result).toEqual({ok: true, data: {recordingsUpdated: 1}});
+    expect((await db.doc("halaqat/h2").get()).data()).toEqual({name: "h2", teacherId: "t2", teacherName: "name t2"});
+    expect(await recording("r4")).toMatchObject({halaqaId: "h2", teacherId: "t2"});
   });
 });

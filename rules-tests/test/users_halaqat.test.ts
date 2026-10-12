@@ -12,8 +12,9 @@ import {
   setDoc,
   updateDoc,
   where,
+  type Firestore,
 } from "firebase/firestore";
-import { afterAll, beforeAll, beforeEach, describe, test } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { anonymous, as, createTestEnv, seedFixtures } from "./fixtures.js";
 
 let env: RulesTestEnvironment;
@@ -131,10 +132,23 @@ describe("halaqat", () => {
     );
   });
 
-  test("student reads own halaqa only", async () => {
+  test("student reads own halaqa only, with its teacher's name", async () => {
     const db = as(env, "s1", "student");
-    await assertSucceeds(getDoc(doc(db, "halaqat/h1")));
+    const own = await assertSucceeds(getDoc(doc(db, "halaqat/h1")));
+    expect(own.get("teacherName")).toBe("المعلم الأول");
     await assertFails(getDoc(doc(db, "halaqat/h2")));
+    await assertFails(getDocs(query(collection(db, "halaqat"), orderBy("name"))));
+    // The name comes from the halaqa: the teacher's profile stays closed.
+    await assertFails(getDoc(doc(db, "users/t1")));
+  });
+
+  test("a student moved to another halaqa reads the new one only", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore() as unknown as Firestore, "users/s1"), { halaqaId: "h2" });
+    });
+    const db = as(env, "s1", "student");
+    await assertSucceeds(getDoc(doc(db, "halaqat/h2")));
+    await assertFails(getDoc(doc(db, "halaqat/h1")));
   });
 
   test("teacher cannot create or rename a halaqa", async () => {
@@ -146,8 +160,12 @@ describe("halaqat", () => {
   test("admin creates and renames halaqat", async () => {
     const db = as(env, "admin", "admin");
     await assertSucceeds(getDocs(query(collection(db, "halaqat"), orderBy("name"))));
-    await assertSucceeds(addDoc(collection(db, "halaqat"), { name: "حلقة المغرب", teacherId: "t2" }));
+    await assertSucceeds(
+      addDoc(collection(db, "halaqat"), { name: "حلقة المغرب", teacherId: "t2", teacherName: "المعلم الثاني" }),
+    );
     await assertSucceeds(updateDoc(doc(db, "halaqat/h1"), { name: "حلقة الضحى" }));
+    // A halaqa from before Task 10 (no teacherName) can still be renamed.
+    await assertSucceeds(updateDoc(doc(db, "halaqat/h2"), { name: "حلقة العشاء" }));
   });
 
   test("nobody deletes a halaqa from the client (deleteHalaqa function only)", async () => {
@@ -166,11 +184,28 @@ describe("halaqat", () => {
   test("admin cannot create an invalid halaqa", async () => {
     const db = as(env, "admin", "admin");
     const halaqat = collection(db, "halaqat");
-    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "s1" })); // a student
-    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "nobody" }));
-    await assertFails(addDoc(halaqat, { name: "", teacherId: "t1" }));
-    await assertFails(addDoc(halaqat, { name: "ح".repeat(61), teacherId: "t1" }));
-    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "t1", extra: true }));
+    const t1 = "المعلم الأول";
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "s1", teacherName: "أحمد" })); // a student
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "nobody", teacherName: t1 }));
+    await assertFails(addDoc(halaqat, { name: "", teacherId: "t1", teacherName: t1 }));
+    await assertFails(addDoc(halaqat, { name: "ح".repeat(61), teacherId: "t1", teacherName: t1 }));
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "t1", teacherName: t1, extra: true }));
     await assertFails(updateDoc(doc(db, "halaqat/h1"), { teacherId: "s1" }));
+  });
+
+  test("a new halaqa needs teacherName equal to its teacher's fullName", async () => {
+    const halaqat = collection(as(env, "admin", "admin"), "halaqat");
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "t1" }));
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "t1", teacherName: "المعلم الثاني" }));
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "t1", teacherName: "" }));
+    await assertFails(addDoc(halaqat, { name: "حلقة", teacherId: "t1", teacherName: null }));
+    await assertSucceeds(addDoc(halaqat, { name: "حلقة", teacherId: "t1", teacherName: "المعلم الأول" }));
+  });
+
+  test("nobody changes teacherName from the client (the server keeps it)", async () => {
+    await assertFails(updateDoc(doc(as(env, "admin", "admin"), "halaqat/h1"), { teacherName: "اسم آخر" }));
+    await assertFails(updateDoc(doc(as(env, "admin", "admin"), "halaqat/h2"), { teacherName: "المعلم الثاني" }));
+    await assertFails(updateDoc(doc(as(env, "t1", "teacher"), "halaqat/h1"), { teacherName: "اسم آخر" }));
+    await assertFails(updateDoc(doc(as(env, "s1", "student"), "halaqat/h1"), { teacherName: "اسم آخر" }));
   });
 });

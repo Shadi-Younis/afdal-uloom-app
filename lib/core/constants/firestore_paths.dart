@@ -42,6 +42,9 @@ abstract final class Fields {
   // halaqat
   static const name = 'name';
 
+  /// A copy of `users/{teacherId}.fullName`, kept by the server.
+  static const teacherName = 'teacherName';
+
   // recordings
   static const studentId = 'studentId';
   static const uploadedBy = 'uploadedBy';

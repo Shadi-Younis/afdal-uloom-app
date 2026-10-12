@@ -106,12 +106,16 @@ service cloud.firestore {
     // ---- halaqat --------------------------------------------------------
 
     match /halaqat/{halaqaId} {
+      // teacherName is a copy of the teacher's fullName for the students,
+      // who cannot read teachers' profiles; the server keeps it equal
+      // (changeHalaqaTeacher, updateUserProfile).
       function isValidHalaqa(data) {
-        return data.keys().hasAll(['name', 'teacherId'])
-          && data.keys().hasOnly(['name', 'teacherId'])
+        return data.keys().hasAll(['name', 'teacherId', 'teacherName'])
+          && data.keys().hasOnly(['name', 'teacherId', 'teacherName'])
           && isStringOfLength(data.name, 1, 60)
           && data.teacherId is string
-          && isUserWithRole(data.teacherId, 'teacher');
+          && isUserWithRole(data.teacherId, 'teacher')
+          && data.teacherName == get(userPath(data.teacherId)).data.fullName;
       }
 
       allow read: if isAdmin()

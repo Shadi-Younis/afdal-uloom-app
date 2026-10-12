@@ -15,6 +15,10 @@ class FakeHalaqaRepository implements HalaqaRepository {
     : halaqat = {for (final h in halaqat) h.id: h};
 
   final Map<String, Halaqa> halaqat;
+
+  /// The teacher's name create copies into a new halaqa, as the real
+  /// repository does from the users doc.
+  String? Function(String teacherId) teacherNameOf = (_) => null;
   Object? watchError;
   Object? writeError;
   Completer<void>? gate;
@@ -56,7 +60,14 @@ class FakeHalaqaRepository implements HalaqaRepository {
     await gate?.future;
     if (writeError case final error?) throw error;
     final id = 'halaqa-new-${createCalls.length}';
-    put(Halaqa(id: id, name: name, teacherId: teacherId));
+    put(
+      Halaqa(
+        id: id,
+        name: name,
+        teacherId: teacherId,
+        teacherName: teacherNameOf(teacherId),
+      ),
+    );
     return id;
   }
 

@@ -3,7 +3,7 @@ import {logger} from "firebase-functions";
 import {auth, db} from "../lib/admin.js";
 import {requireRole} from "../lib/auth_checks.js";
 import {callable} from "../lib/callable.js";
-import {F, USERS, emailFor} from "../lib/constants.js";
+import {F, HALAQAT, USERS, emailFor} from "../lib/constants.js";
 import {alreadyExists, invalidArgument, permissionDenied} from "../lib/errors.js";
 import {getUserDoc, teacherOwnsStudent} from "../lib/lookups.js";
 import {asObject, readFullName, readId, readStudentCode, readUsername} from "../lib/validation.js";
@@ -16,7 +16,9 @@ import {asObject, readFullName, readId, readStudentCode, readUsername} from "../
  * At least one field is required. fullName 2..60; username follows the
  * createUser rules and stays unique (`already-exists`, field `username`):
  * it changes the sign-in email AND users/{uid}.username; studentCode only
- * for students, unique (`already-exists`, field `studentCode`).
+ * for students, unique (`already-exists`, field `studentCode`). A teacher's
+ * new fullName also reaches the teacherName of every halaqa they teach, in
+ * the same transaction.
  */
 export const updateUserProfile = callable(async (request) => {
   const caller = requireRole(request, "admin", "teacher");
@@ -65,6 +67,14 @@ export const updateUserProfile = callable(async (request) => {
         if (sameCode.docs.some((doc) => doc.id !== uid)) {
           throw alreadyExists("studentCode already exists.", "studentCode");
         }
+      }
+      // A teacher teaches a few halaqat: far below a transaction's 500 writes.
+      const halaqat =
+        fullName !== undefined && target[F.role] === "teacher"
+          ? await transaction.get(db.collection(HALAQAT).where(F.teacherId, "==", uid))
+          : null;
+      for (const halaqa of halaqat?.docs ?? []) {
+        transaction.update(halaqa.ref, {[F.teacherName]: fullName});
       }
       transaction.update(db.collection(USERS).doc(uid), {
         ...(fullName !== undefined && {[F.fullName]: fullName}),
