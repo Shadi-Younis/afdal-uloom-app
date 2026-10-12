@@ -2,6 +2,10 @@
     <!-- Firebase needs the network in every build type; declare it here
          instead of relying on plugin manifests being merged in. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- «سجّل تدريباً»: the student records his recitation. Android shows
+         its own permission dialog (in the phone's language); when it is
+         refused, the app explains in Arabic how to allow it in Settings. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="أفضل العلوم"
         android:name="${applicationName}"

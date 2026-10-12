@@ -8,9 +8,11 @@ import '../data/firebase_auth_service.dart';
 import '../data/just_audio_player_service.dart';
 import '../data/functions_accounts_service.dart';
 import '../data/platform_audio_file_picker.dart';
+import '../data/record_audio_recorder_service.dart';
 import '../services/accounts_service.dart';
 import '../services/audio_file_picker.dart';
 import '../services/audio_player_service.dart';
+import '../services/audio_recorder_service.dart';
 import '../services/audio_storage_service.dart';
 import '../services/auth_service.dart';
 
@@ -54,4 +56,14 @@ final audioPlayerServiceProvider = Provider.autoDispose<AudioPlayerService>((
 /// The system's file picker for audio files (the upload page).
 final audioFilePickerProvider = Provider<AudioFilePicker>(
   (ref) => const PlatformAudioFilePicker(),
+);
+
+/// The microphone recorder of the practice page. autoDispose: leaving the
+/// page stops a running take and frees the recorder.
+final audioRecorderServiceProvider = Provider.autoDispose<AudioRecorderService>(
+  (ref) {
+    final recorder = RecordAudioRecorderService();
+    ref.onDispose(recorder.dispose);
+    return recorder;
+  },
 );

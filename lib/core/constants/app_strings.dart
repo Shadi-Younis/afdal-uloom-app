@@ -442,5 +442,7 @@ abstract final class AppStrings {
   static const errorFileTooLarge = 'الملف أكبر من ١٠٠ ميغابايت.';
   static const errorUnsupportedFile = 'نوع الملف غير مدعوم. اختر ملفاً صوتياً.';
   static const errorUploadCancelled = 'تم إلغاء الرفع.';
+  static const errorRecordingFailed =
+      'تعذّر التسجيل من الميكروفون على هذا الجهاز. حاول مرة أخرى.';
   static const errorUnknown = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
 }

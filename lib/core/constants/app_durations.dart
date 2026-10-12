@@ -25,4 +25,13 @@ abstract final class AppDurations {
   /// «السابق» this far into a marker goes to the one before it, not back
   /// to its own start.
   static const previousMarkerTolerance = Duration(milliseconds: 1500);
+
+  /// The longest practice recording; the recorder stops by itself there.
+  static const maxPracticeLength = Duration(minutes: 30);
+
+  /// From here on the recorder warns that [maxPracticeLength] is near.
+  static const practiceLengthWarning = Duration(minutes: 25);
+
+  /// How often the recorder's timer and level meter refresh.
+  static const recorderTick = Duration(milliseconds: 200);
 }
