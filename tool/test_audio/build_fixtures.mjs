@@ -17,7 +17,7 @@
 // builds its practice recordings with buildPracticeM4a (practice_*.m4a:
 // one recitation in one channel, as the phone app records).
 import {execFileSync} from "node:child_process";
-import {existsSync, mkdirSync, writeFileSync} from "node:fs";
+import {existsSync, mkdirSync, rmSync, writeFileSync} from "node:fs";
 import {createRequire} from "node:module";
 import {dirname, join, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -185,16 +185,23 @@ export function buildPracticeM4a(clipFile) {
   mkdirSync(fixturesDir, {recursive: true});
   const output = join(fixturesDir, `practice_${clipFile.replace(/\.mp3$/, "")}.m4a`);
   if (!existsSync(output)) {
-    execFileSync(
-      ffmpeg(),
-      [
-        "-hide_banner", "-loglevel", "error", "-y",
-        "-i", source,
-        "-ac", "1", "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart",
-        output,
-      ],
-      {stdio: ["ignore", "inherit", "inherit"]},
-    );
+    try {
+      execFileSync(
+        ffmpeg(),
+        [
+          "-hide_banner", "-loglevel", "error", "-y",
+          "-i", source,
+          // -vn: the recitations carry cover art, which .m4a cannot hold.
+          "-vn", "-ac", "1", "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart",
+          output,
+        ],
+        {stdio: ["ignore", "inherit", "inherit"]},
+      );
+    } catch (error) {
+      // Never leave a broken file to be reused by the next run.
+      rmSync(output, {force: true});
+      throw error;
+    }
   }
   return {path: output, durationSec: durationOf(output)};
 }
