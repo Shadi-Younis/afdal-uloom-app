@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/application/recording_player_controller.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/models/playback_source.dart';
 import '../../../../core/models/recording.dart';
 import '../../../../core/providers/clock_provider.dart';
 import '../../../../core/widgets/common/app_snack_bar.dart';
@@ -31,7 +32,9 @@ class RecordingDetailsView extends ConsumerWidget {
 
   Future<void> _addNoteHere(BuildContext context, WidgetRef ref) async {
     final player = ref.read(
-      recordingPlayerControllerProvider(recording.playablePath).notifier,
+      recordingPlayerControllerProvider(
+        StoredPlayback(recording.playablePath),
+      ).notifier,
     );
     await player.pause();
     if (!context.mounted) return;
@@ -53,6 +56,7 @@ class RecordingDetailsView extends ConsumerWidget {
     final notes = ref.watch(recordingFeedbackProvider(recording.id)).value;
     final markers = markersOf(notes ?? const []);
     final notice = analysisNoticeFor(recording, ref.watch(clockProvider)());
+    final source = StoredPlayback(recording.playablePath);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.pagePadding),
       child: Align(
@@ -66,10 +70,10 @@ class RecordingDetailsView extends ConsumerWidget {
               const SizedBox(height: AppSizes.spaceM),
               if (notice != null) AnalysisBanner(notice: notice),
               RecordingPlayer(
-                storagePath: recording.playablePath,
+                source: source,
                 markers: markers,
                 footer: MarkerNavigation(
-                  storagePath: recording.playablePath,
+                  source: source,
                   markers: markers,
                   onAddNote: canManage
                       ? () => _addNoteHere(context, ref)

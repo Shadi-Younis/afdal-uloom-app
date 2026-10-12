@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
+import 'package:afdal_uloom_tilawat/core/models/playback_source.dart';
 import 'package:afdal_uloom_tilawat/core/providers/service_providers.dart';
 import 'package:afdal_uloom_tilawat/core/widgets/common/recording_player.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,9 @@ void main() {
   Future<void> pumpPlayer(WidgetTester tester) => pumpScreen(
     tester,
     const Scaffold(
-      body: SingleChildScrollView(child: RecordingPlayer(storagePath: path)),
+      body: SingleChildScrollView(
+        child: RecordingPlayer(source: StoredPlayback(path)),
+      ),
     ),
     auth: FakeAuthService(),
     overrides: [

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../constants/playback_speeds.dart';
 import '../errors/app_exception.dart';
+import '../models/playback_source.dart';
 import '../models/playback_status.dart';
 import '../providers/service_providers.dart';
 import '../services/audio_player_service.dart';
@@ -11,16 +12,17 @@ import '../services/audio_storage_service.dart';
 import 'recording_player_phase.dart';
 import 'recording_player_state.dart';
 
-/// Plays the recording at [storagePath]: gets its URL, loads it, and runs
-/// play / pause / seek / speed. When loading fails (also in the middle of
+/// Plays [source]: a recording in Storage (its URL comes from
+/// AudioStorageService) or a take on this device. Loads it and runs play /
+/// pause / seek / speed. When loading fails (also in the middle of
 /// playback) it tries once more with a fresh URL, at the same position.
 ///
 /// The player stops when the screen is left: this provider and the one
 /// audio player are both autoDispose.
 class RecordingPlayerController extends Notifier<RecordingPlayerState> {
-  RecordingPlayerController(this.storagePath);
+  RecordingPlayerController(this.source);
 
-  final String storagePath;
+  final PlaybackSource source;
 
   late AudioPlayerService _player;
   late AudioStorageService _storage;
@@ -112,7 +114,13 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
       position: at,
     );
     try {
-      final url = await _storage.getPlaybackUrl(storagePath, refresh: freshUrl);
+      final url = switch (source) {
+        StoredPlayback(:final storagePath) => await _storage.getPlaybackUrl(
+          storagePath,
+          refresh: freshUrl,
+        ),
+        LocalPlayback(:final uri) => uri,
+      };
       final duration = await _player.load(url, initialPosition: at);
       if (!ref.mounted || number != _loadNumber) return;
       state = state.copyWith(
@@ -180,6 +188,6 @@ class RecordingPlayerController extends Notifier<RecordingPlayerState> {
 }
 
 final recordingPlayerControllerProvider = NotifierProvider.autoDispose
-    .family<RecordingPlayerController, RecordingPlayerState, String>(
+    .family<RecordingPlayerController, RecordingPlayerState, PlaybackSource>(
       RecordingPlayerController.new,
     );

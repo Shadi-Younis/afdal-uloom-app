@@ -32,7 +32,7 @@ final thisWeekRecordingsProvider = StreamProvider.autoDispose<List<Recording>>(
 final pendingReviewProvider = StreamProvider.autoDispose<List<Recording>>(
   (ref) => ref
       .watch(recordingRepositoryProvider)
-      .watchUnreviewed(_uid(ref), RecordingType.official),
+      .watchUnreviewed(_uid(ref), type: RecordingType.official),
 );
 
 /// The counts of the teacher's home.
@@ -69,14 +69,4 @@ final teacherStudentRecordingsProvider = StreamProvider.autoDispose
       (ref, studentId) => ref
           .watch(recordingRepositoryProvider)
           .watchForStudent(studentId, teacherId: _uid(ref)),
-    );
-
-/// How many notes about a moment of recording [recordingId] there are
-/// (the markers on its seek bar).
-final recordingMarkerCountProvider = StreamProvider.autoDispose
-    .family<int, String>(
-      (ref, recordingId) => ref
-          .watch(feedbackRepositoryProvider)
-          .watch(recordingId)
-          .map((notes) => notes.where((n) => n.atSecond != null).length),
     );

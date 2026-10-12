@@ -4,6 +4,7 @@ import 'package:afdal_uloom_tilawat/core/application/recording_player_controller
 import 'package:afdal_uloom_tilawat/core/application/recording_player_phase.dart';
 import 'package:afdal_uloom_tilawat/core/application/recording_player_state.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
+import 'package:afdal_uloom_tilawat/core/models/playback_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/playback_status.dart';
 import 'package:afdal_uloom_tilawat/core/providers/service_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +19,9 @@ void main() {
   late FakeAudioStorageService storage;
   late ProviderContainer container;
 
-  final provider = recordingPlayerControllerProvider(path);
+  final provider = recordingPlayerControllerProvider(
+    const StoredPlayback(path),
+  );
   RecordingPlayerController controller() => container.read(provider.notifier);
   RecordingPlayerState state() => container.read(provider);
 
@@ -57,6 +60,23 @@ void main() {
     await settle();
     expect(state().phase, RecordingPlayerPhase.ready);
   }
+
+  test('a take on this device loads its own URI, without Storage', () async {
+    final take = Uri.file('/tmp/practice-1.m4a');
+    container.listen(
+      recordingPlayerControllerProvider(LocalPlayback(take)),
+      (_, _) {},
+    );
+    await settle();
+    expect(
+      container
+          .read(recordingPlayerControllerProvider(LocalPlayback(take)))
+          .phase,
+      RecordingPlayerPhase.ready,
+    );
+    expect(player.loads.single.$1, take);
+    expect(storage.urlRequests, isEmpty);
+  });
 
   test('starts loading, then is ready with the duration', () async {
     player.loadGate = Completer<void>();

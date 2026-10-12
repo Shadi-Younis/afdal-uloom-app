@@ -11,8 +11,9 @@ import 'reviewed_chip.dart';
 
 /// A recording in a list: title (surah and ayat), recorded date, type, and
 /// a dot when it has feedback the student has not read. For the teacher
-/// also [markerCount] (the notes about a moment) and, with [showReviewed],
-/// whether it was reviewed.
+/// also [markerCount] (the notes about a moment), with [showReviewed]
+/// whether it was reviewed, and [studentName] in a list of many students
+/// (the review queue).
 class RecordingTile extends StatelessWidget {
   const RecordingTile({
     super.key,
@@ -20,6 +21,7 @@ class RecordingTile extends StatelessWidget {
     required this.onTap,
     this.markerCount,
     this.showReviewed = false,
+    this.studentName,
   });
 
   final Recording recording;
@@ -28,6 +30,9 @@ class RecordingTile extends StatelessWidget {
   /// Null: not shown (unknown yet, or not for this viewer).
   final int? markerCount;
   final bool showReviewed;
+
+  /// Shown before the date; null: not shown.
+  final String? studentName;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +48,7 @@ class RecordingTile extends StatelessWidget {
         children: [
           Text(
             [
+              ?studentName,
               formatDay(r.recordedAt),
               if (markerCount case final count?)
                 AppStrings.markerCount(toArabicDigits(count)),

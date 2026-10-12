@@ -6,6 +6,7 @@ import '../../application/recording_player_phase.dart';
 import '../../constants/app_durations.dart';
 import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
+import '../../models/playback_source.dart';
 import '../islamic/app_card.dart';
 import '../islamic/error_state.dart';
 import 'playback_speed_selector.dart';
@@ -13,23 +14,23 @@ import 'player_controls.dart';
 import 'player_marker.dart';
 import 'player_seek_bar.dart';
 
-/// Plays the recording stored at [storagePath]: seek bar with times and
-/// [markers], back / play-pause / forward, the speed, and [footer] (e.g.
-/// buttons that jump between markers). Tapping a marker jumps there and
+/// Plays [source] (a recording in Storage, or a take on this device): seek
+/// bar with times and [markers], back / play-pause / forward, the speed,
+/// and [footer] (e.g. buttons that jump between markers). Tapping a marker jumps there and
 /// plays. Shows loading and Arabic errors (with retry). Stops when it
 /// leaves the screen.
 ///
 /// To seek from outside (e.g. a note's "at ٠١:٢٣"), or to read the current
-/// position, use `recordingPlayerControllerProvider(storagePath)`.
+/// position, use `recordingPlayerControllerProvider(source)`.
 class RecordingPlayer extends ConsumerWidget {
   const RecordingPlayer({
     super.key,
-    required this.storagePath,
+    required this.source,
     this.markers = const [],
     this.footer,
   });
 
-  final String storagePath;
+  final PlaybackSource source;
   final List<PlayerMarker> markers;
 
   /// Shown under the controls once the audio is loaded.
@@ -37,7 +38,7 @@ class RecordingPlayer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = recordingPlayerControllerProvider(storagePath);
+    final provider = recordingPlayerControllerProvider(source);
     final state = ref.watch(provider);
     final controller = ref.read(provider.notifier);
     return AppCard(
