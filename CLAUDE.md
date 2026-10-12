@@ -246,6 +246,14 @@ Tests may use literal values when they assert behavior (e.g. "the region is
 - Never commit secrets (`serviceAccountKey.json`, `.env`), `.emulator-data/`
   or `.claude/`.
 
+## Shadi's phone
+
+Shadi's phone (R5CW91LEGXW) must always end a task with the current RELEASE
+build installed. If you install a debug build for testing, uninstall it and
+reinstall the release APK (tool/deploy/build_release_apk.ps1 from main)
+before you report the task as done, and say so in the report. Never leave a
+debug build connected to production on his phone.
+
 ## Definition of done
 
 - `flutter analyze` reports no issues.
