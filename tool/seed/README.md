@@ -13,7 +13,7 @@ powershell -ExecutionPolicy Bypass -File tool/seed/download_test_audio.ps1      
 powershell -ExecutionPolicy Bypass -File tool/seed/download_test_audio.ps1 -Force   # يعيد تنزيل الكل
 ```
 
-تسجيل الاستوديو `rec-26` يُبنى من هذه الملفات (`tool/test_audio/build_fixtures.mjs`) في `C:\dev\test-audio\fixtures\` عند أول تشغيل للـ Seed إذا لم يكن موجوداً. وكذلك تسجيلات التدريب: كل واحد منها هو ملف التلاوة نفسه بقناة واحدة (Mono) بصيغة `m4a` كما يسجّلها هاتف الطالب (`practice_*.m4a` في نفس المجلد).
+تسجيلات الاستوديو `rec-26` (ملف Stereo) و`rec-28` (ملفان: الطالب والشيخ) و`rec-29` (قناتان مبدّلتان) تُبنى من هذه الملفات (`tool/test_audio/build_fixtures.mjs`) في `C:\dev\test-audio\fixtures\` عند أول تشغيل للـ Seed إذا لم تكن موجودة. وكذلك تسجيلات التدريب: كل واحد منها هو ملف التلاوة نفسه بقناة واحدة (Mono) بصيغة `m4a` كما يسجّلها هاتف الطالب (`practice_*.m4a` في نفس المجلد).
 
 لاستخدام مجلد آخر عرّف `SEED_AUDIO_DIR` قبل التنزيل وقبل الـ Seed. إذا كان المجلد أو أحد الملفات ناقصاً يرفض الـ Seed العمل ويذكر هذا الأمر.
 
