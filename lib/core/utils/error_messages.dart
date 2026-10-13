@@ -22,6 +22,7 @@ String errorMessageFor(AppErrorCode code) => switch (code) {
   AppErrorCode.weakPassword => AppStrings.errorWeakPassword,
   AppErrorCode.fileTooLarge => AppStrings.errorFileTooLarge,
   AppErrorCode.unsupportedFile => AppStrings.errorUnsupportedFile,
+  AppErrorCode.stemsLengthMismatch => AppStrings.errorStemsLengthMismatch,
   AppErrorCode.uploadCancelled => AppStrings.errorUploadCancelled,
   AppErrorCode.recordingFailed => AppStrings.errorRecordingFailed,
   AppErrorCode.unknown => AppStrings.errorUnknown,

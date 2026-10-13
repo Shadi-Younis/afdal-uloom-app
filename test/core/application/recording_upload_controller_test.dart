@@ -9,7 +9,9 @@ import 'package:afdal_uloom_tilawat/core/application/session_providers.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
 import 'package:afdal_uloom_tilawat/core/models/audio_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/auth_session.dart';
+import 'package:afdal_uloom_tilawat/core/models/recording_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
+import 'package:afdal_uloom_tilawat/core/models/stem_paths.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
 import 'package:afdal_uloom_tilawat/core/providers/repository_providers.dart';
 import 'package:afdal_uloom_tilawat/core/providers/service_providers.dart';
@@ -253,6 +255,109 @@ void main() {
         sub.close();
       },
     );
+  });
+
+  group('a two-file recording', () {
+    setUp(() => setUpAs(const AuthSession(uid: 't01', role: UserRole.teacher)));
+
+    final sheikhSource = BytesAudioSource(Uint8List.fromList([4, 5, 6]));
+    RecordingUploadRequest stems({String sheikhExtension = 'mp3'}) =>
+        RecordingUploadRequest(
+          studentId: 's001',
+          halaqaId: 'halaqa-fajr',
+          teacherId: 't01',
+          type: RecordingType.official,
+          surahNumber: 2,
+          ayahFrom: 1,
+          ayahTo: 20,
+          recordedAt: DateTime(2026, 10, 5, 16),
+          source: source,
+          fileExtension: 'WAV',
+          sheikhSource: sheikhSource,
+          sheikhFileExtension: sheikhExtension,
+        );
+
+    test('one document, both files side by side, progress of each', () async {
+      final result = controller().start(stems());
+      await settle();
+
+      final doc = recordings.created.single;
+      expect(doc.source, RecordingSource.stems);
+      // The server writes the joined mp3 here.
+      expect(doc.storagePath, 'recordings/s001/new-1.mp3');
+      expect(
+        doc.stemPaths,
+        const StemPaths(
+          student: 'recordings/s001/new-1.student.wav',
+          sheikh: 'recordings/s001/new-1.sheikh.mp3',
+        ),
+      );
+      expect(storage.uploads, hasLength(2));
+      final [student, sheikh] = storage.uploads;
+      expect(student.storagePath, 'recordings/s001/new-1.student.wav');
+      expect(student.contentType, 'audio/wav');
+      expect(student.source, same(source));
+      expect(sheikh.storagePath, 'recordings/s001/new-1.sheikh.mp3');
+      expect(sheikh.contentType, 'audio/mpeg');
+      expect(sheikh.source, same(sheikhSource));
+
+      student.progress(0.5);
+      sheikh.progress(0.25);
+      expect(state().progress, 0.375);
+      expect(state().stemProgress, (student: 0.5, sheikh: 0.25));
+      student.complete();
+      expect(state().status, RecordingUploadStatus.uploading);
+      sheikh.complete();
+
+      expect(await result, 'new-1');
+      expect(state().status, RecordingUploadStatus.done);
+      expect(state().stemProgress, isNull);
+      expect(recordings.deleted, isEmpty);
+    });
+
+    test('one file fails: the other is stopped, the document deleted', () async {
+      final result = controller().start(stems());
+      await settle();
+      final [student, sheikh] = storage.uploads;
+      sheikh.fail(const AppException(AppErrorCode.network));
+
+      expect(await result, isNull);
+      expect(student.cancelCalls, 1);
+      expect(recordings.deleted, ['new-1']);
+      expect(state().status, RecordingUploadStatus.failed);
+      expect(state().error?.code, AppErrorCode.network);
+    });
+
+    test('cancel stops both files', () async {
+      final result = controller().start(stems());
+      await settle();
+      await controller().cancel();
+
+      expect(await result, isNull);
+      expect(storage.uploads.map((u) => u.cancelCalls), [1, 1]);
+      expect(recordings.deleted, ['new-1']);
+      expect(state().status, RecordingUploadStatus.cancelled);
+    });
+
+    test('a sheikh file of a type the app refuses: nothing written', () async {
+      expect(await controller().start(stems(sheikhExtension: 'flac')), isNull);
+      expect(state().error?.code, AppErrorCode.unsupportedFile);
+      expect(recordings.created, isEmpty);
+      expect(storage.uploads, isEmpty);
+    });
+  });
+
+  test('one file: a stereo recording, no stemPaths', () async {
+    await setUpAs(const AuthSession(uid: 't01', role: UserRole.teacher));
+    final result = controller().start(request());
+    await settle();
+    expect(recordings.created.single.source, RecordingSource.stereo);
+    expect(recordings.created.single.stemPaths, isNull);
+    expect(storage.uploads, hasLength(1));
+    storage.lastUpload.progress(0.5);
+    expect(state().stemProgress, isNull);
+    storage.lastUpload.complete();
+    await result;
   });
 
   test('a student uploads practice: not reviewed yet', () async {

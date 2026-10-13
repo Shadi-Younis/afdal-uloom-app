@@ -17,6 +17,8 @@ class RecordingUploadRequest {
     required this.source,
     required this.fileExtension,
     this.durationSec,
+    this.sheikhSource,
+    this.sheikhFileExtension,
   });
 
   final String studentId;
@@ -29,10 +31,19 @@ class RecordingUploadRequest {
   final int ayahFrom;
   final int ayahTo;
   final DateTime recordedAt;
+  /// The file; for a two-file recording the student's.
   final AudioSource source;
 
   /// Of the picked or recorded file, without the dot, e.g. `mp3`; decides
   /// the storagePath and the content type.
   final String fileExtension;
   final int? durationSec;
+
+  /// A two-file recording («ملفين: الطالب + الشيخ», official only): the
+  /// sheikh's file and its extension; [source] is then the student's.
+  final AudioSource? sheikhSource;
+  final String? sheikhFileExtension;
+
+  /// Two files, which the server joins into one.
+  bool get isStems => sheikhSource != null;
 }

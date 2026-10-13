@@ -62,6 +62,10 @@ enum AppErrorCode {
   /// an empty one.
   unsupportedFile,
 
+  /// The two files of a two-file recording differ in length by more than
+  /// AppDurations.stemsMaxLengthDifference: not the same session.
+  stemsLengthMismatch,
+
   /// The user cancelled an upload.
   uploadCancelled,
 
