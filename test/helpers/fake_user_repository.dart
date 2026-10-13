@@ -30,7 +30,14 @@ class FakeUserRepository implements UserRepository {
   }
 
   @override
-  Stream<AppUser?> watchUser(String uid) => _live(() => users[uid]);
+  Stream<AppUser?> watchUser(String uid) {
+    watchedUids.add(uid);
+    return _live(() => users[uid]);
+  }
+
+  /// Every uid asked for through watchUser, e.g. to check a student never
+  /// asks for a profile the rules would refuse.
+  final watchedUids = <String>[];
 
   @override
   Stream<List<AppUser>> watchStudentsInHalaqa(String halaqaId) => _live(

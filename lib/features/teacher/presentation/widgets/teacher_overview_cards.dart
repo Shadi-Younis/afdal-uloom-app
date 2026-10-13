@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/islamic/error_state.dart';
@@ -9,7 +11,8 @@ import '../../../../core/widgets/islamic/stat_card.dart';
 import '../../application/teacher_providers.dart';
 
 /// The teacher's three counts: «طلابي», «تسجيلات هذا الأسبوع» and
-/// «بانتظار المراجعة».
+/// «بانتظار المراجعة», which opens the review queue (push: back returns
+/// home).
 class TeacherOverviewCards extends ConsumerWidget {
   const TeacherOverviewCards({super.key});
 
@@ -39,6 +42,7 @@ class TeacherOverviewCards extends ConsumerWidget {
               child: StatCard(
                 number: overview.pendingReview,
                 label: AppStrings.pendingReview,
+                onTap: () => context.push(AppRoutes.teacherReview),
               ),
             ),
           ],

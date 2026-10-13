@@ -69,14 +69,77 @@ void main() {
     // s012 is disabled: two active students.
     expect(statOf(tester, 'طلابي'), '2');
     expect(statOf(tester, 'تسجيلات هذا الأسبوع'), '1');
-    expect(statOf(tester, 'بانتظار المراجعة'), '1');
-    expect(find.text('٢'), findsOneWidget);
+    // rec-02 (official) and rec-20 (practice) wait for him.
+    expect(statOf(tester, 'بانتظار المراجعة'), '2');
+    expect(find.text('٢'), findsNWidgets(2));
     expect(find.text('رفع تسجيلات'), findsOneWidget);
     expect(find.text('حلقاتي'), findsOneWidget);
     expect(find.text('حلقة الفجر'), findsOneWidget);
     expect(find.text('عدد الطلاب: ٣'), findsOneWidget);
     expect(find.text('حلقة العصر'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('«بانتظار المراجعة» opens his queue: both types, oldest '
+      'first, with the student; a practice opens like any recording', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await pumpTeacher(tester);
+
+    await tester.tap(find.text('بانتظار المراجعة'));
+    await tester.pumpAndSettle();
+    expect(currentPath(tester), '/teacher/review');
+    final tiles = find.byType(RecordingTile);
+    expect(tiles, findsNWidgets(2));
+    // Oldest createdAt first: rec-02 (8 Sep), then rec-20 (20 Sep).
+    final first = tester.widget<RecordingTile>(tiles.at(0)).recording;
+    final second = tester.widget<RecordingTile>(tiles.at(1)).recording;
+    expect([first.id, second.id], ['rec-02', 'rec-20']);
+    expect(find.text('رسمي'), findsOneWidget);
+    expect(find.text('تدريب'), findsOneWidget);
+    expect(find.textContaining('أحمد الخطيب ·'), findsNWidgets(2));
+    expect(find.text('بانتظار المراجعة'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('تدريب'));
+    await tester.pumpAndSettle();
+    expect(currentPath(tester), '/recording/rec-20');
+    await tester.tap(find.byTooltip('رجوع'));
+    await tester.pumpAndSettle();
+    expect(currentPath(tester), '/teacher/review');
+    await tester.tap(find.byTooltip('رجوع'));
+    await tester.pumpAndSettle();
+    expect(currentPath(tester), '/teacher');
+  });
+
+  testWidgets('the queue: a reviewed recording leaves it; empty state', (
+    tester,
+  ) async {
+    usePhoneSize(tester);
+    await pumpTeacher(tester, location: '/teacher/review');
+    expect(find.byType(RecordingTile), findsNWidgets(2));
+
+    await school.recordings.setReviewed('rec-20', reviewed: true);
+    await tester.pumpAndSettle();
+    expect(find.byType(RecordingTile), findsOneWidget);
+
+    await school.recordings.setReviewed('rec-02', reviewed: true);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('لا توجد تسجيلات بانتظار المراجعة. بارك الله فيك.'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the queue opened from a link: back goes to the home', (
+    tester,
+  ) async {
+    await pumpTeacher(tester, location: '/teacher/review');
+    await tester.tap(find.byTooltip('رجوع'));
+    await tester.pumpAndSettle();
+    expect(currentPath(tester), '/teacher');
   });
 
   testWidgets('360x640: every count label shows in full, cards equally tall', (

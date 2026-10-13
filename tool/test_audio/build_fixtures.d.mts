@@ -19,3 +19,9 @@ export interface FixturesManifest {
 
 /** Builds every fixture into fixturesDir and returns the manifest. */
 export function buildFixtures(): FixturesManifest;
+
+/**
+ * al-Minshawi's [clipFile] as a phone practice recording (mono AAC .m4a),
+ * built into fixturesDir once; its path and duration in seconds.
+ */
+export function buildPracticeM4a(clipFile: string): { path: string; durationSec: number };

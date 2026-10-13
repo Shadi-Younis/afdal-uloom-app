@@ -68,6 +68,9 @@ users/{uid}/progress/{surahNumber}     // متابعة الحفظ (المرحل�
 halaqat/{halaqaId}
   name: string                // "حلقة الفجر"
   teacherId: string
+  teacherName: string?        // نسخة من users/{teacherId}.fullName ليراها الطالب (لا يقرأ ملفات المعلمين)؛
+                              // تُكتب عند الإنشاء ويحدّثها السيرفر (changeHalaqaTeacher، updateUserProfile).
+                              // الحلقات الأقدم من المهمة 10 بدونها حتى «تغيير المعلم»
 
 recordings/{recordingId}
   studentId: string

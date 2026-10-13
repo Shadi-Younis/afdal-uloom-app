@@ -4,11 +4,11 @@ import '../../../core/application/my_students_providers.dart';
 import '../../../core/application/recording_upload_controller.dart';
 import '../../../core/application/recording_upload_request.dart';
 import '../../../core/application/recording_upload_status.dart';
-import '../../../core/constants/audio_formats.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/models/picked_audio_file.dart';
 import '../../../core/models/recording_type.dart';
 import '../../../core/providers/clock_provider.dart';
+import '../../../core/utils/audio_file_check.dart';
 import '../../../core/utils/recording_file_name.dart';
 import 'upload_batch_state.dart';
 import 'upload_row.dart';
@@ -54,7 +54,7 @@ class UploadBatchController extends Notifier<UploadBatchState> {
           return UploadRow(
             key: 'upload-${_nextKey++}',
             file: file,
-            fileProblem: _fileProblem(file),
+            fileProblem: uploadProblemOf(file),
             studentId: code == null ? fallback?.student.id : byCode?.student.id,
             surahNumber: parsed.surahNumber,
             ayahFrom: parsed.ayahFrom,
@@ -230,17 +230,6 @@ class UploadBatchController extends Notifier<UploadBatchState> {
 
   void _setRunning(bool running) =>
       state = UploadBatchState(rows: state.rows, running: running);
-
-  static AppErrorCode? _fileProblem(PickedAudioFile file) {
-    if (AudioFormats.contentTypeFor(file.extension) == null ||
-        file.sizeBytes <= 0) {
-      return AppErrorCode.unsupportedFile;
-    }
-    if (file.sizeBytes >= AudioFormats.maxUploadBytes) {
-      return AppErrorCode.fileTooLarge;
-    }
-    return null;
-  }
 }
 
 /// The upload page's files, for a page opened from the student

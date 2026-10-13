@@ -16,6 +16,14 @@ abstract final class AppRoutes {
   /// The signed-in user's own account ("حسابي"), for every role.
   static const account = '/account';
 
+  /// The student's practice recorder («سجّل تدريباً»).
+  static const practiceSegment = 'practice';
+  static const studentPractice = '$student/$practiceSegment';
+
+  /// The teacher's review queue («بانتظار المراجعة»).
+  static const reviewSegment = 'review';
+  static const teacherReview = '$teacher/$reviewSegment';
+
   // Teacher pages, under /teacher (the role guard protects them).
   static const teacherHalaqatSegment = 'halaqat';
   static const uploadSegment = 'upload';
@@ -128,11 +136,15 @@ abstract final class AppRoutes {
     (RegExp('^/admin/teachers/$adminSegment/[^/]+\$'), (_) => adminTeachers),
     // /admin/students/new, /admin/students/:id
     (RegExp(r'^/admin/students/[^/]+$'), (_) => adminStudents),
-    // /teacher/halaqat/:id, /teacher/upload
+    // /teacher/halaqat/:id, /teacher/upload, /teacher/review
     (
-      RegExp('^/teacher/($teacherHalaqatSegment/[^/]+|$uploadSegment)\$'),
+      RegExp(
+        '^/teacher/($teacherHalaqatSegment/[^/]+|$uploadSegment|$reviewSegment)\$',
+      ),
       (_) => teacher,
     ),
+    // /student/practice
+    (RegExp('^/student/$practiceSegment\$'), (_) => student),
     // /teacher/halaqat/:id/students/:studentId
     (
       RegExp(
@@ -165,4 +177,6 @@ abstract final class AppRoutes {
   static const teacherHalaqaName = 'teacherHalaqa';
   static const teacherStudentName = 'teacherStudent';
   static const teacherUploadName = 'teacherUpload';
+  static const teacherReviewName = 'teacherReview';
+  static const studentPracticeName = 'studentPractice';
 }

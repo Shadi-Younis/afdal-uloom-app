@@ -95,7 +95,15 @@ class FakeAccountsService implements AccountsService {
     changeTeacherCalls.add((halaqaId, teacherId));
     await _call();
     final halaqa = halaqat?.halaqat[halaqaId];
-    if (halaqa != null) halaqat!.put(halaqa.copyWith(teacherId: teacherId));
+    if (halaqa != null) {
+      // As the function does: the teacher's name is copied too.
+      halaqat!.put(
+        halaqa.copyWith(
+          teacherId: teacherId,
+          teacherName: users?.users[teacherId]?.fullName,
+        ),
+      );
+    }
     return 0;
   }
 
@@ -148,6 +156,14 @@ class FakeAccountsService implements AccountsService {
           studentCode: studentCode,
         ),
       );
+    }
+    // As the function does: a teacher's new name reaches their halaqat.
+    if (fullName != null) {
+      for (final halaqa in [...?halaqat?.halaqat.values]) {
+        if (halaqa.teacherId == uid) {
+          halaqat!.put(halaqa.copyWith(teacherName: fullName));
+        }
+      }
     }
   }
 

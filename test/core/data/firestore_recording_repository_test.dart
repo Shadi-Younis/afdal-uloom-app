@@ -130,7 +130,7 @@ void main() {
   });
 
   test(
-    'watchUnreviewed: that type, not reviewed, oldest createdAt first',
+    'watchUnreviewed: not reviewed, oldest createdAt first, of a type if given',
     () async {
       Future<void> practice(
         String id,
@@ -166,13 +166,16 @@ void main() {
       );
 
       final practiceQueue = await repository
-          .watchUnreviewed('t1', RecordingType.practice)
+          .watchUnreviewed('t1', type: RecordingType.practice)
           .first;
       expect(practiceQueue.map((r) => r.id), ['p-old', 'p-new']);
       final officialQueue = await repository
-          .watchUnreviewed('t1', RecordingType.official)
+          .watchUnreviewed('t1', type: RecordingType.official)
           .first;
       expect(officialQueue.map((r) => r.id), ['official']);
+      // No type: the whole queue of both kinds, oldest first.
+      final queue = await repository.watchUnreviewed('t1').first;
+      expect(queue.map((r) => r.id), ['p-old', 'official', 'p-new']);
     },
   );
 

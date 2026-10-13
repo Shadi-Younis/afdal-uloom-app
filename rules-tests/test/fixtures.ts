@@ -1,11 +1,13 @@
 // Shared test environment and fixture data for the Firestore and Storage
 // rules tests.
 //
-// Fixture: admin; teachers t1 (owns h1) and t2 (owns h2); students s1, s2
-// in h1 and s3 in h2; one official recording per student, one unreviewed
-// practice recording of s1 (with unread feedback). On r-s1: a written note
-// f1 by t1 (written before Task 09, so without kind), a voice marker v1
-// (the server's, author t1) and a note f-old by a former teacher.
+// Fixture: admin; teachers t1 (owns h1) and t2 (owns h2, which has no
+// teacherName: created before Task 10); students s1, s2 in h1 and s3 in
+// h2; one official recording per student (r-s1 with unread feedback);
+// practice recordings of s1 (p-s1 unreviewed, p-s1-reviewed) and of s2
+// (p-s2, unreviewed). On r-s1: a written note f1 by t1 (written before
+// Task 09, so without kind), a voice marker v1 (the server's, author t1)
+// and a note f-old by a former teacher.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
@@ -110,7 +112,8 @@ export async function seedFixtures(env: RulesTestEnvironment): Promise<void> {
       ["users/s1", user("s001", "أحمد", "student", "h1")],
       ["users/s2", user("s002", "بلال", "student", "h1")],
       ["users/s3", user("s003", "خالد", "student", "h2")],
-      ["halaqat/h1", { name: "حلقة الفجر", teacherId: "t1" }],
+      ["halaqat/h1", { name: "حلقة الفجر", teacherId: "t1", teacherName: "المعلم الأول" }],
+      // Created before Task 10: no teacherName.
       ["halaqat/h2", { name: "حلقة العصر", teacherId: "t2" }],
       ["recordings/r-s1", recordingDoc("r-s1", { unreadFeedback: true })],
       ["recordings/r-s2", recordingDoc("r-s2", { studentId: "s2" })],
@@ -125,6 +128,25 @@ export async function seedFixtures(env: RulesTestEnvironment): Promise<void> {
           uploadedBy: "s1",
           reviewed: false,
           storagePath: "recordings/s1/p-s1.m4a",
+        }),
+      ],
+      [
+        "recordings/p-s1-reviewed",
+        recordingDoc("p-s1-reviewed", {
+          type: "practice",
+          uploadedBy: "s1",
+          reviewed: true,
+          storagePath: "recordings/s1/p-s1-reviewed.m4a",
+        }),
+      ],
+      [
+        "recordings/p-s2",
+        recordingDoc("p-s2", {
+          studentId: "s2",
+          type: "practice",
+          uploadedBy: "s2",
+          reviewed: false,
+          storagePath: "recordings/s2/p-s2.m4a",
         }),
       ],
       [

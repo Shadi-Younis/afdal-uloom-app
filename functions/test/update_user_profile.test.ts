@@ -82,6 +82,20 @@ describe("updateUserProfile: admin", () => {
     expect((await auth.getUser("admin")).customClaims).toEqual({role: "admin"});
   });
 
+  test("a teacher's new name reaches every halaqa they teach, and only theirs", async () => {
+    await db.doc("halaqat/h3").set({name: "h3", teacherId: "t1"}); // from before Task 10
+    expect(await update("admin", {uid: "t1", fullName: "الشيخ محمود"})).toMatchObject({ok: true});
+    expect((await db.doc("halaqat/h1").get()).data()).toEqual({name: "h1", teacherId: "t1", teacherName: "الشيخ محمود"});
+    expect((await db.doc("halaqat/h3").get()).data()!.teacherName).toBe("الشيخ محمود");
+    expect((await db.doc("halaqat/h2").get()).data()!.teacherName).toBeUndefined();
+  });
+
+  test("other changes leave halaqat alone", async () => {
+    expect(await update("admin", {uid: "t1", username: "t1.new"})).toMatchObject({ok: true});
+    expect(await update("admin", {uid: "s1", fullName: "طالب"})).toMatchObject({ok: true});
+    expect((await db.doc("halaqat/h1").get()).data()!.teacherName).toBe("name t1");
+  });
+
   test("invalid input -> invalid-argument", async () => {
     const bad = [
       {uid: "s1"}, // nothing to update

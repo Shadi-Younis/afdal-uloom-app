@@ -8,17 +8,17 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/recording_type.dart';
 import '../../../../core/providers/clock_provider.dart';
-import '../../../../core/utils/arabic_digits.dart';
+import '../../../../core/utils/file_size.dart';
+import '../../../../core/widgets/common/ayah_range_fields.dart';
 import '../../../../core/widgets/common/recording_type_chip.dart';
+import '../../../../core/widgets/common/surah_field.dart';
 import '../../../../core/widgets/islamic/app_card.dart';
 import '../../application/upload_batch_controller.dart';
 import '../../application/upload_row.dart';
 import '../../application/upload_row_status.dart';
-import 'upload_ayah_fields.dart';
 import 'upload_date_field.dart';
 import 'upload_row_status_line.dart';
 import 'upload_student_field.dart';
-import 'upload_surah_field.dart';
 
 /// One file of the upload page: its name and size, the student, surah,
 /// ayat and date (editable until it uploads), its type (always «رسمي»),
@@ -52,12 +52,12 @@ class UploadRowCard extends ConsumerWidget {
       showError: editable && row.studentId == null,
       onChanged: (id) => controller.setStudent(key, id),
     );
-    final surah = UploadSurahField(
+    final surah = SurahField(
       surahNumber: row.surahNumber,
       enabled: editable,
       onChanged: (n) => controller.setSurah(key, n),
     );
-    final ayat = UploadAyahFields(
+    final ayat = AyahRangeFields(
       from: row.ayahFrom,
       to: row.ayahTo,
       enabled: editable,
@@ -129,7 +129,6 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final megabytes = (row.file.sizeBytes / (1024 * 1024)).toStringAsFixed(1);
     final status = row.status;
     return Row(
       children: [
@@ -148,9 +147,7 @@ class _Header extends StatelessWidget {
                 style: theme.textTheme.titleSmall,
               ),
               Text(
-                AppStrings.fileSize(
-                  toArabicDigits(megabytes).replaceAll('.', '٫'),
-                ),
+                formatFileSize(row.file.sizeBytes),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

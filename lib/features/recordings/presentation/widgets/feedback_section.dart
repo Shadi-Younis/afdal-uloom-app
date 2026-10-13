@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/application/recording_player_controller.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/models/playback_source.dart';
 import '../../../../core/models/recording.dart';
 import '../../../../core/widgets/islamic/empty_state.dart';
 import '../../../../core/widgets/islamic/error_state.dart';
@@ -30,7 +31,9 @@ class FeedbackSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(recordingFeedbackProvider(recording.id));
-    final player = recordingPlayerControllerProvider(recording.playablePath);
+    final player = recordingPlayerControllerProvider(
+      StoredPlayback(recording.playablePath),
+    );
     Future<void> playFrom(Duration position) async {
       await ref.read(player.notifier).seek(position);
       await ref.read(player.notifier).play();

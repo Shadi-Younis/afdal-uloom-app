@@ -35,6 +35,7 @@ void main() {
       );
 
       // Writes through a repository land in the injected instance.
+      await db.doc('users/t1').set({'fullName': 'محمود', 'role': 'teacher'});
       final id = await container
           .read(halaqaRepositoryProvider)
           .create(name: 'حلقة', teacherId: 't1');

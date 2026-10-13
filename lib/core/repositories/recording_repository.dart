@@ -26,12 +26,16 @@ abstract class RecordingRepository {
     String? teacherId,
   });
 
-  /// The recordings of [type] for [teacherId] that are not reviewed yet,
-  /// oldest `createdAt` first (the review queue): official ones whose voice
-  /// markers the sheikh has not checked, practice ones not listened to.
+  /// The recordings of [teacherId] that are not reviewed yet, oldest
+  /// `createdAt` first (the review queue «بانتظار المراجعة»): official ones
+  /// whose voice markers the sheikh has not checked, practice ones not
+  /// listened to. Only those of [type] when given.
   ///
   /// Allowed for: the teacher themself and admins.
-  Stream<List<Recording>> watchUnreviewed(String teacherId, RecordingType type);
+  Stream<List<Recording>> watchUnreviewed(
+    String teacherId, {
+    RecordingType? type,
+  });
 
   /// The recordings of [teacherId] recorded at [since] or later, newest
   /// `recordedAt` first.
@@ -81,8 +85,9 @@ abstract class RecordingRepository {
   Future<void> setReviewed(String id, {required bool reviewed});
 
   /// Deletes the document only. The audio file and the feedback
-  /// subcollection are cleaned up by a Cloud Function (later task).
+  /// subcollection are cleaned up by a Cloud Function (onRecordingDeleted).
   ///
-  /// Allowed for: the teacher of the recording and admins.
+  /// Allowed for: the teacher of the recording and admins, and its student
+  /// for a practice recording that is not reviewed yet («حذف التدريب»).
   Future<void> delete(String id);
 }

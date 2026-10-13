@@ -49,13 +49,16 @@ class FakeRecordingRepository implements RecordingRepository {
 
   @override
   Stream<List<Recording>> watchUnreviewed(
-    String teacherId,
-    RecordingType type,
-  ) => _live(
+    String teacherId, {
+    RecordingType? type,
+  }) => _live(
     () =>
         recordings.values
             .where(
-              (r) => r.teacherId == teacherId && r.type == type && !r.reviewed,
+              (r) =>
+                  r.teacherId == teacherId &&
+                  (type == null || r.type == type) &&
+                  !r.reviewed,
             )
             .toList()
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
@@ -104,8 +107,17 @@ class FakeRecordingRepository implements RecordingRepository {
     _changed.add(null);
   }
 
+  /// Every markFeedbackRead call, in order.
+  final readCalls = <String>[];
+  Object? markReadError;
+
   @override
-  Future<void> markFeedbackRead(String id) => throw UnimplementedError();
+  Future<void> markFeedbackRead(String id) async {
+    readCalls.add(id);
+    if (markReadError case final error?) throw error;
+    final recording = recordings[id];
+    if (recording != null) put(recording.copyWith(unreadFeedback: false));
+  }
 
   /// Every setReviewed call, in order.
   final reviewedCalls = <(String id, bool reviewed)>[];

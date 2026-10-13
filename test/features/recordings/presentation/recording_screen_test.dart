@@ -34,6 +34,7 @@ void main() {
       auth: FakeAuthService(initial: session),
       overrides: [
         userRepositoryProvider.overrideWithValue(school.users),
+        halaqaRepositoryProvider.overrideWithValue(school.halaqat),
         recordingRepositoryProvider.overrideWithValue(school.recordings),
         feedbackRepositoryProvider.overrideWithValue(school.feedback),
         audioStorageServiceProvider.overrideWithValue(school.storage),
@@ -145,14 +146,15 @@ void main() {
     expect(find.text('العنصر المطلوب غير موجود.'), findsOneWidget);
   });
 
-  testWidgets('the student sees "المعلم" as uploader, their own name for '
-      'practice', (tester) async {
+  testWidgets('the student sees «الشيخ» while the halaqa has no teacher '
+      'name, their own name for practice', (tester) async {
     const student = AuthSession(uid: 's001', role: UserRole.student);
     await pumpRecording(tester, 'rec-02', session: student);
-    expect(find.text('رُفع بواسطة: المعلم'), findsOneWidget);
+    expect(find.text('رُفع بواسطة: الشيخ'), findsOneWidget);
     // Their own name in the title; never a teacher's profile.
     expect(find.text('تسجيل أحمد الخطيب'), findsOneWidget);
-    expect(find.text('المعلم · ٩ سبتمبر ٢٠٢٦'), findsOneWidget);
+    expect(find.text('الشيخ · ٩ سبتمبر ٢٠٢٦'), findsOneWidget);
+    expect(school.users.watchedUids, isNot(contains('t01')));
 
     await pumpRecording(tester, 'rec-20', session: student);
     expect(find.text('تدريب'), findsOneWidget);

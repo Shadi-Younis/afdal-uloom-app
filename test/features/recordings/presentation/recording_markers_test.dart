@@ -77,6 +77,7 @@ void main() {
       auth: FakeAuthService(initial: session),
       overrides: [
         userRepositoryProvider.overrideWithValue(school.users),
+        halaqaRepositoryProvider.overrideWithValue(school.halaqat),
         recordingRepositoryProvider.overrideWithValue(school.recordings),
         feedbackRepositoryProvider.overrideWithValue(school.feedback),
         audioStorageServiceProvider.overrideWithValue(school.storage),

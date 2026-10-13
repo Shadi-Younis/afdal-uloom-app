@@ -23,6 +23,7 @@ String errorMessageFor(AppErrorCode code) => switch (code) {
   AppErrorCode.fileTooLarge => AppStrings.errorFileTooLarge,
   AppErrorCode.unsupportedFile => AppStrings.errorUnsupportedFile,
   AppErrorCode.uploadCancelled => AppStrings.errorUploadCancelled,
+  AppErrorCode.recordingFailed => AppStrings.errorRecordingFailed,
   AppErrorCode.unknown => AppStrings.errorUnknown,
 };
 

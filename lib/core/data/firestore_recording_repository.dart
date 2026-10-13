@@ -32,15 +32,15 @@ class FirestoreRecordingRepository implements RecordingRepository {
 
   @override
   Stream<List<Recording>> watchUnreviewed(
-    String teacherId,
-    RecordingType type,
-  ) => _watchList(
-    _recordings
-        .where(Fields.teacherId, isEqualTo: teacherId)
-        .where(Fields.type, isEqualTo: type.value)
-        .where(Fields.reviewed, isEqualTo: false)
-        .orderBy(Fields.createdAt),
-  );
+    String teacherId, {
+    RecordingType? type,
+  }) {
+    var query = _recordings.where(Fields.teacherId, isEqualTo: teacherId);
+    if (type != null) query = query.where(Fields.type, isEqualTo: type.value);
+    return _watchList(
+      query.where(Fields.reviewed, isEqualTo: false).orderBy(Fields.createdAt),
+    );
+  }
 
   @override
   Stream<List<Recording>> watchForTeacherSince(

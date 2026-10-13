@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/surahs.dart';
-import '../../../../core/utils/arabic_digits.dart';
-import '../../../../core/utils/arabic_search.dart';
+import '../../constants/app_strings.dart';
+import '../../constants/surahs.dart';
+import '../../utils/arabic_digits.dart';
+import '../../utils/arabic_search.dart';
 
-/// The surah of an uploaded file: type its name or number (in either kind
-/// of digits) and pick it from the list.
-class UploadSurahField extends StatelessWidget {
-  const UploadSurahField({
+/// The surah of a recording (an uploaded file, a practice): type its name
+/// or number (in either kind of digits) and pick it from the list.
+class SurahField extends StatelessWidget {
+  const SurahField({
     super.key,
     required this.surahNumber,
     required this.onChanged,

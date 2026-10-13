@@ -65,6 +65,10 @@ enum AppErrorCode {
   /// The user cancelled an upload.
   uploadCancelled,
 
+  /// The microphone could not be recorded (no device, busy, the recorder
+  /// failed).
+  recordingFailed,
+
   /// Anything else.
   unknown,
 }

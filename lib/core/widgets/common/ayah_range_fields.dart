@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_sizes.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/utils/arabic_digits.dart';
+import '../../constants/app_sizes.dart';
+import '../../constants/app_strings.dart';
+import '../../utils/arabic_digits.dart';
 
 /// «من آية» and «إلى آية» side by side, in either kind of digits;
 /// «الآيات ليست في هذه السورة» under them when [invalid].
-class UploadAyahFields extends StatelessWidget {
-  const UploadAyahFields({
+class AyahRangeFields extends StatelessWidget {
+  const AyahRangeFields({
     super.key,
     required this.from,
     required this.to,

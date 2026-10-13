@@ -107,4 +107,15 @@ abstract final class AppSizes {
 
   /// The tappable width around a marker's star.
   static const markerHitWidth = 32.0;
+
+  /// The practice recorder's big round button, its icon and its gold halo.
+  static const recordButton = 96.0;
+  static const recordIcon = 44.0;
+  static const recordHalo = 6.0;
+
+  /// The recorder's small pause / stop buttons.
+  static const recorderSideButton = 56.0;
+
+  /// The height of the recorder's live level meter.
+  static const levelMeter = 10.0;
 }
