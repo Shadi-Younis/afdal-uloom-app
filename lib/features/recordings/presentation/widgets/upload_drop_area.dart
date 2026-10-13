@@ -1,5 +1,5 @@
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_colors.dart';
@@ -30,7 +30,11 @@ class UploadDropArea extends StatefulWidget {
 
   /// Whether this platform takes dropped files (desktop_drop's web
   /// support; the iOS plugin does not exist).
-  static bool get supported => kIsWeb;
+  static bool get supported => debugSupported ?? kIsWeb;
+
+  /// Tests set this to drive drops through desktop_drop's channel.
+  @visibleForTesting
+  static bool? debugSupported;
 
   /// The keys of the widgets under the UploadDropArea above [context] that
   /// take dropped files themselves: add a widget's key to claim its area,

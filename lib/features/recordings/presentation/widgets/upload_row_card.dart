@@ -51,7 +51,11 @@ class UploadRowCard extends ConsumerWidget {
     );
     final key = row.key;
     final editable = row.status.isEditable && row.fileProblem == null;
+    // The fields read their value once. A file put in a zone may fill them
+    // in (its name), so they start again then; never while one is typed in.
+    final filled = (row.studentFile, row.sheikhFile);
     final student = UploadStudentField(
+      key: ValueKey(('student', filled)),
       students: students,
       studentId: row.studentId,
       enabled: editable,
@@ -59,11 +63,13 @@ class UploadRowCard extends ConsumerWidget {
       onChanged: (id) => controller.setStudent(key, id),
     );
     final surah = SurahField(
+      key: ValueKey(('surah', filled)),
       surahNumber: row.surahNumber,
       enabled: editable,
       onChanged: (n) => controller.setSurah(key, n),
     );
     final ayat = AyahRangeFields(
+      key: ValueKey(('ayat', filled)),
       from: row.ayahFrom,
       to: row.ayahTo,
       enabled: editable,
