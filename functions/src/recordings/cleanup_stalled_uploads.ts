@@ -23,7 +23,10 @@ export interface CleanupResult {
 /**
  * cleanupStalledUploads (daily): deletes recordings older than 24 h whose
  * audio file does not exist, i.e. uploads that failed without the app
- * deleting the document. onRecordingDeleted then removes their feedback.
+ * deleting the document. For a two-file recording the audio file is the
+ * joined one, so this also removes those whose two stems never both
+ * arrived (or could not be joined). onRecordingDeleted then removes their
+ * feedback and any stem that did arrive.
  */
 export const cleanupStalledUploads = onSchedule(
   {schedule: CLEANUP_SCHEDULE, timeZone: CLEANUP_TIME_ZONE},
