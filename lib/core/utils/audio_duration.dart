@@ -17,7 +17,9 @@ Duration? audioDurationOf(Uint8List bytes, String extension) {
     _ => null,
   };
   if (seconds == null || !seconds.isFinite || seconds <= 0) return null;
-  return Duration(microseconds: (seconds * Duration.microsecondsPerSecond).round());
+  return Duration(
+    microseconds: (seconds * Duration.microsecondsPerSecond).round(),
+  );
 }
 
 bool _tagAt(ByteData data, int offset, String tag) {
@@ -50,8 +52,40 @@ double? _wavSeconds(ByteData data) {
   return null;
 }
 
-const _mpeg1Kbps = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
-const _mpeg2Kbps = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
+const _mpeg1Kbps = [
+  0,
+  32,
+  40,
+  48,
+  56,
+  64,
+  80,
+  96,
+  112,
+  128,
+  160,
+  192,
+  224,
+  256,
+  320,
+];
+const _mpeg2Kbps = [
+  0,
+  8,
+  16,
+  24,
+  32,
+  40,
+  48,
+  56,
+  64,
+  80,
+  96,
+  112,
+  128,
+  144,
+  160,
+];
 const _sampleRates = {
   3: [44100, 48000, 32000], // MPEG-1
   2: [22050, 24000, 16000], // MPEG-2
@@ -85,7 +119,13 @@ double? _mp3Seconds(ByteData data) {
   return null;
 }
 
-typedef _Frame = ({int bitrate, int sampleRate, int samples, bool mpeg1, bool mono});
+typedef _Frame = ({
+  int bitrate,
+  int sampleRate,
+  int samples,
+  bool mpeg1,
+  bool mono,
+});
 
 _Frame? _frameAt(ByteData data, int offset) {
   if (offset + 4 > data.lengthInBytes) return null;

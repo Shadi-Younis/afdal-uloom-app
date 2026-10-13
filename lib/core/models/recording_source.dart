@@ -21,6 +21,7 @@ enum RecordingSource {
       ? stereo
       : values.firstWhere(
           (source) => source.value == value,
-          orElse: () => throw FormatException('Unknown recording source', value),
+          orElse: () =>
+              throw FormatException('Unknown recording source', value),
         );
 }

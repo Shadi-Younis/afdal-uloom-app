@@ -204,8 +204,7 @@ abstract final class AppStrings {
 
   /// A file's size and length, e.g. "٣٫٢ ميغابايت · ٠١:٠١"; both arrive
   /// formatted.
-  static String sizeAndLength(String size, String length) =>
-      '$size · $length';
+  static String sizeAndLength(String size, String length) => '$size · $length';
 
   /// [megabytes] arrives in Arabic-Indic digits.
   static String fileSize(String megabytes) => '$megabytes ميغابايت';
