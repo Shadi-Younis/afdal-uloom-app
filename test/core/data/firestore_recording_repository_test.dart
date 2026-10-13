@@ -1,8 +1,11 @@
 import 'package:afdal_uloom_tilawat/core/constants/storage_paths.dart';
 import 'package:afdal_uloom_tilawat/core/data/firestore_recording_repository.dart';
 import 'package:afdal_uloom_tilawat/core/errors/app_exception.dart';
+import 'package:afdal_uloom_tilawat/core/models/analysis_status.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording.dart';
+import 'package:afdal_uloom_tilawat/core/models/recording_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
+import 'package:afdal_uloom_tilawat/core/models/stem_paths.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -233,5 +236,56 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('a two-file recording: source and stemPaths stored, the server\'s '
+      'analysis read back', () async {
+    final id = repository.newId();
+    final recording = build(id: id, recordedAt: DateTime(2026, 10, 5)).copyWith(
+      source: RecordingSource.stems,
+      stemPaths: StemPaths(
+        student: 'recordings/s1/$id.student.wav',
+        sheikh: 'recordings/s1/$id.sheikh.mp3',
+      ),
+    );
+    await repository.create(recording);
+
+    final stored = (await db.doc('recordings/$id').get()).data()!;
+    expect(stored['source'], 'stems');
+    expect(stored['stemPaths'], {
+      'student': 'recordings/s1/$id.student.wav',
+      'sheikh': 'recordings/s1/$id.sheikh.mp3',
+    });
+    expect(stored['storagePath'], 'recordings/s1/$id.mp3');
+
+    // What the server writes once joined and analysed; whole dB arrive as int.
+    await db.doc('recordings/$id').update({
+      'analysis': {
+        'status': 'done',
+        'segmentCount': 2,
+        'swapped': true,
+        'bleedDb': -15,
+        'separationDb': 30.1,
+        'stemsLagMs': 0,
+      },
+    });
+    final read = (await repository.get(id))!;
+    expect(read.source, RecordingSource.stems);
+    expect(read.stemPaths, recording.stemPaths);
+    expect(read.analysis?.status, AnalysisStatus.done);
+    expect(read.analysis?.swapped, isTrue);
+    expect(read.analysis?.bleedDb, -15.0);
+    expect(read.analysis?.separationDb, 30.1);
+    expect(read.analysis?.stemsLagMs, 0);
+    expect(read.hasAudio, isTrue);
+  });
+
+  test('a one-file recording writes no source', () async {
+    final id = repository.newId();
+    await repository.create(build(id: id, recordedAt: DateTime(2026, 10, 5)));
+    final stored = (await db.doc('recordings/$id').get()).data()!;
+    expect(stored.containsKey('source'), isFalse);
+    expect(stored.containsKey('stemPaths'), isFalse);
+    expect((await repository.get(id))!.source, RecordingSource.stereo);
   });
 }
