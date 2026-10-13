@@ -9,13 +9,16 @@ import 'parsed_recording_name.dart';
 final _code = RegExp(ModelLimits.studentCodePattern, caseSensitive: false);
 final _date = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
 final _surah = RegExp(r'^\d{1,3}$');
-final _ayat = RegExp(r'^(\d{1,3})(?:-(\d{1,3}))?$');
+// Anything after the ayat that does not start with a digit or a dash is
+// ignored: a stem's track name, `001-020 - Student`.
+final _ayat = RegExp(r'^(\d{1,3})(?:-(\d{1,3}))?(?:[^\d-].*)?$');
 
 /// The parts of [fileName] in the studio naming
 /// `{studentCode}_[{yyyy-mm-dd}_]{surah}_{fromAyah}-{toAyah}.{ext}`:
 /// `S014_002_001-020.mp3`, `S014_2_1-20.wav` or
 /// `S023_2026-10-05_002_1-20.mp3`; one ayah may be written alone
-/// (`S014_067_5`). Whatever does not parse, or does not exist in the
+/// (`S014_067_5`). A stem's track name may follow
+/// (`S014_002_001-020 - Student.wav`, `S014_002_001-020_sheikh.wav`). Whatever does not parse, or does not exist in the
 /// Quran (surah 115, ayat past the surah's end), is left null; the code is
 /// not checked against any student here.
 ParsedRecordingName parseRecordingFileName(String fileName) {
