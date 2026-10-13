@@ -24,7 +24,7 @@ import {
 } from "../lib/constants.js";
 import {AudioToolError, decodeLevels, encodePlayback} from "../lib/ffmpeg.js";
 import {parseRecordingUpload, playbackPathFor, type RecordingUpload} from "../lib/recording_files.js";
-import {findSheikhSegments, isMonoLike, type Segment} from "../lib/voice_analysis.js";
+import {analyseVoices, isMonoLike, type VoiceAnalysis} from "../lib/voice_analysis.js";
 
 /**
  * onRecordingUploaded: when the audio of an official recording arrives at
@@ -57,10 +57,9 @@ export const onRecordingUploaded = onObjectFinalized(
 /** The gRPC status of a Firestore write to a missing document. */
 const GRPC_NOT_FOUND = 5;
 
-/** What the analysis found, for the recording document. */
+/** What the analysis found, for the recording document; [voices] is null for a mono file. */
 interface Result {
-  status: typeof ANALYSIS_STATUS.done | typeof ANALYSIS_STATUS.mono;
-  segments: Segment[];
+  voices: VoiceAnalysis | null;
   durationSec: number;
 }
 
@@ -97,10 +96,8 @@ async function analyseUpload(upload: RecordingUpload, objectPath: string): Promi
     await bucket.file(objectPath).download({destination: original});
 
     const {levels, durationSeconds} = await decodeLevels(original);
-    const mono = isMonoLike(levels);
     const result: Result = {
-      status: mono ? ANALYSIS_STATUS.mono : ANALYSIS_STATUS.done,
-      segments: mono ? [] : findSheikhSegments(levels),
+      voices: isMonoLike(levels) ? null : analyseVoices(levels),
       durationSec: Math.round(durationSeconds),
     };
 
@@ -113,10 +110,15 @@ async function analyseUpload(upload: RecordingUpload, objectPath: string): Promi
     });
 
     await writeResult(ref, snapshot.get(F.teacherId) as string, result, playbackPath);
+    const voices = result.voices;
     logger.info("Recording analysed.", {
       recordingId,
-      status: result.status,
-      segments: result.segments,
+      status: voices ? ANALYSIS_STATUS.done : ANALYSIS_STATUS.mono,
+      swapped: voices?.swapped,
+      bleedDb: voices?.bleedDb,
+      separationDb: voices?.separationDb,
+      segmentCount: voices?.segments.length ?? 0,
+      segments: voices?.segments ?? [],
       durationSec: result.durationSec,
     });
   } catch (error) {
@@ -140,9 +142,10 @@ async function writeResult(
   const feedback = ref.collection(FEEDBACK);
   const oldMarkers = await feedback.where(F.kind, "==", VOICE).select().get();
 
+  const segments = result.voices?.segments ?? [];
   const writes: Array<(batch: WriteBatch) => void> = [
     ...oldMarkers.docs.map((doc) => (batch: WriteBatch) => batch.delete(doc.ref)),
-    ...result.segments.map((segment) => (batch: WriteBatch) =>
+    ...segments.map((segment) => (batch: WriteBatch) =>
       batch.create(feedback.doc(), {
         [F.teacherId]: teacherId,
         [F.kind]: VOICE,
@@ -155,13 +158,19 @@ async function writeResult(
       }),
     ),
   ];
-  const segmentCount = result.segments.length;
+  const segmentCount = segments.length;
+  const voices = result.voices;
   writes.push((batch) =>
     batch.update(ref, {
-      [F.analysis]:
-        result.status === ANALYSIS_STATUS.done
-          ? {status: ANALYSIS_STATUS.done, segmentCount}
-          : {status: ANALYSIS_STATUS.mono},
+      [F.analysis]: voices
+        ? {
+            status: ANALYSIS_STATUS.done,
+            segmentCount,
+            swapped: voices.swapped,
+            bleedDb: voices.bleedDb,
+            separationDb: voices.separationDb,
+          }
+        : {status: ANALYSIS_STATUS.mono},
       [F.playbackPath]: playbackPath,
       [F.durationSec]: result.durationSec,
       ...(segmentCount > 0 ? {[F.unreadFeedback]: true} : {}),
