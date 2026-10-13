@@ -29,9 +29,9 @@ void main() {
     expect(AudioFormats.contentTypeFor(''), isNull);
   });
 
-  test('firestore.rules allows exactly these extensions in storagePath', () {
+  test('firestore.rules allows exactly these extensions (isAudioPath)', () {
     final rules = File('firestore.rules').readAsStringSync();
-    final allowed = RegExp(r"prefix \+ '(\w+)'")
+    final allowed = RegExp(r"base \+ '(\w+)'")
         .allMatches(rules)
         .map((m) => m.group(1))
         .toSet();

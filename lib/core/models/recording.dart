@@ -1,8 +1,11 @@
 import '../constants/firestore_paths.dart';
 import '../constants/model_limits.dart';
 import '../utils/map_reader.dart';
+import 'analysis_status.dart';
 import 'recording_analysis.dart';
+import 'recording_source.dart';
 import 'recording_type.dart';
+import 'stem_paths.dart';
 
 /// A recitation (`recordings/{id}`). The audio file lives in Storage at
 /// [storagePath]; Firestore never stores a download URL.
@@ -28,6 +31,8 @@ class Recording {
     required this.createdAt,
     required this.unreadFeedback,
     required this.reviewed,
+    this.source = RecordingSource.stereo,
+    this.stemPaths,
     this.analysis,
     this.playbackPath,
   }) {
@@ -65,6 +70,14 @@ class Recording {
     createdAt: readRequired<DateTime>(map, Fields.createdAt),
     unreadFeedback: readRequired<bool>(map, Fields.unreadFeedback),
     reviewed: readRequired<bool>(map, Fields.reviewed),
+    source: RecordingSource.fromValue(readOptional<String>(map, Fields.source)),
+    stemPaths: switch (readOptional<Map<String, dynamic>>(
+      map,
+      Fields.stemPaths,
+    )) {
+      final paths? => StemPaths.fromMap(paths),
+      null => null,
+    },
     analysis: switch (readOptional<Map<String, dynamic>>(
       map,
       Fields.analysis,
@@ -105,6 +118,13 @@ class Recording {
   /// one's voice markers, a practice one's recitation).
   final bool reviewed;
 
+  /// How the studio exported it: one stereo file, or two files the server
+  /// joins into [storagePath].
+  final RecordingSource source;
+
+  /// The two files of a [RecordingSource.stems] recording; null otherwise.
+  final StemPaths? stemPaths;
+
   /// The server's analysis of an official recording; null before the file
   /// arrived, and for practice recordings (never analysed).
   final RecordingAnalysis? analysis;
@@ -115,6 +135,23 @@ class Recording {
 
   /// What the player plays: the centred copy when there is one.
   String get playablePath => playbackPath ?? storagePath;
+
+  /// Whether [storagePath] holds the audio. A two-file recording has none
+  /// until the server joined its files: while they upload or are being
+  /// joined, and for good when joining them failed.
+  bool get hasAudio => switch (source) {
+    RecordingSource.stereo => true,
+    RecordingSource.stems => switch (analysis) {
+      null => false,
+      final analysis => switch (analysis.status) {
+        AnalysisStatus.merging => false,
+        AnalysisStatus.failed => !analysis.isStemsFailure,
+        AnalysisStatus.pending ||
+        AnalysisStatus.done ||
+        AnalysisStatus.mono => true,
+      },
+    },
+  };
 
   Map<String, dynamic> toMap() => {
     Fields.studentId: studentId,
@@ -131,6 +168,10 @@ class Recording {
     Fields.createdAt: createdAt,
     Fields.unreadFeedback: unreadFeedback,
     Fields.reviewed: reviewed,
+    // Left out for a stereo recording: documents from before Task 11 have
+    // no source, and stereo is what a missing one means.
+    if (source != RecordingSource.stereo) Fields.source: source.value,
+    Fields.stemPaths: ?stemPaths?.toMap(),
     // Server-written: left out while unset, so a new recording's document
     // has only the fields a client may create (firestore.rules).
     Fields.analysis: ?analysis?.toMap(),
@@ -154,6 +195,8 @@ class Recording {
     DateTime? createdAt,
     bool? unreadFeedback,
     bool? reviewed,
+    RecordingSource? source,
+    StemPaths? stemPaths,
     RecordingAnalysis? analysis,
     String? playbackPath,
   }) => Recording(
@@ -172,6 +215,8 @@ class Recording {
     createdAt: createdAt ?? this.createdAt,
     unreadFeedback: unreadFeedback ?? this.unreadFeedback,
     reviewed: reviewed ?? this.reviewed,
+    source: source ?? this.source,
+    stemPaths: stemPaths ?? this.stemPaths,
     analysis: analysis ?? this.analysis,
     playbackPath: playbackPath ?? this.playbackPath,
   );
@@ -194,6 +239,8 @@ class Recording {
       other.createdAt == createdAt &&
       other.unreadFeedback == unreadFeedback &&
       other.reviewed == reviewed &&
+      other.source == source &&
+      other.stemPaths == stemPaths &&
       other.analysis == analysis &&
       other.playbackPath == playbackPath;
 
@@ -214,6 +261,8 @@ class Recording {
     createdAt,
     unreadFeedback,
     reviewed,
+    source,
+    stemPaths,
     analysis,
     playbackPath,
   ]);
@@ -226,5 +275,6 @@ class Recording {
       'storagePath: $storagePath, durationSec: $durationSec, '
       'recordedAt: $recordedAt, createdAt: $createdAt, '
       'unreadFeedback: $unreadFeedback, reviewed: $reviewed, '
+      'source: ${source.value}, stemPaths: $stemPaths, '
       'analysis: $analysis, playbackPath: $playbackPath)';
 }

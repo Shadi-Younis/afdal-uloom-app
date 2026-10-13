@@ -1,5 +1,6 @@
 import 'package:afdal_uloom_tilawat/core/models/analysis_status.dart';
 import 'package:afdal_uloom_tilawat/core/models/feedback_kind.dart';
+import 'package:afdal_uloom_tilawat/core/models/recording_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +26,7 @@ void main() {
 
   test('AnalysisStatus values match the Firestore strings', () {
     expect(AnalysisStatus.values.map((s) => s.value), [
+      'merging',
       'pending',
       'done',
       'mono',
@@ -33,6 +35,15 @@ void main() {
     for (final status in AnalysisStatus.values) {
       expect(AnalysisStatus.fromValue(status.value), status);
     }
+  });
+
+  test('RecordingSource values match the Firestore strings; missing is stereo', () {
+    expect(RecordingSource.values.map((s) => s.value), ['stereo', 'stems']);
+    for (final source in RecordingSource.values) {
+      expect(RecordingSource.fromValue(source.value), source);
+    }
+    expect(RecordingSource.fromValue(null), RecordingSource.stereo);
+    expect(() => RecordingSource.fromValue('Stems'), throwsFormatException);
   });
 
   test('FeedbackKind values match the Firestore strings', () {

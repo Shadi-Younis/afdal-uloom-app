@@ -1,6 +1,10 @@
 /// Where the server's analysis of an official recording is
 /// (`recordings/{id}.analysis.status`). [value] is what Firestore stores.
 enum AnalysisStatus {
+  /// A two-file recording: both files arrived and the server joins them
+  /// into the stereo file (then [pending]).
+  merging('merging'),
+
   /// Uploaded; onRecordingUploaded is working on it.
   pending('pending'),
 

@@ -428,6 +428,18 @@ abstract final class AppStrings {
       'يمكن إضافة الملاحظات يدوياً';
   static const analysisFailed =
       'تعذّر تحليل التسجيل، يمكن إضافة الملاحظات يدوياً';
+
+  // Two-file recordings (Task 11), for the teacher.
+  static const analysisMerging = 'جارٍ دمج الملفين…';
+  static const stemsLengthMismatchFailure =
+      'تعذّر دمج الملفين: مدتهما غير متساوية. تأكد أنهما من نفس التسجيل، '
+      'ثم احذف هذا التسجيل وارفعهما من جديد';
+  static const stemsMisalignedFailure =
+      'تعذّر دمج الملفين: صوت الشيخ لا يطابق صوت الطالب في التوقيت. '
+      'صدّرهما من نفس الجلسة، ثم احذف هذا التسجيل وارفعهما من جديد';
+  static const stemsFailure =
+      'تعذّر دمج الملفين، احذف هذا التسجيل وارفعهما من جديد';
+  static const swappedChip = 'تم تبديل الطالب والشيخ تلقائياً';
   static const nextMarker = 'التالي';
   static const previousMarker = 'السابق';
   static const addNoteHere = 'إضافة ملاحظة هنا';

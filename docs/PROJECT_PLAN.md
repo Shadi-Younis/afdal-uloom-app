@@ -81,16 +81,25 @@ recordings/{recordingId}
   surahNumber: int            // 1..114
   ayahFrom: int
   ayahTo: int
-  storagePath: string         // "recordings/{studentId}/{id}.mp3"
+  storagePath: string         // "recordings/{studentId}/{id}.mp3"؛ في stems هو الملف المدموج ولا يرفعه إلا السيرفر
   durationSec: int?           // يملؤه السيرفر من الصوت بعد الرفع (الرسمي)
   recordedAt: timestamp
   createdAt: timestamp
   unreadFeedback: bool        // للطالب: هل في ملاحظة جديدة؟
   reviewed: bool              // للمعلم: هل راجع التسجيل؟ (الرسمي يبدأ false)
+  source: "stereo" | "stems"? // الرسمي فقط (المهمة 11). غيابه = "stereo": ملف واحد، الطالب يسار والشيخ يمين.
+                              // "stems": ملفان (ملف لكل ميكروفون) يدمجهما السيرفر في storagePath = "{id}.mp3"
+  stemPaths: map?             // stems فقط، يكتبه المعلم عند الإنشاء ولا يتغيّر:
+    student: string           // "recordings/{studentId}/{id}.student.{ext}"
+    sheikh: string            // "recordings/{studentId}/{id}.sheikh.{ext}"؛ يحذفهما السيرفر بعد الدمج
   analysis: map?              // السيرفر فقط، للتسجيل الرسمي:
-    status: "pending" | "done" | "mono" | "failed"
+    status: "merging" | "pending" | "done" | "mono" | "failed"   // merging: stems وصلا ويُدمجان
     segmentCount: int?        // عدد مواضع كلام الشيخ (done)
-    error: string?            // رمز قصير للسجلات (failed)
+    swapped: bool?            // done: كان الشيخ في القناة اليسرى فبُدّلت القناتان تلقائياً
+    bleedDb: number?          // done: صوت الطالب في ميكروفون الشيخ مقارنة بميكروفونه (dB، بدقة 0.1)
+    separationDb: number?     // done: كم يعلو صوت الشيخ فوق ذلك (أقل من 10: لا مواضع)
+    stemsLagMs: int?          // stems: تأخر ملف الشيخ عن ملف الطالب (ms) كما قيس قبل الدمج
+    error: string?            // رمز قصير (failed)، منها "stems_length_mismatch" و"stems_misaligned"
   playbackPath: string?       // السيرفر فقط: "recordings/{studentId}/{id}.play.mp3" (نسخة متوسطة للسماع)
 
 recordings/{recordingId}/feedback/{feedbackId}
@@ -112,7 +121,7 @@ recordings/{recordingId}/feedback/{feedbackId}
 - **في قاعدة البيانات نخزّن مسار الملف فقط** (`storagePath`) وليس رابطاً كاملاً.
 - **الواجهة لا تتعامل مع Firestore مباشرة أبداً**، بل عبر الـ Repositories في `lib/core/`.
 - **السورة تُخزَّن برقمها** (2 = البقرة)، واسمها يُعرض من قائمة ثابتة داخل التطبيق.
-- **`analysis` و`playbackPath`** لا يكتبهما إلا السيرفر (`onRecordingUploaded`). التطبيق يشغّل `playbackPath` إذا وُجد، وإلا `storagePath`. ملاحظات `voice` لا ينشئها إلا السيرفر؛ المعلم يضيف لها نصاً أو يحذفها.
+- **`analysis` و`playbackPath`** لا يكتبهما إلا السيرفر (`onRecordingUploaded`). التطبيق يشغّل `playbackPath` إذا وُجد، وإلا `storagePath`. تسجيل `stems` لا يُسمع ولا يظهر للطالب قبل أن يدمج السيرفر الملفين؛ بعدها هو تسجيل عادي. ملاحظات `voice` لا ينشئها إلا السيرفر؛ المعلم يضيف لها نصاً أو يحذفها.
 
 ### تسمية ملفات الاستوديو
 
@@ -125,6 +134,8 @@ S023_2026-10-05_002_1-20.mp3   (مع تاريخ التسجيل، اختياري)
 استخدمنا رقم السورة بدل اسمها العربي لتجنّب مشاكل الأحرف العربية في أسماء الملفات بين البرامج. صفحة الرفع تقرأ هذه الأجزاء من اسم الملف وتملأ الحقول، وما لم تفهمه تتركه فارغاً.
 
 إعدادات التصدير من Studio One: **MP3 (أو WAV)، Stereo، 128 kbps**. في القالب مسار الطالب **يسار بالكامل** ومسار الشيخ **يمين بالكامل**؛ بهذا يجد السيرفر مواضع كلام الشيخ تلقائياً. الطالب يسمع نسخة متوسطة (`playbackPath`) لا يساراً ويميناً.
+
+أو **ملفان** (Export Stems: ملف لكل ميكروفون): في صفحة الرفع «ملفين: الطالب + الشيخ». إذا كان في اسم الملف student أو talmid أو طالب، أو sheikh أو sheich أو شيخ، يوضع في مكانه تلقائياً. السيرفر يتأكد أن الملفين من الجلسة نفسها (فرق المدة ثانية واحدة على الأكثر، والتأخر ١٠٠ ملّي ثانية على الأكثر) ثم يدمجهما. وفي الحالتين يكتشف السيرفر وحده إذا كانت القناتان مبدّلتين، ولا يعدّ صوت الطالب في ميكروفون الشيخ كلاماً للشيخ.
 
 ---
 
