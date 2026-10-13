@@ -175,6 +175,73 @@ describe("create", () => {
   });
 });
 
+describe("a two-file recording (st-s1, source stems)", () => {
+  const STUDENT_STEM = "recordings/s1/st-s1.student.wav";
+  const SHEIKH_STEM = "recordings/s1/st-s1.sheikh.mp3";
+  const JOINED = "recordings/s1/st-s1.mp3";
+
+  test("its uploader sends both stems, each once", async () => {
+    const t1 = as("t1", "teacher");
+    await assertSucceeds(upload(t1, STUDENT_STEM, "audio/wav"));
+    await assertSucceeds(upload(t1, SHEIKH_STEM));
+    await assertFails(upload(t1, STUDENT_STEM, "audio/wav"));
+    await assertFails(upload(t1, SHEIKH_STEM));
+  });
+
+  test("but never the joined file: only the server writes it", async () => {
+    await assertFails(upload(as("t1", "teacher"), JOINED));
+    await assertFails(upload(as("admin", "admin"), JOINED));
+  });
+
+  test("only the stems the document names", async () => {
+    const t1 = as("t1", "teacher");
+    await assertFails(upload(t1, "recordings/s1/st-s1.student.mp3")); // other extension
+    await assertFails(upload(t1, "recordings/s1/st-s1.sheikh.wav", "audio/wav"));
+    await assertFails(upload(t1, "recordings/s2/st-s1.student.wav", "audio/wav")); // other folder
+    await assertFails(upload(t1, "recordings/s1/st-s1.teacher.mp3"));
+  });
+
+  test("a one-file recording has no stems", async () => {
+    await assertFails(upload(as("t1", "teacher"), "recordings/s1/r-s1.student.mp3"));
+    await assertFails(upload(as("t1", "teacher"), "recordings/s1/r-s1.sheikh.mp3"));
+  });
+
+  test("denied for anyone but uploadedBy, the admin included", async () => {
+    await assertFails(upload(as("s1", "student"), SHEIKH_STEM));
+    await assertFails(upload(as("t2", "teacher"), SHEIKH_STEM));
+    await assertFails(upload(as("admin", "admin"), SHEIKH_STEM));
+    await assertFails(upload(env.unauthenticatedContext().storage(), SHEIKH_STEM));
+  });
+
+  test("audio only, not empty, under 100 MiB each", async () => {
+    const t1 = as("t1", "teacher");
+    await assertFails(upload(t1, SHEIKH_STEM, "text/plain"));
+    await assertFails(upload(t1, SHEIKH_STEM, "audio/mpeg", new Uint8Array(0)));
+    await assertFails(upload(t1, SHEIKH_STEM, "audio/mpeg", audio(100 * MiB)));
+    await assertSucceeds(upload(t1, SHEIKH_STEM, "audio/mpeg", audio(100 * MiB - 1)));
+  }, 120_000);
+
+  test("the joined file and its copy are read like any recording's; the stems are admin-only", async () => {
+    await existingFiles(JOINED, "recordings/s1/st-s1.play.mp3", STUDENT_STEM, SHEIKH_STEM);
+    for (const path of [JOINED, "recordings/s1/st-s1.play.mp3"]) {
+      await assertSucceeds(read(as("s1", "student"), path));
+      await assertSucceeds(read(as("t1", "teacher"), path));
+      await assertFails(read(as("s2", "student"), path));
+    }
+    for (const path of [STUDENT_STEM, SHEIKH_STEM]) {
+      await assertFails(read(as("s1", "student"), path));
+      await assertFails(read(as("t1", "teacher"), path));
+      await assertSucceeds(read(as("admin", "admin"), path));
+    }
+  });
+
+  test("no client deletes a stem", async () => {
+    await existingFiles(STUDENT_STEM);
+    await assertFails(as("t1", "teacher").ref(STUDENT_STEM).delete());
+    await assertFails(as("admin", "admin").ref(STUDENT_STEM).delete());
+  });
+});
+
 describe("update and delete", () => {
   beforeEach(() => existingFiles(R_S1, P_S1));
 

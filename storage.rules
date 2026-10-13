@@ -22,8 +22,10 @@ service firebase.storage {
     }
 
     match /recordings/{studentId}/{fileName} {
-      // fileName is `{recordingId}.{ext}`, or `{recordingId}.play.mp3` for
-      // the centred copy the server makes; Firestore ids contain no dots.
+      // fileName is `{recordingId}.{ext}`, `{recordingId}.play.mp3` for
+      // the centred copy the server makes, or `{recordingId}.student.{ext}`
+      // / `{recordingId}.sheikh.{ext}` for the two stems of a two-file
+      // recording; Firestore ids contain no dots.
       function recordingId() {
         return fileName.split('\\.')[0];
       }
@@ -39,6 +41,20 @@ service firebase.storage {
       // The document points at exactly this object.
       function isRecordingFile() {
         return recording().storagePath == 'recordings/' + studentId + '/' + fileName;
+      }
+
+      // A two-file recording: the uploader sends its two stems, and only
+      // the server (onRecordingUploaded) writes its storagePath, the stereo
+      // file it joins them into.
+      function isStems() {
+        return recording().get('source', 'stereo') == 'stems';
+      }
+
+      // One of the two stems the document names.
+      function isStemFile() {
+        let path = 'recordings/' + studentId + '/' + fileName;
+        return isStems()
+          && (recording().stemPaths.student == path || recording().stemPaths.sheikh == path);
       }
 
       function isPlaybackName() {
@@ -58,15 +74,17 @@ service firebase.storage {
                     || recording().studentId == request.auth.uid)));
 
       // The flow (RecordingRepository): create the document, then upload
-      // to its storagePath. Only the uploader of that document may, once:
+      // to its storagePath, or its two stemPaths for a two-file recording.
+      // Only the uploader of that document may, once each:
       // `resource == null` refuses writing over an existing file (the
       // emulator evaluates such an overwrite as a create, not an update).
-      // Only the server (onRecordingUploaded) writes the playback copy.
+      // Only the server (onRecordingUploaded) writes the playback copy and
+      // the joined file of a two-file recording.
       allow create: if request.auth != null
         && !isPlaybackName()
         && resource == null
         && firestore.exists(recordingPath())
-        && isRecordingFile()
+        && ((isRecordingFile() && !isStems()) || isStemFile())
         && recording().uploadedBy == request.auth.uid
         && request.resource.contentType.matches('audio/.*')
         && request.resource.size > 0
