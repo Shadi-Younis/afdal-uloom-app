@@ -86,6 +86,26 @@ export const ANALYSIS = {
    * template by about 20 dB (each voice on its own side).
    */
   monoMaxMeanDifferenceDb: 3.0,
+
+  // Two stems (lib/stems.ts), before they are joined into one stereo file.
+
+  /** Their lengths may differ by this much (export tails); more: not the same session. */
+  stemsMaxLengthDiffSeconds: 1.0,
+  /** Length of one level of the envelopes that align the stems (10 ms). */
+  envelopeSeconds: 0.01,
+  /** The alignment is searched this far either way. */
+  stemsLagSearchSeconds: 2,
+  /**
+   * The stems may be this far apart (about one syllable is 150 ms); more:
+   * the markers would land beside the sheikh's words.
+   */
+  stemsMaxLagMs: 100,
+  /**
+   * Below this correlation of the envelopes at their best shift there is no
+   * bleed to align on (stems exported with a noise gate): the lag is not
+   * measured and the stems are joined as they are.
+   */
+  stemsMinCorrelation: 0.2,
 } as const;
 
 /** The level of each frame of the two channels, in dBFS. */

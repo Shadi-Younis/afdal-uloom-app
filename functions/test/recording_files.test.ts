@@ -5,8 +5,10 @@ import {describe, expect, test} from "vitest";
 import {
   findStalledRecordings,
   isRecordingFilePath,
+  isStemPath,
   parseRecordingUpload,
   playbackPathFor,
+  stemPathsOf,
 } from "../src/lib/recording_files.js";
 import {AYAH_COUNTS, isValidAyahRange} from "../src/lib/surahs.js";
 
@@ -26,6 +28,23 @@ describe("parseRecordingUpload and playbackPathFor", () => {
     expect(parseRecordingUpload("recordings//r1.mp3")).toBeNull();
     expect(parseRecordingUpload("other/s1/r1.mp3")).toBeNull();
     expect(parseRecordingUpload(undefined)).toBeNull();
+  });
+
+  test("a stem of a two-file recording names its role", () => {
+    expect(parseRecordingUpload("recordings/s1/r1.student.wav")).toEqual({
+      studentId: "s1",
+      recordingId: "r1",
+      stem: "student",
+    });
+    expect(parseRecordingUpload("recordings/s1/r1.sheikh.mp3")).toEqual({
+      studentId: "s1",
+      recordingId: "r1",
+      stem: "sheikh",
+    });
+    expect(parseRecordingUpload("recordings/s1/r1.teacher.mp3")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/r1.student.exe")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/r1.student.sheikh.mp3")).toBeNull();
+    expect(parseRecordingUpload("recordings/s1/r1.Student.mp3")).toBeNull();
   });
 
   test("the playback copy sits next to the original", () => {
@@ -49,6 +68,30 @@ describe("isRecordingFilePath", () => {
     expect(isRecordingFilePath("recordings/s1/r1.MP3/..", "r1")).toBe(false);
     expect(isRecordingFilePath(null, "r1")).toBe(false);
     expect(isRecordingFilePath(42, "r1")).toBe(false);
+  });
+});
+
+describe("isStemPath and stemPathsOf", () => {
+  test("a stem path of this recording and role only", () => {
+    expect(isStemPath("recordings/s1/r1.student.mp3", "r1", "student")).toBe(true);
+    expect(isStemPath("recordings/s1/r1.sheikh.wav", "r1", "sheikh")).toBe(true);
+    expect(isStemPath("recordings/s1/r1.sheikh.wav", "r1", "student")).toBe(false);
+    expect(isStemPath("recordings/s1/r2.student.mp3", "r1", "student")).toBe(false);
+    expect(isStemPath("recordings/s1/r1.mp3", "r1", "student")).toBe(false);
+    expect(isStemPath("recordings/s1/r1.play.mp3", "r1", "student")).toBe(false);
+    expect(isStemPath("other/s1/r1.student.mp3", "r1", "student")).toBe(false);
+    expect(isStemPath(7, "r1", "student")).toBe(false);
+  });
+
+  test("keeps the valid stems of a document's stemPaths", () => {
+    expect(
+      stemPathsOf({student: "recordings/s1/r1.student.mp3", sheikh: "recordings/s1/r1.sheikh.wav"}, "r1"),
+    ).toEqual({student: "recordings/s1/r1.student.mp3", sheikh: "recordings/s1/r1.sheikh.wav"});
+    expect(stemPathsOf({student: "recordings/s1/r1.student.mp3", sheikh: "recordings/s2/x.mp3"}, "r1")).toEqual({
+      student: "recordings/s1/r1.student.mp3",
+    });
+    expect(stemPathsOf(undefined, "r1")).toEqual({});
+    expect(stemPathsOf("recordings/s1/r1.student.mp3", "r1")).toEqual({});
   });
 });
 

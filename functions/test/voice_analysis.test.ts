@@ -59,6 +59,11 @@ describe("the thresholds", () => {
       minSegmentSeconds: 0.6,
       leadInSeconds: 0.3,
       monoMaxMeanDifferenceDb: 3.0,
+      stemsMaxLengthDiffSeconds: 1.0,
+      envelopeSeconds: 0.01,
+      stemsLagSearchSeconds: 2,
+      stemsMaxLagMs: 100,
+      stemsMinCorrelation: 0.2,
     });
   });
 });

@@ -22,9 +22,10 @@ import {
   STORAGE_BUCKET,
   VOICE,
 } from "../lib/constants.js";
-import {AudioToolError, decodeLevels, encodePlayback} from "../lib/ffmpeg.js";
+import {analyseFile} from "../lib/analyse_file.js";
+import {AudioToolError, encodePlayback} from "../lib/ffmpeg.js";
 import {parseRecordingUpload, playbackPathFor, type RecordingUpload} from "../lib/recording_files.js";
-import {analyseVoices, isMonoLike, type VoiceAnalysis} from "../lib/voice_analysis.js";
+import {type VoiceAnalysis} from "../lib/voice_analysis.js";
 
 /**
  * onRecordingUploaded: when the audio of an official recording arrives at
@@ -95,11 +96,8 @@ async function analyseUpload(upload: RecordingUpload, objectPath: string): Promi
     const playback = join(workDir, "playback.mp3");
     await bucket.file(objectPath).download({destination: original});
 
-    const {levels, durationSeconds} = await decodeLevels(original);
-    const result: Result = {
-      voices: isMonoLike(levels) ? null : analyseVoices(levels),
-      durationSec: Math.round(durationSeconds),
-    };
+    const {voices: found, durationSeconds} = await analyseFile(original);
+    const result: Result = {voices: found, durationSec: Math.round(durationSeconds)};
 
     await encodePlayback(original, playback);
     await bucket.upload(playback, {

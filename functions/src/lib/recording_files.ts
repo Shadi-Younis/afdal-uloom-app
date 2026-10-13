@@ -13,24 +13,56 @@ export function playbackPathFor(studentId: string, recordingId: string): string 
   return `${RECORDINGS}/${studentId}/${recordingId}${PLAYBACK_SUFFIX}`;
 }
 
+/** The two stems of a two-file recording: one per microphone. */
+export const STEM_ROLES = ["student", "sheikh"] as const;
+export type StemRole = (typeof STEM_ROLES)[number];
+
 export interface RecordingUpload {
   studentId: string;
   recordingId: string;
+  /** Set for a stem of a two-file recording (`{recordingId}.{stem}.{ext}`). */
+  stem?: StemRole;
 }
 
 /**
  * The recording an uploaded object belongs to, when [name] is
- * `recordings/{studentId}/{recordingId}.{ext}` with an accepted audio
- * extension; null for anything else, the `.play.mp3` copies included (the
- * server writes those itself).
+ * `recordings/{studentId}/{recordingId}.{ext}`, or a stem
+ * `recordings/{studentId}/{recordingId}.student.{ext}` /
+ * `.sheikh.{ext}`, with an accepted audio extension; null for anything
+ * else, the `.play.mp3` copies included (the server writes those itself).
  */
 export function parseRecordingUpload(name: string | undefined): RecordingUpload | null {
   if (!name || name.endsWith(PLAYBACK_SUFFIX)) return null;
   const parts = name.split("/");
   if (parts.length !== 3 || parts[0] !== RECORDINGS || parts[1] === "") return null;
-  const match = /^([^.]+)\.([a-z0-9]+)$/.exec(parts[2]);
-  if (!match || !(AUDIO_EXTENSIONS as readonly string[]).includes(match[2])) return null;
-  return {studentId: parts[1], recordingId: match[1]};
+  const match = /^([^.]+)(?:\.(student|sheikh))?\.([a-z0-9]+)$/.exec(parts[2]);
+  if (!match || !(AUDIO_EXTENSIONS as readonly string[]).includes(match[3])) return null;
+  const upload: RecordingUpload = {studentId: parts[1], recordingId: match[1]};
+  if (match[2]) upload.stem = match[2] as StemRole;
+  return upload;
+}
+
+/**
+ * Whether [path] is the [stem] of recording [recordingId]:
+ * `recordings/{studentId}/{recordingId}.{stem}.{ext}` with an accepted
+ * audio extension. Like isRecordingFilePath, it keeps the server from ever
+ * reading or deleting a file a malformed document points at.
+ */
+export function isStemPath(path: unknown, recordingId: string, stem: StemRole): path is string {
+  if (typeof path !== "string") return false;
+  const upload = parseRecordingUpload(path);
+  return upload !== null && upload.recordingId === recordingId && upload.stem === stem;
+}
+
+/** The valid stem paths in a document's [stemPaths] value (none for a stereo recording). */
+export function stemPathsOf(stemPaths: unknown, recordingId: string): Partial<Record<StemRole, string>> {
+  const result: Partial<Record<StemRole, string>> = {};
+  if (typeof stemPaths !== "object" || stemPaths === null) return result;
+  for (const stem of STEM_ROLES) {
+    const path = (stemPaths as Record<string, unknown>)[stem];
+    if (isStemPath(path, recordingId, stem)) result[stem] = path;
+  }
+  return result;
 }
 
 /**

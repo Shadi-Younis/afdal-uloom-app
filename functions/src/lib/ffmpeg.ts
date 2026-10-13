@@ -1,10 +1,11 @@
 // Runs ffmpeg (the ffmpeg-static binary: Linux in Cloud Functions, Windows
-// in the emulator) to decode a recording into channel levels and to make
-// the centred copy for listening.
+// in the emulator) to decode a recording into channel levels, to make the
+// centred copy for listening, and to join two stems into one stereo file.
 import {spawn} from "node:child_process";
 
 import ffmpegPath from "ffmpeg-static";
 
+import {EnvelopeMeter} from "./stems.js";
 import {type ChannelLevels, FrameLevelMeter} from "./voice_analysis.js";
 
 /**
@@ -16,6 +17,9 @@ export const ANALYSIS_SAMPLE_RATE = 16000;
 /** The centred copy: one channel, (L + R) / 2, MP3 at this bitrate. */
 export const PLAYBACK_BITRATE = "128k";
 export const PLAYBACK_SAMPLE_RATE = 44100;
+
+/** The stereo file made from two stems: student left, sheikh right, MP3 at this bitrate. */
+export const MERGED_BITRATE = "320k";
 
 export interface DecodedLevels {
   levels: ChannelLevels;
@@ -52,6 +56,67 @@ export async function decodeLevels(inputPath: string): Promise<DecodedLevels> {
   const levels = meter.finish();
   if (levels.left.length === 0) throw new AudioToolError("decode", "no audio");
   return {levels, durationSeconds: meter.durationSeconds};
+}
+
+export interface DecodedEnvelope {
+  /** One level (dBFS) per ANALYSIS.envelopeSeconds. */
+  levels: number[];
+  durationSeconds: number;
+}
+
+/**
+ * The loudness envelope of [inputPath] mixed down to one channel, streamed
+ * from ffmpeg (16-bit PCM), and its decoded length.
+ */
+export async function decodeEnvelope(inputPath: string): Promise<DecodedEnvelope> {
+  const meter = new EnvelopeMeter(ANALYSIS_SAMPLE_RATE);
+  await run(
+    [
+      "-i", inputPath,
+      "-vn",
+      "-ac", "1",
+      "-ar", String(ANALYSIS_SAMPLE_RATE),
+      "-f", "s16le",
+      "-acodec", "pcm_s16le",
+      "pipe:1",
+    ],
+    "decode",
+    (chunk) => meter.push(chunk),
+  );
+  const levels = meter.finish();
+  if (levels.length === 0) throw new AudioToolError("decode", "no audio");
+  return {levels, durationSeconds: meter.durationSeconds};
+}
+
+/**
+ * Joins two stems into one stereo MP3 at [outputPath]: [studentPath] mixed
+ * down to the LEFT channel, [sheikhPath] to the RIGHT, as the studio
+ * template exports it. The shorter one is padded with silence up to
+ * [durationSeconds] (the longer one's length).
+ */
+export async function joinStems(
+  studentPath: string,
+  sheikhPath: string,
+  durationSeconds: number,
+  outputPath: string,
+): Promise<void> {
+  const mono = `aresample=${PLAYBACK_SAMPLE_RATE},aformat=sample_fmts=fltp:channel_layouts=mono`;
+  await run(
+    [
+      "-i", studentPath,
+      "-i", sheikhPath,
+      "-filter_complex",
+      `[0:a]${mono},apad[student];[1:a]${mono},apad[sheikh];` +
+        "[student][sheikh]join=inputs=2:channel_layout=stereo:map=0.0-FL|1.0-FR[out]",
+      "-map", "[out]",
+      // apad never ends: stop at the longer stem.
+      "-t", durationSeconds.toFixed(3),
+      "-codec:a", "libmp3lame",
+      "-b:a", MERGED_BITRATE,
+      "-y", outputPath,
+    ],
+    "encode",
+  );
 }
 
 /** Writes the centred MP3 copy of [inputPath] to [outputPath]. */
