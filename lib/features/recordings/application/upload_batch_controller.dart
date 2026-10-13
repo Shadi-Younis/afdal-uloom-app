@@ -2,15 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/my_students_providers.dart';
 import '../../../core/application/recording_upload_controller.dart';
-import '../../../core/application/recording_upload_request.dart';
 import '../../../core/application/recording_upload_status.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/models/picked_audio_file.dart';
-import '../../../core/models/recording_type.dart';
+import '../../../core/models/recording_source.dart';
+import '../../../core/models/stem_role.dart';
 import '../../../core/providers/clock_provider.dart';
-import '../../../core/utils/audio_file_check.dart';
-import '../../../core/utils/recording_file_name.dart';
+import '../../../core/providers/service_providers.dart';
+import 'stem_files.dart';
 import 'upload_batch_state.dart';
+import 'upload_row_builders.dart';
 import 'upload_row.dart';
 import 'upload_row_status.dart';
 
@@ -22,6 +23,11 @@ import 'upload_row_status.dart';
 ///
 /// [defaultStudentId] (the student page the page was opened from) fills in
 /// the student of files whose name names none.
+///
+/// A row can switch to two-file mode («ملفين: الطالب + الشيخ»): the
+/// student's and the sheikh's files (Studio One «Export Stems»), placed by
+/// their names or the order dropped, checked for equal lengths, and
+/// uploaded together as one recording.
 class UploadBatchController extends Notifier<UploadBatchState> {
   UploadBatchController(this.defaultStudentId);
 
@@ -40,28 +46,13 @@ class UploadBatchController extends Notifier<UploadBatchState> {
     final today = ref.read(clockProvider)();
     final added = [
       for (final file in files)
-        () {
-          final parsed = parseRecordingFileName(file.name);
-          final code = parsed.studentCode;
-          final byCode = code == null
-              ? null
-              : students
-                    .where((s) => s.student.studentCode == code)
-                    .firstOrNull;
-          final fallback = students
-              .where((s) => s.student.id == defaultStudentId)
-              .firstOrNull;
-          return UploadRow(
-            key: 'upload-${_nextKey++}',
-            file: file,
-            fileProblem: uploadProblemOf(file),
-            studentId: code == null ? fallback?.student.id : byCode?.student.id,
-            surahNumber: parsed.surahNumber,
-            ayahFrom: parsed.ayahFrom,
-            ayahTo: parsed.ayahTo,
-            recordedAt: parsed.recordedAt ?? today,
-          );
-        }(),
+        newUploadRow(
+          key: 'upload-${_nextKey++}',
+          file: file,
+          students: students,
+          defaultStudentId: defaultStudentId,
+          today: today,
+        ),
     ];
     state = UploadBatchState(
       rows: [...state.rows, ...added],
@@ -85,6 +76,76 @@ class UploadBatchController extends Notifier<UploadBatchState> {
 
   void setRecordedAt(String key, DateTime day) =>
       _edit(key, (row) => row.copyWith(recordedAt: day));
+
+  /// «ملف واحد (يسار/يمين)» or «ملفين: الطالب + الشيخ». The first switch
+  /// to two files puts the row's file where its name says (else the
+  /// student's); switching back keeps both files for later.
+  void setSource(String key, RecordingSource source) {
+    final row = state.row(key);
+    if (row == null || !row.status.isEditable || row.fileProblem != null) {
+      return;
+    }
+    _edit(key, (row) => row.copyWith(source: source));
+    if (source == RecordingSource.stems &&
+        row.studentFile == null &&
+        row.sheikhFile == null) {
+      setStems(key, [row.file]);
+    }
+  }
+
+  /// Puts [files] into the two-file slots of [key] (placeStems): [into]
+  /// is the zone they were dropped on or picked for. Their names fill in
+  /// what the row still lacks, and their lengths are read.
+  void setStems(String key, List<PickedAudioFile> files, {StemRole? into}) {
+    final row = state.row(key);
+    if (row == null || !row.isStems || !row.status.isEditable) return;
+    final placed = placeStems(row, files, into: into);
+    if (placed.isEmpty) return;
+    final students = ref.read(myStudentsProvider).value ?? const [];
+    final today = ref.read(clockProvider)();
+    _edit(key, (row) {
+      var next = row;
+      for (final (role, file) in placed) {
+        next = next.withStem(role, file, null);
+      }
+      return prefilledFrom(
+        next,
+        [for (final (_, file) in placed) file],
+        students,
+        today,
+      );
+    });
+    for (final (_, file) in placed) {
+      _readDuration(key, file);
+    }
+  }
+
+  /// «تبديل»: the student's file becomes the sheikh's and the other way.
+  void swapStems(String key) => _edit(
+    key,
+    (row) => row.copyWith(
+      studentFile: () => row.sheikhFile,
+      sheikhFile: () => row.studentFile,
+      studentDuration: () => row.sheikhDuration,
+      sheikhDuration: () => row.studentDuration,
+    ),
+  );
+
+  /// Shows how long [file] is, in whichever slot of [key] it is by then.
+  Future<void> _readDuration(String key, PickedAudioFile file) async {
+    final duration = await ref
+        .read(audioDurationReaderProvider)
+        .durationOf(file);
+    if (!ref.mounted || duration == null) return;
+    _update(key, (row) {
+      for (final role in StemRole.values) {
+        if (identical(row.stemFile(role), file)) {
+          return row.withStem(role, file, duration);
+        }
+      }
+      return row;
+    });
+  }
 
   void remove(String key) {
     if (state.row(key)?.status.isEditable != true) return;
@@ -149,6 +210,7 @@ class UploadBatchController extends Notifier<UploadBatchState> {
       (row) => row.copyWith(
         status: UploadRowStatus.uploading,
         progress: 0,
+        stemProgress: () => null,
         error: () => null,
       ),
     );
@@ -163,29 +225,20 @@ class UploadBatchController extends Notifier<UploadBatchState> {
     // Listening keeps the (autoDispose) upload alive and reports progress.
     final subscription = ref.listen(provider, (_, next) {
       if (next.isUploading) {
-        _update(key, (row) => row.copyWith(progress: next.progress));
+        _update(
+          key,
+          (row) => row.copyWith(
+            progress: next.progress,
+            stemProgress: () => next.stemProgress,
+          ),
+        );
       }
     });
     try {
-      final source = await row.file.open();
+      final request = await uploadRequestOf(row, student);
       // The page may have been left meanwhile (the upload then stops).
       if (!ref.mounted) return;
-      final id = await ref
-          .read(provider.notifier)
-          .start(
-            RecordingUploadRequest(
-              studentId: student.student.id,
-              halaqaId: student.halaqa.id,
-              teacherId: student.halaqa.teacherId,
-              type: RecordingType.official,
-              surahNumber: row.surahNumber!,
-              ayahFrom: row.ayahFrom!,
-              ayahTo: row.ayahTo!,
-              recordedAt: row.recordedAt,
-              source: source,
-              fileExtension: row.file.extension,
-            ),
-          );
+      final id = await ref.read(provider.notifier).start(request);
       if (!ref.mounted) return;
       final result = ref.read(provider);
       if (id != null) {

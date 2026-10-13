@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 
 import 'fake_accounts_service.dart';
 import 'fake_audio_player_service.dart';
+import 'fake_audio_duration_reader.dart';
 import 'fake_audio_storage_service.dart';
 import 'fake_auth_service.dart';
 import 'fake_feedback_repository.dart';
@@ -108,6 +109,7 @@ class AdminFixture {
 
   final storage = FakeAudioStorageService();
   final player = FakeAudioPlayerService();
+  final durations = FakeAudioDurationReader();
 
   /// The same passwords in every run.
   PasswordGenerator get passwords => PasswordGenerator(Random(1));
@@ -121,6 +123,7 @@ class AdminFixture {
     recordingRepositoryProvider.overrideWithValue(recordings),
     feedbackRepositoryProvider.overrideWithValue(feedback),
     audioStorageServiceProvider.overrideWithValue(storage),
+    audioDurationReaderProvider.overrideWithValue(durations),
     audioPlayerServiceProvider.overrideWith((ref) {
       ref.onDispose(player.dispose);
       return player;
