@@ -186,6 +186,27 @@ abstract final class AppStrings {
   /// [percent] arrives in Arabic-Indic digits.
   static String uploading(String percent) => 'جارٍ الرفع… $percent٪';
 
+  // Two-file mode of the upload page (Task 11).
+  static const sourceOneFile = 'ملف واحد (يسار/يمين)';
+  static const sourceTwoFiles = 'ملفين: الطالب + الشيخ';
+  static const stemStudent = 'صوت الطالب';
+  static const stemSheikh = 'صوت الشيخ';
+  static const swapStems = 'تبديل';
+  static const pickStem = 'اختيار ملف';
+  static const dropStem = 'اسحب الملف هنا';
+  static const noStemYet = 'لم يُختر ملف بعد';
+  static const stemsMissing = 'أضف صوت الطالب وصوت الشيخ';
+
+  /// One file of two while uploading: [stem] is [stemStudent] or
+  /// [stemSheikh]; [percent] arrives in Arabic-Indic digits.
+  static String stemUploading(String stem, String percent) =>
+      '$stem: $percent٪';
+
+  /// A file's size and length, e.g. "٣٫٢ ميغابايت · ٠١:٠١"; both arrive
+  /// formatted.
+  static String sizeAndLength(String size, String length) =>
+      '$size · $length';
+
   /// [megabytes] arrives in Arabic-Indic digits.
   static String fileSize(String megabytes) => '$megabytes ميغابايت';
 

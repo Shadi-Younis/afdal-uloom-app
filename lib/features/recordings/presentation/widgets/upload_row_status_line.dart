@@ -10,7 +10,8 @@ import '../../application/upload_row_status.dart';
 
 /// How a file's upload goes: why it cannot be uploaded, what is missing,
 /// waiting, the progress bar, done, failed (the Arabic reason) or
-/// cancelled.
+/// cancelled. In two-file mode also a missing file, why the two cannot go
+/// together (e.g. their lengths), and a progress bar for each.
 class UploadRowStatusLine extends StatelessWidget {
   const UploadRowStatusLine({super.key, required this.row});
 
@@ -24,7 +25,17 @@ class UploadRowStatusLine extends StatelessWidget {
     if (row.fileProblem case final problem?) {
       return _Line(text: errorMessageFor(problem), color: error);
     }
+    final stemsProblem = row.isStems ? row.stemsProblem : null;
     return switch (row.status) {
+      UploadRowStatus.editing when stemsProblem != null => _Line(
+        text: errorMessageFor(stemsProblem),
+        color: error,
+        icon: Icons.error_outline,
+      ),
+      UploadRowStatus.editing when row.isStems && !row.hasBothStems => _Line(
+        text: AppStrings.stemsMissing,
+        color: muted,
+      ),
       UploadRowStatus.editing when !row.isComplete => _Line(
         text: AppStrings.completeTheRow,
         color: muted,
@@ -34,19 +45,35 @@ class UploadRowStatusLine extends StatelessWidget {
         text: AppStrings.uploadWaiting,
         color: muted,
       ),
-      UploadRowStatus.uploading => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LinearProgressIndicator(value: row.progress),
-          const SizedBox(height: AppSizes.spaceXS),
-          _Line(
-            text: AppStrings.uploading(
-              toArabicDigits((row.progress * 100).floor()),
+      UploadRowStatus.uploading => switch (row.stemProgress) {
+        final stems? => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Progress(
+              value: stems.student,
+              text: AppStrings.stemUploading(
+                AppStrings.stemStudent,
+                _percent(stems.student),
+              ),
+              color: muted,
             ),
-            color: muted,
-          ),
-        ],
-      ),
+            const SizedBox(height: AppSizes.spaceXS),
+            _Progress(
+              value: stems.sheikh,
+              text: AppStrings.stemUploading(
+                AppStrings.stemSheikh,
+                _percent(stems.sheikh),
+              ),
+              color: muted,
+            ),
+          ],
+        ),
+        null => _Progress(
+          value: row.progress,
+          text: AppStrings.uploading(_percent(row.progress)),
+          color: muted,
+        ),
+      },
       UploadRowStatus.done => const _Line(
         text: AppStrings.uploadDone,
         color: AppColors.green,
@@ -66,6 +93,31 @@ class UploadRowStatusLine extends StatelessWidget {
       ),
     };
   }
+}
+
+String _percent(double progress) => toArabicDigits((progress * 100).floor());
+
+/// A progress bar with what it is under it.
+class _Progress extends StatelessWidget {
+  const _Progress({
+    required this.value,
+    required this.text,
+    required this.color,
+  });
+
+  final double value;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      LinearProgressIndicator(value: value),
+      const SizedBox(height: AppSizes.spaceXS),
+      _Line(text: text, color: color),
+    ],
+  );
 }
 
 class _Line extends StatelessWidget {
