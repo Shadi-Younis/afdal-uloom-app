@@ -51,10 +51,16 @@ class DailyHadithCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSizes.spaceXS),
+          // Amiri too: Cairo draws ﷺ small and cramped.
           Text(
             AppStrings.prophetSaid,
             textAlign: TextAlign.center,
-            style: muted,
+            style: styles.dailyHadith.copyWith(
+              fontSize: muted?.fontSize,
+              fontWeight: FontWeight.w400,
+              color: muted?.color,
+              height: 1.5,
+            ),
           ),
           Text.rich(
             TextSpan(
