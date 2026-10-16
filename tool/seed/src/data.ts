@@ -124,8 +124,8 @@ type Row = [
 ];
 
 // Official recordings wait for the sheikh to check their voice markers
-// («تمت المراجعة»); rec-02, rec-09, rec-14, rec-26, rec-28 and rec-29
-// still do.
+// («تمت المراجعة»); rec-02, rec-09, rec-14, rec-26, rec-28, rec-29 and
+// rec-30 still do.
 const rows: Row[] = [
   ["rec-01", "s001", "official", "ikhlas", "2026-09-01", true, false],
   ["rec-02", "s001", "official", "fatiha", "2026-09-08", false, true],
