@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/surahs.dart';
 import '../../../../core/models/recording.dart';
 import '../../../../core/utils/date_format.dart';
+import '../../../../core/utils/recording_titles.dart';
 import '../../../../core/widgets/common/recording_type_chip.dart';
 import '../../../../core/widgets/islamic/surah_cartouche.dart';
 import '../../application/recording_details_providers.dart';
 
-/// The surah in its cartouche, then the ayat, the type and the recorded
-/// date on one line, and who uploaded it («رُفع بواسطة: الشيخ محمود» for a
+/// The surah in its cartouche («تسجيل» and the date without one), then
+/// the ayat (when given), the type and the recorded date on one line, and who uploaded it («رُفع بواسطة: الشيخ محمود» for a
 /// student; nothing when a student may not be told).
 class RecordingHeader extends ConsumerWidget {
   const RecordingHeader({super.key, required this.recording});
@@ -26,12 +26,11 @@ class RecordingHeader extends ConsumerWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
     final uploader = ref.watch(personNameProvider(uploaderOf(r))).value;
+    final ayat = recordingAyatOf(r);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SurahCartouche(
-          title: AppStrings.surahName(surahByNumber(r.surahNumber).nameAr),
-        ),
+        SurahCartouche(title: recordingHeadingOf(r)),
         const SizedBox(height: AppSizes.spaceS),
         Wrap(
           alignment: WrapAlignment.center,
@@ -39,7 +38,7 @@ class RecordingHeader extends ConsumerWidget {
           spacing: AppSizes.spaceS,
           runSpacing: AppSizes.spaceXS,
           children: [
-            Text(formatAyahRange(r.ayahFrom, r.ayahTo), style: muted),
+            if (ayat != null) Text(ayat, style: muted),
             RecordingTypeChip(type: r.type),
             Text(
               '${AppStrings.recordedAtLabel}: ${formatDay(r.recordedAt)}',

@@ -78,9 +78,9 @@ recordings/{recordingId}
   teacherId: string           // مكرر عمداً
   uploadedBy: string
   type: "official" | "practice"
-  surahNumber: int            // 1..114
-  ayahFrom: int
-  ayahTo: int
+  surahNumber: int?           // 1..114. اختيارية في الرسمي (المهمة 12): لا شيء، أو سورة وحدها، أو سورة مع الآيتين؛
+  ayahFrom: int?              // الآيتان معاً أو لا شيء، ولا آيات بلا سورة. يكملها المعلم أو المدير لاحقاً
+  ayahTo: int?                // («تعديل السورة والآيات»). التدريب يحتاج الثلاثة. بلا سورة يُعرض «تسجيل» + التاريخ
   storagePath: string         // "recordings/{studentId}/{id}.mp3"؛ في stems هو الملف المدموج ولا يرفعه إلا السيرفر
   durationSec: int?           // يملؤه السيرفر من الصوت بعد الرفع (الرسمي)
   recordedAt: timestamp

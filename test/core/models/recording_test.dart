@@ -11,9 +11,9 @@ void main() {
   final createdAt = DateTime.utc(2026, 10, 5, 18);
 
   Recording build({
-    int surahNumber = 2,
-    int ayahFrom = 1,
-    int ayahTo = 20,
+    int? surahNumber = 2,
+    int? ayahFrom = 1,
+    int? ayahTo = 20,
     int? durationSec = 300,
   }) => Recording(
     id: 'r1',
@@ -208,6 +208,44 @@ void main() {
     // Written back as it came.
     expect(analysis.toMap()['status'], 'thinking');
     expect(RecordingAnalysis.fromMap({'status': 'done'}).unknownStatus, isNull);
+  });
+
+  group('surah and ayat are optional (Task 12)', () {
+    test('none, or a surah alone: built, left out of the map, round trip', () {
+      final bare = build(surahNumber: null, ayahFrom: null, ayahTo: null);
+      expect(bare.surahNumber, isNull);
+      expect(bare.toMap().keys, isNot(contains('surahNumber')));
+      expect(bare.toMap().keys, isNot(contains('ayahFrom')));
+      expect(bare.toMap().keys, isNot(contains('ayahTo')));
+      expect(Recording.fromMap('r1', bare.toMap()), bare);
+
+      final surahOnly = build(ayahFrom: null, ayahTo: null);
+      expect(surahOnly.toMap()['surahNumber'], 2);
+      expect(surahOnly.toMap().keys, isNot(contains('ayahFrom')));
+      expect(Recording.fromMap('r1', surahOnly.toMap()), surahOnly);
+    });
+
+    test('a document without them, or with nulls, loads', () {
+      final map = build().toMap()
+        ..remove('surahNumber')
+        ..remove('ayahFrom')
+        ..remove('ayahTo');
+      expect(Recording.fromMap('r1', map).surahNumber, isNull);
+      final nulls = {
+        ...build().toMap(),
+        'surahNumber': null,
+        'ayahFrom': null,
+        'ayahTo': null,
+      };
+      expect(Recording.fromMap('r1', nulls).ayahFrom, isNull);
+    });
+
+    test('ayat without a surah, or only one ayah, throw ArgumentError', () {
+      expect(() => build(surahNumber: null), throwsArgumentError);
+      expect(() => build(ayahFrom: null), throwsArgumentError);
+      expect(() => build(ayahTo: null), throwsArgumentError);
+      expect(() => build(surahNumber: null, ayahTo: null), throwsArgumentError);
+    });
   });
 
   test('missing required field throws FormatException', () {

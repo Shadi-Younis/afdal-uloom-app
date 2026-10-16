@@ -7,6 +7,7 @@ import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
 import 'package:afdal_uloom_tilawat/core/models/stem_role.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
 import 'package:afdal_uloom_tilawat/core/providers/clock_provider.dart';
+import 'package:afdal_uloom_tilawat/core/utils/ayat_problem.dart';
 import 'package:afdal_uloom_tilawat/features/recordings/application/upload_batch_controller.dart';
 import 'package:afdal_uloom_tilawat/features/recordings/application/upload_batch_state.dart';
 import 'package:afdal_uloom_tilawat/features/recordings/application/upload_row.dart';
@@ -122,13 +123,56 @@ void main() {
       expect(row(0).recordedAt, DateTime(2026, 10, 9));
 
       controller().setSurah(key, 1);
-      expect(row(0).hasValidAyat, isTrue);
+      expect(row(0).ayatProblem, isNull);
       controller().setAyahTo(key, 8);
-      expect(row(0).hasInvalidAyat, isTrue);
+      expect(row(0).ayatProblem, AyatProblem.notInSurah);
       expect(row(0).canStart, isFalse);
 
       controller().setStudent(key, null);
       expect(row(0).studentId, isNull);
+    });
+
+    test('surah and ayat are optional (Task 12): the student is enough', () {
+      controller().addFiles([pickedFile('Mixdown.mp3')]);
+      final key = row(0).key;
+      expect(row(0).isComplete, isFalse);
+      controller().setStudent(key, 's001');
+      expect(row(0).ayatProblem, isNull);
+      expect(row(0).canStart, isTrue);
+
+      // A surah alone.
+      controller().setSurah(key, 2);
+      expect(row(0).canStart, isTrue);
+
+      // Only one of the two ayat.
+      controller().setAyahFrom(key, 5);
+      expect(row(0).ayatProblem, AyatProblem.oneAyahMissing);
+      expect(row(0).canStart, isFalse);
+      controller().setAyahTo(key, 10);
+      expect(row(0).canStart, isTrue);
+
+      // From after to.
+      controller().setAyahFrom(key, 11);
+      expect(row(0).ayatProblem, AyatProblem.notInSurah);
+
+      // Ayat without a surah.
+      controller().setSurah(key, null);
+      expect(row(0).ayatProblem, AyatProblem.noSurah);
+      expect(row(0).canStart, isFalse);
+
+      // Nothing at all again.
+      controller()
+        ..setAyahFrom(key, null)
+        ..setAyahTo(key, null);
+      expect(row(0).canStart, isTrue);
+    });
+
+    test('a name with only the student code fills the student only', () {
+      controller().addFiles([pickedFile('S002.mp3')]);
+      expect(row(0).studentId, 's002');
+      expect(row(0).surahNumber, isNull);
+      expect(row(0).ayahFrom, isNull);
+      expect(row(0).canStart, isTrue);
     });
 
     test('a file is removed', () {

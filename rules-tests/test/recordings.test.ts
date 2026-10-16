@@ -2,6 +2,7 @@ import { assertFails, assertSucceeds, type RulesTestEnvironment } from "@firebas
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -221,7 +222,8 @@ describe("teacher t1", () => {
     await assertSucceeds(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
     await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false }));
     await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: true }));
-    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { durationSec: 3 }));
+    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false, surahNumber: 3 }));
     await assertFails(updateDoc(doc(db, "recordings/r-s3"), { reviewed: true }));
   });
 
@@ -262,6 +264,117 @@ describe("official uploads (Task 09)", () => {
     await assertSucceeds(
       create(as(env, "admin", "admin"), "n1", official("n1", { ...forS3, storagePath: "recordings/s3/n1.mp3" })),
     );
+  });
+});
+
+describe("optional surah and ayat (Task 12)", () => {
+  /** official() without some of the three fields. */
+  const without = (id: string, keys: string[], over: Record<string, unknown> = {}) => {
+    const data = official(id, over);
+    for (const key of keys) delete data[key];
+    return data;
+  };
+
+  test("an official upload may leave out all three, or the ayat", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertSucceeds(create(t1, "n1", without("n1", ["surahNumber", "ayahFrom", "ayahTo"])));
+    await assertSucceeds(create(t1, "n2", without("n2", ["ayahFrom", "ayahTo"])));
+    // Null is the same as absent.
+    await assertSucceeds(create(t1, "n3", official("n3", { surahNumber: null, ayahFrom: null, ayahTo: null })));
+    await assertSucceeds(create(t1, "n4", official("n4", { ayahFrom: null, ayahTo: null })));
+    const admin = as(env, "admin", "admin");
+    await assertSucceeds(
+      create(admin, "n5", without("n5", ["surahNumber", "ayahFrom", "ayahTo"], { uploadedBy: "admin" })),
+    );
+  });
+
+  test("ayat without a surah, one ayah alone, or from > to are refused", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertFails(create(t1, "n1", without("n1", ["surahNumber"])));
+    await assertFails(create(t1, "n1", official("n1", { surahNumber: null })));
+    await assertFails(create(t1, "n1", without("n1", ["ayahTo"])));
+    await assertFails(create(t1, "n1", without("n1", ["ayahFrom"])));
+    await assertFails(create(t1, "n1", without("n1", ["surahNumber", "ayahTo"])));
+    await assertFails(create(t1, "n1", official("n1", { ayahFrom: 21, ayahTo: 20 })));
+    await assertFails(create(t1, "n1", official("n1", { ayahFrom: 0 })));
+    await assertFails(create(t1, "n1", without("n1", ["ayahFrom", "ayahTo"], { surahNumber: 115 })));
+    await assertFails(create(t1, "n1", without("n1", ["ayahFrom", "ayahTo"], { surahNumber: "2" })));
+  });
+
+  test("a two-file recording may leave them out too", async () => {
+    const stems = {
+      source: "stems",
+      stemPaths: { student: "recordings/s1/n1.student.wav", sheikh: "recordings/s1/n1.sheikh.mp3" },
+    };
+    await assertSucceeds(
+      create(as(env, "t1", "teacher"), "n1", without("n1", ["surahNumber", "ayahFrom", "ayahTo"], stems)),
+    );
+  });
+
+  test("a practice still says what it is: all three required", async () => {
+    const s1 = as(env, "s1", "student");
+    const bare = practice("n1");
+    for (const keys of [["surahNumber", "ayahFrom", "ayahTo"], ["ayahFrom", "ayahTo"], ["ayahTo"]]) {
+      const data = { ...bare };
+      for (const key of keys) delete data[key];
+      await assertFails(create(s1, "n1", data));
+    }
+    await assertFails(create(s1, "n1", practice("n1", { ayahFrom: null, ayahTo: null })));
+    await assertSucceeds(create(s1, "n1", bare));
+  });
+
+  test("the teacher and the admin fill, change or clear them later", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 3, ayahFrom: 5, ayahTo: 9 }));
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { ayahFrom: null, ayahTo: null }));
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: deleteField() }));
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 112, ayahFrom: 1, ayahTo: 4 }));
+    const admin = as(env, "admin", "admin");
+    await assertSucceeds(
+      updateDoc(doc(admin, "recordings/r-s3"), {
+        surahNumber: deleteField(),
+        ayahFrom: deleteField(),
+        ayahTo: deleteField(),
+      }),
+    );
+    await assertSucceeds(updateDoc(doc(admin, "recordings/r-s3"), { surahNumber: 1 }));
+  });
+
+  test("an edit keeps the same combinations", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: null }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { ayahTo: null }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { ayahFrom: 30 }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 0 }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 3, storagePath: "recordings/s1/x.mp3" }));
+  });
+
+  test("not another teacher, not the student, not a practice", async () => {
+    await assertFails(updateDoc(doc(as(env, "t2", "teacher"), "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "s1", "student"), "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "t1", "student"), "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "s1", "student"), "recordings/p-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "admin", "admin"), "recordings/p-s1"), { surahNumber: 3 }));
+  });
+
+  test("a recording without them reads and lists like any other", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore() as unknown as Firestore;
+      await setDoc(
+        doc(db, "recordings/bare"),
+        without("bare", ["surahNumber", "ayahFrom", "ayahTo"], { createdAt: Timestamp.now() }),
+      );
+    });
+    await assertSucceeds(getDoc(doc(as(env, "s1", "student"), "recordings/bare")));
+    await assertSucceeds(getDoc(doc(as(env, "t1", "teacher"), "recordings/bare")));
+    const list = query(
+      collection(as(env, "t1", "teacher"), "recordings"),
+      where("studentId", "==", "s1"),
+      where("teacherId", "==", "t1"),
+      orderBy("recordedAt", "desc"),
+    );
+    const snapshot = await assertSucceeds(getDocs(list));
+    expect(snapshot.docs.map((d) => d.id)).toContain("bare");
   });
 });
 

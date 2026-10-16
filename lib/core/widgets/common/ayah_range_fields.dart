@@ -4,8 +4,8 @@ import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
 import '../../utils/arabic_digits.dart';
 
-/// «من آية» and «إلى آية» side by side, in either kind of digits;
-/// «الآيات ليست في هذه السورة» under them when [invalid].
+/// «من آية» and «إلى آية» side by side, in either kind of digits; [error]
+/// (e.g. «الآيات ليست في هذه السورة») under them.
 class AyahRangeFields extends StatelessWidget {
   const AyahRangeFields({
     super.key,
@@ -13,7 +13,7 @@ class AyahRangeFields extends StatelessWidget {
     required this.to,
     required this.onFromChanged,
     required this.onToChanged,
-    this.invalid = false,
+    this.error,
     this.enabled = true,
   });
 
@@ -21,7 +21,9 @@ class AyahRangeFields extends StatelessWidget {
   final int? to;
   final ValueChanged<int?> onFromChanged;
   final ValueChanged<int?> onToChanged;
-  final bool invalid;
+
+  /// Null: no error.
+  final String? error;
   final bool enabled;
 
   @override
@@ -35,7 +37,7 @@ class AyahRangeFields extends StatelessWidget {
             value: from,
             enabled: enabled,
             onChanged: onFromChanged,
-            error: invalid ? AppStrings.ayatNotInSurah : null,
+            error: error,
           ),
         ),
         const SizedBox(width: AppSizes.spaceS),

@@ -21,6 +21,8 @@
 // The student s001 has every case of the student's screens: official
 // rec-26 (unread voice markers) and rec-01 (reviewed), practice rec-27
 // (reviewed, with a written note) and rec-20 (waiting for the sheikh).
+// rec-30 (s001) was uploaded without surah and ayat (optional since
+// Task 12): it shows as «تسجيل» and its date.
 // The seed refuses a note whose "at second" is past the end of its
 // recording's audio.
 
@@ -47,9 +49,10 @@ export interface SeedRecording {
   type: "official" | "practice";
   /** The id of the clip in test_audio.json that this recording plays. */
   clipId: string;
-  surahNumber: number;
-  ayahFrom: number;
-  ayahTo: number;
+  /** Null when the teacher left them out (official recordings only). */
+  surahNumber: number | null;
+  ayahFrom: number | null;
+  ayahTo: number | null;
   recordedAt: string; // ISO date
   reviewed: boolean;
   unreadFeedback: boolean;
@@ -153,7 +156,11 @@ const rows: Row[] = [
   ["rec-27", "s001", "practice", "mulk-1", "2026-10-06", true, false],
   ["rec-28", "s001", "official", "studio-stems", "2026-10-11", false, false],
   ["rec-29", "s002", "official", "studio-swapped", "2026-10-11", false, false],
+  ["rec-30", "s001", "official", "nas", "2026-10-12", false, false],
 ];
+
+/** Official recordings uploaded without surah and ayat. */
+const withoutSurah = new Set(["rec-30"]);
 
 const clipById = new Map(
   [...clips, studioClip, studioStemsClip, studioSwappedClip].map((clip) => [clip.id, clip]),
@@ -163,15 +170,16 @@ export const recordings: SeedRecording[] = rows.map(
   ([id, studentId, type, clipId, date, reviewed, unreadFeedback]) => {
     const clip = clipById.get(clipId);
     if (!clip) throw new Error(`${id}: no clip "${clipId}" in test_audio.json`);
+    const bare = withoutSurah.has(id);
     return {
       id,
       studentId,
       type,
       clipId,
       // Taken from the clip, so the ayat shown always match the audio.
-      surahNumber: clip.surahNumber,
-      ayahFrom: clip.ayahFrom,
-      ayahTo: clip.ayahTo,
+      surahNumber: bare ? null : clip.surahNumber,
+      ayahFrom: bare ? null : clip.ayahFrom,
+      ayahTo: bare ? null : clip.ayahTo,
       recordedAt: `${date}T16:00:00Z`,
       reviewed,
       unreadFeedback,

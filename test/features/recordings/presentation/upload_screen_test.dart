@@ -114,7 +114,8 @@ void main() {
       '١. الفاتحة',
     );
     expect(textOf(tester, fieldIn('Mixdown.mp3', 'الطالب')), isEmpty);
-    expect(find.text('أكمل بيانات هذا الملف'), findsOneWidget);
+    // Only the student is still required (surah and ayat are optional).
+    expect(find.text('اختر الطالب لهذا الملف'), findsOneWidget);
 
     await choose(
       tester,
@@ -122,11 +123,11 @@ void main() {
       'عمر',
       'عمر الحسن · S002 · حلقة الفجر',
     );
+    expect(find.text('اختر الطالب لهذا الملف'), findsNothing);
     await choose(tester, fieldIn('Mixdown.mp3', 'السورة'), '67', '٦٧. الملك');
     await tester.enterText(fieldIn('Mixdown.mp3', 'من آية'), '١');
     await tester.enterText(fieldIn('Mixdown.mp3', 'إلى آية'), '2');
     await tester.pumpAndSettle();
-    expect(find.text('أكمل بيانات هذا الملف'), findsNothing);
 
     await tester.tap(uploadAll());
     await tester.pump();
@@ -162,6 +163,56 @@ void main() {
     await tester.enterText(fieldIn('S001_001_1-7.mp3', 'إلى آية'), '9');
     await tester.pumpAndSettle();
     expect(find.text('الآيات ليست في هذه السورة'), findsOneWidget);
+    expect(tester.widget<FilledButton>(uploadAll()).onPressed, isNull);
+  });
+
+  testWidgets('surah and ayat left empty: accepted, uploaded without them', (
+    tester,
+  ) async {
+    useWideSize(tester);
+    await pumpUpload(tester);
+    await pick(tester, ['S001.mp3']);
+    expect(
+      textOf(tester, fieldIn('S001.mp3', 'الطالب')),
+      'أحمد الخطيب · S001 · حلقة الفجر',
+    );
+    expect(textOf(tester, fieldIn('S001.mp3', 'السورة')), isEmpty);
+    expect(find.text('اختر الطالب لهذا الملف'), findsNothing);
+    expect(tester.widget<FilledButton>(uploadAll()).onPressed, isNotNull);
+
+    await tester.tap(uploadAll());
+    await tester.pump();
+    school.storage.lastUpload.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('تم الرفع'), findsOneWidget);
+    final created = school.recordings.created.single;
+    expect(created.surahNumber, isNull);
+    expect((created.ayahFrom, created.ayahTo), (null, null));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ayat without a surah, or only one ayah: why, cannot start', (
+    tester,
+  ) async {
+    useWideSize(tester);
+    await pumpUpload(tester);
+    await pick(tester, ['S001.mp3']);
+    await tester.enterText(fieldIn('S001.mp3', 'من آية'), '1');
+    await tester.enterText(fieldIn('S001.mp3', 'إلى آية'), '5');
+    await tester.pumpAndSettle();
+    expect(find.text('اختر السورة قبل الآيات'), findsOneWidget);
+    expect(tester.widget<FilledButton>(uploadAll()).onPressed, isNull);
+
+    await choose(tester, fieldIn('S001.mp3', 'السورة'), '67', '٦٧. الملك');
+    expect(find.text('اختر السورة قبل الآيات'), findsNothing);
+    expect(tester.widget<FilledButton>(uploadAll()).onPressed, isNotNull);
+
+    await tester.enterText(fieldIn('S001.mp3', 'إلى آية'), '');
+    await tester.pumpAndSettle();
+    expect(
+      find.text('اكتب الآيتين «من» و«إلى» أو اتركهما فارغتين'),
+      findsOneWidget,
+    );
     expect(tester.widget<FilledButton>(uploadAll()).onPressed, isNull);
   });
 

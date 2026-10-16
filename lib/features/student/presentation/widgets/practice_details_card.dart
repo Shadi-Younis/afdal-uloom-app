@@ -38,7 +38,7 @@ class PracticeDetailsCard extends ConsumerWidget {
             from: state.ayahFrom,
             to: state.ayahTo,
             enabled: enabled,
-            invalid: state.hasInvalidAyat,
+            error: state.hasInvalidAyat ? AppStrings.ayatNotInSurah : null,
             onFromChanged: controller.setAyahFrom,
             onToChanged: controller.setAyahTo,
           ),

@@ -36,8 +36,10 @@ class UploadRowStatusLine extends StatelessWidget {
         text: AppStrings.stemsMissing,
         color: muted,
       ),
-      UploadRowStatus.editing when !row.isComplete => _Line(
-        text: AppStrings.completeTheRow,
+      // Surah and ayat are optional; a problem with them shows under the
+      // ayat. The student is all that may still be missing.
+      UploadRowStatus.editing when row.studentId == null => _Line(
+        text: AppStrings.chooseTheStudent,
         color: muted,
       ),
       UploadRowStatus.editing => const SizedBox.shrink(),

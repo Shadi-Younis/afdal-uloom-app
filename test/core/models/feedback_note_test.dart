@@ -23,13 +23,19 @@ void main() {
     });
   });
 
-  test('a note with a rating from before Task 12 loads; the rating is gone', () {
-    for (final rating in [4, null, 4.5, 'x']) {
-      final old = {...build().toMap(), 'rating': rating};
-      expect(FeedbackNote.fromMap('f1', old), build());
-      expect(FeedbackNote.fromMap('f1', old).toMap(), isNot(contains('rating')));
-    }
-  });
+  test(
+    'a note with a rating from before Task 12 loads; the rating is gone',
+    () {
+      for (final rating in [4, null, 4.5, 'x']) {
+        final old = {...build().toMap(), 'rating': rating};
+        expect(FeedbackNote.fromMap('f1', old), build());
+        expect(
+          FeedbackNote.fromMap('f1', old).toMap(),
+          isNot(contains('rating')),
+        );
+      }
+    },
+  );
 
   FeedbackNote voice({String note = '', int at = 83, int? end = 91}) =>
       FeedbackNote(

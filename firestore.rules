@@ -163,27 +163,46 @@ service cloud.firestore {
               && isAudioPath(data.stemPaths.sheikh, prefix + 'sheikh.'));
       }
 
+      // Surah and ayat: none, a surah alone, or a surah with both ayat
+      // (absent or null each). The ayat's upper bound depends on the
+      // surah, which only the app knows; rules check the order. Optional
+      // for official recordings only: a practice says «ماذا ستتلو؟».
+      function hasValidAyat(data) {
+        let surah = data.get('surahNumber', null);
+        let from = data.get('ayahFrom', null);
+        let to = data.get('ayahTo', null);
+        return (surah == null && from == null && to == null)
+          || (isIntInRange(surah, 1, 114)
+              && ((from == null && to == null)
+                  || (from is int && to is int && from >= 1 && from <= to)));
+      }
+
+      function hasAllAyat(data) {
+        return data.get('surahNumber', null) != null
+          && data.get('ayahFrom', null) != null
+          && data.get('ayahTo', null) != null;
+      }
+
       // Checks for every create, whoever the caller: shape, ranges, path,
       // and that studentId / halaqaId / teacherId agree with each other.
       // `analysis` and `playbackPath` are not among the keys: only the
       // server (onRecordingUploaded) writes them.
       function isValidNewRecording(data) {
         let required = ['studentId', 'halaqaId', 'teacherId', 'uploadedBy',
-          'type', 'surahNumber', 'ayahFrom', 'ayahTo', 'storagePath',
-          'recordedAt', 'createdAt', 'unreadFeedback', 'reviewed'];
+          'type', 'storagePath', 'recordedAt', 'createdAt', 'unreadFeedback',
+          'reviewed'];
         let prefix = 'recordings/' + data.studentId + '/' + recordingId + '.';
         let student = get(userPath(data.studentId)).data;
         return data.keys().hasAll(required)
-          && data.keys().hasOnly(required.concat(['durationSec', 'source', 'stemPaths']))
+          && data.keys().hasOnly(required.concat(['surahNumber', 'ayahFrom',
+                                                  'ayahTo', 'durationSec',
+                                                  'source', 'stemPaths']))
           && data.studentId is string
           && data.halaqaId is string
           && data.teacherId is string
           && data.type in ['official', 'practice']
-          && isIntInRange(data.surahNumber, 1, 114)
-          && data.ayahFrom is int
-          && data.ayahTo is int
-          && data.ayahFrom >= 1
-          && data.ayahFrom <= data.ayahTo
+          && hasValidAyat(data)
+          && (data.type == 'official' || hasAllAyat(data))
           && (data.get('durationSec', null) == null
               || (data.durationSec is int && data.durationSec >= 0))
           && isAudioPath(data.storagePath, prefix)
@@ -240,7 +259,12 @@ service cloud.firestore {
         || ((isOwningTeacher() || isAdmin())
           && onlyChanged(['reviewed', 'unreadFeedback'])
           && request.resource.data.reviewed is bool
-          && request.resource.data.unreadFeedback is bool);
+          && request.resource.data.unreadFeedback is bool)
+        // «تعديل السورة والآيات»: an official recording only.
+        || ((isOwningTeacher() || isAdmin())
+          && resource.data.type == 'official'
+          && onlyChanged(['surahNumber', 'ayahFrom', 'ayahTo'])
+          && hasValidAyat(request.resource.data));
 
       // A student may take back a practice recording the sheikh has not
       // reviewed yet; onRecordingDeleted removes its file and notes.

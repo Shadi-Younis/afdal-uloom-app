@@ -7,6 +7,9 @@ import '../constants/surahs.dart';
 import 'parsed_recording_name.dart';
 
 final _code = RegExp(ModelLimits.studentCodePattern, caseSensitive: false);
+// A name that is only the code and a label (`S014 - Student`, `S014.take2`):
+// the code alone, followed by neither a letter nor a digit.
+final _codeAlone = RegExp(r'^(S\d{3,5})(?![0-9a-z])', caseSensitive: false);
 final _date = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
 final _surah = RegExp(r'^\d{1,3}$');
 // Anything after the ayat that does not start with a digit or a dash is
@@ -18,9 +21,12 @@ final _ayat = RegExp(r'^(\d{1,3})(?:-(\d{1,3}))?(?:[^\d-].*)?$');
 /// `S014_002_001-020.mp3`, `S014_2_1-20.wav` or
 /// `S023_2026-10-05_002_1-20.mp3`; one ayah may be written alone
 /// (`S014_067_5`). A stem's track name may follow
-/// (`S014_002_001-020 - Student.wav`, `S014_002_001-020_sheikh.wav`). Whatever does not parse, or does not exist in the
-/// Quran (surah 115, ayat past the surah's end), is left null; the code is
-/// not checked against any student here.
+/// (`S014_002_001-020 - Student.wav`, `S014_002_001-020_sheikh.wav`).
+/// Surah and ayat are optional: `S014.mp3`, `S014_take2.wav` or
+/// `S014 - Student.wav` give the code alone, `S014_002.mp3` the code and
+/// the surah. Whatever does not parse, or does not exist in the Quran
+/// (surah 115, ayat past the surah's end), is left null; the code is not
+/// checked against any student here.
 ParsedRecordingName parseRecordingFileName(String fileName) {
   final dot = fileName.lastIndexOf('.');
   final base = (dot > 0 ? fileName.substring(0, dot) : fileName).trim();
@@ -30,6 +36,9 @@ ParsedRecordingName parseRecordingFileName(String fileName) {
   String? code;
   if (i < parts.length && _code.hasMatch(parts[i])) {
     code = parts[i++].toUpperCase();
+  } else if (_codeAlone.firstMatch(parts.first) case final m?) {
+    // Nothing else of the studio form follows a label.
+    return ParsedRecordingName(studentCode: m[1]!.toUpperCase());
   }
 
   DateTime? day;
