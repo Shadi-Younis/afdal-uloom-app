@@ -6,6 +6,7 @@ import 'package:afdal_uloom_tilawat/core/models/recording_analysis.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/stem_paths.dart';
 import 'package:afdal_uloom_tilawat/core/models/user_role.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -70,16 +71,19 @@ void main() {
 
   Finder player() => find.byTooltip('تشغيل');
 
+  /// The teacher's «تمت المراجعة» toggle.
+  Finder reviewedToggle() => find.widgetWithText(FilterChip, 'تمت المراجعة');
+
   group('its teacher', () {
-    testWidgets('while the files arrive or are joined: «$merging», no player', (
-      tester,
-    ) async {
+    testWidgets('while the files arrive or are joined: «$merging», no player, '
+        'nothing to review', (tester) async {
       fixture.school.recordings
         ..put(stems('st-1'))
         ..put(stems('st-2', RecordingAnalysis(status: AnalysisStatus.merging)));
       await open(tester, 'st-1', teacher, spinning: true);
       expect(find.text(merging), findsOneWidget);
       expect(player(), findsNothing);
+      expect(reviewedToggle(), findsNothing);
       expect(tester.takeException(), isNull);
 
       currentRouter(tester).push('/recording/st-2');
@@ -87,9 +91,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text(merging), findsOneWidget);
       expect(player(), findsNothing);
+      expect(reviewedToggle(), findsNothing);
     });
 
-    testWidgets('a join that failed says why', (tester) async {
+    testWidgets('a join that failed says why; nothing to review', (
+      tester,
+    ) async {
       RecordingAnalysis failed(String error) =>
           RecordingAnalysis(status: AnalysisStatus.failed, error: error);
       fixture.school.recordings
@@ -100,10 +107,12 @@ void main() {
       await open(tester, 'st-long', teacher);
       expect(find.textContaining('مدتهما غير متساوية'), findsOneWidget);
       expect(player(), findsNothing);
+      expect(reviewedToggle(), findsNothing);
 
       currentRouter(tester).push('/recording/st-late');
       await tester.pumpAndSettle();
       expect(find.textContaining('لا يطابق صوت الطالب'), findsOneWidget);
+      expect(reviewedToggle(), findsNothing);
 
       currentRouter(tester).push('/recording/st-other');
       await tester.pumpAndSettle();
@@ -111,6 +120,7 @@ void main() {
         find.text('تعذّر دمج الملفين، احذف هذا التسجيل وارفعهما من جديد'),
         findsOneWidget,
       );
+      expect(reviewedToggle(), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -131,7 +141,25 @@ void main() {
       expect(find.text(swappedChip), findsOneWidget);
       expect(find.text(merging), findsNothing);
       expect(player(), findsOneWidget);
+      expect(reviewedToggle(), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('joined, then its own analysis failed: it plays and can be '
+        'reviewed', (tester) async {
+      fixture.school.recordings.put(
+        stems(
+          'st-analysis-failed',
+          RecordingAnalysis(status: AnalysisStatus.failed, error: 'decode'),
+        ),
+      );
+      await open(tester, 'st-analysis-failed', teacher);
+      expect(
+        find.text('تعذّر تحليل التسجيل، يمكن إضافة الملاحظات يدوياً'),
+        findsOne,
+      );
+      expect(player(), findsOneWidget);
+      expect(reviewedToggle(), findsOneWidget);
     });
   });
 

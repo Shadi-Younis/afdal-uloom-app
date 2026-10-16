@@ -26,8 +26,9 @@ import 'swapped_chip.dart';
 /// [AppSizes.contentMaxWidth] wide on the studio PC: the header, the
 /// analysis state, the player (the centred copy when there is one) with the
 /// sheikh's markers, and the notes. A two-file recording has no player
-/// until the server joined its files (the banner says why); its teacher
-/// also sees when the server swapped the student's and sheikh's channels. Its teacher and admins also add notes
+/// and no «تمت المراجعة» until the server joined its files (the banner
+/// says why); its teacher also sees when the server swapped the student's
+/// and sheikh's channels. Its teacher and admins also add notes
 /// at the current second and mark it reviewed. Its student only reads;
 /// opening it clears his «ملاحظات جديدة», and a practice the sheikh has not
 /// reviewed yet can be deleted («حذف التدريب»).
@@ -94,7 +95,10 @@ class RecordingDetailsView extends ConsumerWidget {
                         : null,
                   ),
                 ),
-              if (canManage) ReviewedToggle(recording: recording),
+              // Nothing to review before a two-file recording is joined
+              // (or when joining it failed).
+              if (canManage && recording.hasAudio)
+                ReviewedToggle(recording: recording),
               const OrnamentDivider(title: AppStrings.feedbackTitle),
               const SizedBox(height: AppSizes.spaceXS),
               FeedbackSection(recording: recording, canManage: canManage),
