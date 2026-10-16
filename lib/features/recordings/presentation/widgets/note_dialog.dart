@@ -11,10 +11,9 @@ import '../../../../core/utils/player_format.dart';
 import '../../../../core/widgets/common/loading_button.dart';
 import '../../application/note_editor_controller.dart';
 import '../../application/note_editor_state.dart';
-import 'rating_picker.dart';
 
 /// Opens the note dialog: a new written note at [atSecond], or the text
-/// and rating of [note]. Resolves to true once saved.
+/// of [note]. Resolves to true once saved.
 Future<bool> showNoteDialog(
   BuildContext context, {
   required String recordingId,
@@ -51,8 +50,6 @@ class NoteDialog extends ConsumerStatefulWidget {
 
 class _NoteDialogState extends ConsumerState<NoteDialog> {
   late final _text = TextEditingController(text: widget.note?.note ?? '');
-  // Purely the dialog's own input until it is saved.
-  late int? _rating = widget.note?.rating;
 
   NoteEditorController get _controller =>
       ref.read(noteEditorControllerProvider.notifier);
@@ -70,13 +67,11 @@ class _NoteDialogState extends ConsumerState<NoteDialog> {
             recordingId: widget.recordingId,
             atSecond: widget.atSecond ?? 0,
             text: _text.text,
-            rating: _rating,
           )
         : await _controller.edit(
             recordingId: widget.recordingId,
             note: note,
             text: _text.text,
-            rating: _rating,
           );
     if (saved && mounted) Navigator.of(context).pop(true);
   }
@@ -119,11 +114,6 @@ class _NoteDialogState extends ConsumerState<NoteDialog> {
                   alignLabelWithHint: true,
                   errorText: _problemText(state.problem),
                 ),
-              ),
-              RatingPicker(
-                rating: _rating,
-                enabled: !state.submitting,
-                onChanged: (rating) => setState(() => _rating = rating),
               ),
               if (state.error case final error?)
                 Text(

@@ -168,7 +168,6 @@ async function writeResult(
         [F.atSecond]: Math.floor(segment.start),
         // Never before the start: a short segment inside one second.
         [F.endSecond]: Math.max(Math.floor(segment.start), Math.round(segment.end)),
-        [F.rating]: null,
         [F.createdAt]: FieldValue.serverTimestamp(),
       }),
     ),

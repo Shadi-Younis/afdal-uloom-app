@@ -109,9 +109,10 @@ recordings/{recordingId}/feedback/{feedbackId}
   note: string                // قد يكون فارغاً في voice
   atSecond: int?              // ملاحظة على لحظة معيّنة من التلاوة (بداية كلام الشيخ في voice)
   endSecond: int?             // voice فقط: أين توقف الشيخ
-  rating: int?                // 1..5
+                              // لا تقييم بالنجوم (المهمة 12): حقل rating في الملاحظات القديمة يُتجاهل
+                              // ولا يكتبه أحد
   createdAt: timestamp
-  updatedAt: timestamp?       // آخر تعديل للنص أو التقييم
+  updatedAt: timestamp?       // آخر تعديل للنص
 ```
 
 ### قواعد ثابتة

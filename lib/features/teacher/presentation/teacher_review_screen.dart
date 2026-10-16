@@ -15,7 +15,7 @@ import 'widgets/teacher_recording_tile.dart';
 
 /// «بانتظار المراجعة»: the teacher's recordings not reviewed yet, official
 /// and practice, oldest first, each with its student and type. A tap
-/// opens the recording (notes, rating, «تمت المراجعة»); once reviewed it
+/// opens the recording (notes, «تمت المراجعة»); once reviewed it
 /// leaves the list by itself.
 class TeacherReviewScreen extends ConsumerWidget {
   const TeacherReviewScreen({super.key});

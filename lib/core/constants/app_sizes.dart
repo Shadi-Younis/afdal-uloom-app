@@ -84,9 +84,6 @@ abstract final class AppSizes {
   /// The "new feedback" dot on a recording.
   static const unreadDot = 10.0;
 
-  /// The stars of a teacher's rating.
-  static const ratingStar = 20.0;
-
   /// Every player button is at least this big (Material's touch target).
   static const touchTarget = 48.0;
 

@@ -32,7 +32,6 @@ async function addFeedback(recordingId: string, teacherId: string) {
     teacherId,
     note: "note",
     atSecond: null,
-    rating: null,
     createdAt: Timestamp.now(),
   });
 }

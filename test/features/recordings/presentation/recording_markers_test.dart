@@ -288,9 +288,7 @@ void main() {
   });
 
   group('the recording\'s teacher', () {
-    testWidgets('adds a note at the current second, with a rating', (
-      tester,
-    ) async {
+    testWidgets('adds a note at the current second', (tester) async {
       await pumpRecording(tester);
       await tester.tap(find.widgetWithText(OutlinedButton, 'التالي'));
       await tester.pump();
@@ -306,8 +304,11 @@ void main() {
         ),
         findsOneWidget,
       );
+      // The dialog asks for the note only: no stars any more.
+      expect(find.text('التقييم (اختياري)'), findsNothing);
+      expect(find.byIcon(Icons.star), findsNothing);
+      expect(find.byIcon(Icons.star_border), findsNothing);
       await tester.enterText(find.byType(TextField), '  أطل الغنّة هنا  ');
-      await tester.tap(find.byTooltip('تقييم ٣'));
       await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
       await tester.pumpAndSettle();
 
@@ -317,12 +318,11 @@ void main() {
       expect(note.kind, FeedbackKind.text);
       expect(note.atSecond, 5);
       expect(note.note, 'أطل الغنّة هنا');
-      expect(note.rating, 3);
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.text('تم حفظ الملاحظة'), findsOneWidget);
     });
 
-    testWidgets('a note needs text; the rating may stay empty', (tester) async {
+    testWidgets('a note needs text', (tester) async {
       await pumpRecording(tester);
       await tester.tap(find.widgetWithText(FilledButton, 'إضافة ملاحظة هنا'));
       await tester.pumpAndSettle();
@@ -331,10 +331,9 @@ void main() {
       expect(find.text('اكتب الملاحظة'), findsOneWidget);
       expect(school.feedback.added, isEmpty);
 
-      await tester.enterText(find.byType(TextField), 'بلا تقييم');
+      await tester.enterText(find.byType(TextField), 'أحسنت');
       await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
       await tester.pumpAndSettle();
-      expect(school.feedback.added.single.$2.rating, isNull);
       expect(school.feedback.added.single.$2.atSecond, 0);
     });
 
@@ -349,12 +348,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
       await tester.pumpAndSettle();
 
-      expect(school.feedback.updated.single, (
-        'rec-02',
-        'v1',
-        'انتبه للقلقلة',
-        null,
-      ));
+      expect(school.feedback.updated.single, ('rec-02', 'v1', 'انتبه للقلقلة'));
       expect(find.text('انتبه للقلقلة'), findsOneWidget);
     });
 

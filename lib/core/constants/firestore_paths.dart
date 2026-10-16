@@ -84,7 +84,6 @@ abstract final class Fields {
   // recordings/{recordingId}/feedback
   static const note = 'note';
   static const atSecond = 'atSecond';
-  static const rating = 'rating';
   static const kind = 'kind';
   static const endSecond = 'endSecond';
 }

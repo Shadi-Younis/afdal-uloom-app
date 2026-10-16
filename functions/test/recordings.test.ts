@@ -45,7 +45,6 @@ async function addFeedback(recordingId: string, count: number) {
       teacherId: "t1",
       note: `note ${i}`,
       atSecond: i,
-      rating: null,
       createdAt: Timestamp.now(),
     });
   }

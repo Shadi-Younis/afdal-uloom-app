@@ -204,7 +204,6 @@ async function seedFirestore(): Promise<void> {
       kind: "text",
       note: n.note,
       atSecond: n.atSecond ?? null,
-      rating: n.rating ?? null,
       createdAt: Timestamp.fromDate(createdAt),
     });
   });

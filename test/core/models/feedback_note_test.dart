@@ -5,12 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final createdAt = DateTime.utc(2026, 10, 6, 9);
 
-  FeedbackNote build({int? atSecond = 42, int? rating = 4}) => FeedbackNote(
+  FeedbackNote build({int? atSecond = 42}) => FeedbackNote(
     id: 'f1',
     teacherId: 't1',
     note: 'انتبه للمدّ',
     atSecond: atSecond,
-    rating: rating,
     createdAt: createdAt,
   );
 
@@ -20,9 +19,16 @@ void main() {
       'note': 'انتبه للمدّ',
       'kind': 'text',
       'atSecond': 42,
-      'rating': 4,
       'createdAt': createdAt,
     });
+  });
+
+  test('a note with a rating from before Task 12 loads; the rating is gone', () {
+    for (final rating in [4, null, 4.5, 'x']) {
+      final old = {...build().toMap(), 'rating': rating};
+      expect(FeedbackNote.fromMap('f1', old), build());
+      expect(FeedbackNote.fromMap('f1', old).toMap(), isNot(contains('rating')));
+    }
   });
 
   FeedbackNote voice({String note = '', int at = 83, int? end = 91}) =>
@@ -45,7 +51,6 @@ void main() {
       'kind': 'voice',
       'atSecond': 83,
       'endSecond': 91,
-      'rating': null,
       'createdAt': createdAt,
     });
     expect(FeedbackNote.fromMap('v1', marker.toMap()), marker);
@@ -96,7 +101,7 @@ void main() {
   test('round trip through toMap and fromMap', () {
     final note = build();
     expect(FeedbackNote.fromMap('f1', note.toMap()), note);
-    final plain = build(atSecond: null, rating: null);
+    final plain = build(atSecond: null);
     expect(FeedbackNote.fromMap('f1', plain.toMap()), plain);
   });
 
@@ -104,20 +109,16 @@ void main() {
     final map = build().toMap()..remove('note');
     expect(() => FeedbackNote.fromMap('f1', map), throwsFormatException);
     expect(
-      () => FeedbackNote.fromMap('f1', {...build().toMap(), 'rating': 4.5}),
+      () => FeedbackNote.fromMap('f1', {...build().toMap(), 'atSecond': 4.5}),
       throwsFormatException,
     );
   });
 
   test('accepts the edges of every range', () {
     expect(() => build(atSecond: 0), returnsNormally);
-    expect(() => build(rating: 1), returnsNormally);
-    expect(() => build(rating: 5), returnsNormally);
   });
 
-  test('invalid rating or atSecond throws ArgumentError', () {
-    expect(() => build(rating: 0), throwsArgumentError);
-    expect(() => build(rating: 6), throwsArgumentError);
+  test('a negative atSecond throws ArgumentError', () {
     expect(() => build(atSecond: -1), throwsArgumentError);
   });
 

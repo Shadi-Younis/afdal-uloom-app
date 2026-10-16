@@ -62,7 +62,6 @@ export const F = {
   note: "note",
   atSecond: "atSecond",
   endSecond: "endSecond",
-  rating: "rating",
 } as const;
 
 /** recordings.type of a studio recording; only these are analysed. */

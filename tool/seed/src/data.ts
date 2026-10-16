@@ -62,7 +62,6 @@ export interface SeedNote {
   recordingId: string;
   note: string;
   atSecond?: number;
-  rating?: number;
 }
 
 export const emailDomain = "afdal-uloom.app";
@@ -182,15 +181,15 @@ export const recordings: SeedRecording[] = rows.map(
 );
 
 export const notes: SeedNote[] = [
-  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الياء في «الرحيم»", atSecond: 12, rating: 4 },
-  { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في هذه الآية", rating: 3 },
-  { id: "fb-03", recordingId: "rec-07", note: "تلاوة جميلة، بارك الله فيك", rating: 5 },
+  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الياء في «الرحيم»", atSecond: 12 },
+  { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في هذه الآية" },
+  { id: "fb-03", recordingId: "rec-07", note: "تلاوة جميلة، بارك الله فيك" },
   { id: "fb-04", recordingId: "rec-09", note: "انتبه للغنّة في النون المشدّدة", atSecond: 5 },
   { id: "fb-05", recordingId: "rec-09", note: "الوقف هنا غير مناسب، أعد الآية", atSecond: 17 },
-  { id: "fb-06", recordingId: "rec-09", note: "تحسّن واضح في آخر التلاوة", rating: 4 },
-  { id: "fb-07", recordingId: "rec-11", note: "ممتاز، استمر على هذا", rating: 5 },
-  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة هذه الآية ببطء", atSecond: 14, rating: 3 },
-  { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن", rating: 5 },
+  { id: "fb-06", recordingId: "rec-09", note: "تحسّن واضح في آخر التلاوة" },
+  { id: "fb-07", recordingId: "rec-11", note: "ممتاز، استمر على هذا" },
+  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة هذه الآية ببطء", atSecond: 14 },
+  { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن" },
   { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام النون الساكنة", atSecond: 8 },
-  { id: "fb-11", recordingId: "rec-27", note: "أحسنت، اضبط الوقف على «قدير»", atSecond: 4, rating: 4 },
+  { id: "fb-11", recordingId: "rec-27", note: "أحسنت، اضبط الوقف على «قدير»", atSecond: 4 },
 ];

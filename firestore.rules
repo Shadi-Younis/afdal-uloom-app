@@ -266,31 +266,27 @@ service cloud.firestore {
           return isAdmin() || (isTeacher() && recording().teacherId == request.auth.uid);
         }
 
-        function isValidRating(data) {
-          return data.get('rating', null) == null || isIntInRange(data.rating, 1, 5);
-        }
-
         // A written note. Voice markers (kind 'voice') come only from the
-        // server, which finds them in the sheikh's channel.
+        // server, which finds them in the sheikh's channel. No `rating`:
+        // the stars were removed (Task 12).
         function isValidNote(data) {
           return data.keys().hasAll(['teacherId', 'note', 'kind', 'createdAt'])
-            && data.keys().hasOnly(['teacherId', 'note', 'kind', 'atSecond', 'rating', 'createdAt'])
+            && data.keys().hasOnly(['teacherId', 'note', 'kind', 'atSecond', 'createdAt'])
             && data.teacherId == request.auth.uid
             && data.kind == 'text'
             && isStringOfLength(data.note, 1, 2000)
             && (data.get('atSecond', null) == null || isIntInRange(data.atSecond, 0, 36000))
-            && isValidRating(data)
             && data.createdAt == request.time;
         }
 
-        // Text and rating only. A voice marker's text may be emptied again;
-        // a written note keeps at least one character.
+        // Text only. A voice marker's text may be emptied again; a written
+        // note keeps at least one character. A `rating` an old note still
+        // has stays untouched, so its text remains editable.
         function isValidEdit(data) {
-          return onlyChanged(['note', 'rating', 'updatedAt'])
+          return onlyChanged(['note', 'updatedAt'])
             && (isStringOfLength(data.note, 1, 2000)
                 || (resource.data.get('kind', 'text') == 'voice'
                     && isStringOfLength(data.note, 0, 2000)))
-            && isValidRating(data)
             && data.updatedAt == request.time;
         }
 
