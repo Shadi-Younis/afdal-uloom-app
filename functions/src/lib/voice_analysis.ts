@@ -4,14 +4,25 @@
 //
 // The studio template (Studio One 7): the student's microphone is panned
 // fully LEFT, the sheikh's fully RIGHT, and the session is exported as a
-// stereo file. While the student recites the sheikh is silent; when the
-// sheikh corrects him the student waits. So wherever the right channel is
-// clearly louder than the left one, the sheikh is speaking.
+// stereo file (or as two stems the server joins into one, left = student).
+// While the student recites the sheikh is silent; when the sheikh corrects
+// him the student waits.
+//
+// Real sessions are messier than the template, so nothing below relies on
+// fixed levels:
+// - each microphone also picks up the other voice (bleed), sometimes only
+//   6 dB quieter than in its own microphone;
+// - the two microphones may have different gains;
+// - the channels may be swapped by mistake.
+// The analysis calibrates itself on the recording: the student recites most
+// of the session, so the most common right-minus-left difference is the
+// student's (his bleed, plus any gain difference), and the sheikh is
+// wherever the right channel is clearly above that.
 
 /**
  * Every threshold of the analysis, in one place. Levels are RMS in dBFS
  * (0 dB = a full-scale square wave; digital silence is clamped to
- * silenceDb).
+ * silenceDb). D is a frame's right level minus its left level.
  */
 export const ANALYSIS = {
   /** Length of one level measurement (50 ms). */
@@ -19,25 +30,53 @@ export const ANALYSIS = {
   /** The level given to digital silence instead of -Infinity. */
   silenceDb: -100,
   /**
-   * The right channel's noise floor is this percentile of its frame levels:
-   * the sheikh is silent most of the session, so the low end is the room.
+   * Each channel's noise floor is this percentile of its frame levels: both
+   * people are silent between phrases, so the low end is the room.
    */
   noiseFloorPercentile: 10,
+  /**
+   * An active frame (someone speaks): either channel at least this far
+   * above that channel's noise floor. The mono check uses the same frames.
+   */
+  voicedAboveNoiseDb: 12,
   /** A sheikh frame: the right channel at least this far above its noise floor... */
   sheikhAboveNoiseDb: 12,
-  /** ...and at least this much louder than the left (student) channel. */
-  sheikhOverStudentDb: 6,
+  /**
+   * ...and D at least this far above the student's baseline D. The
+   * student's bleed in the sheikh's microphone always sits near the
+   * baseline, however loud it is; the sheikh's own voice is far above it
+   * (measured on the fixtures: 25..40 dB).
+   */
+  sheikhOverBleedDb: 12,
+  /**
+   * The student's baseline D: this percentile of D over the active frames.
+   * The student fills most of them, so a low percentile is his even when
+   * the sheikh speaks a lot, and it is not pulled up by the sheikh.
+   */
+  studentBaselinePercentile: 25,
+  /**
+   * The upper end of D, for the separation: this percentile over the active
+   * frames (the sheikh's frames when he spoke at all).
+   */
+  separationPercentile: 95,
+  /**
+   * Below this separation (upper end of D minus the baseline) the sheikh
+   * never spoke, or the channels do not keep the two voices apart: no voice
+   * markers at all rather than wrong ones; the teacher adds notes by hand.
+   */
+  minSeparationDb: 10,
+  /**
+   * Swapped channels: the right channel dominates (D > 0) in at least this
+   * many times more active frames than the left one (D < 0). The student
+   * recites most of the session, so his channel dominates most frames.
+   */
+  swapDominanceRatio: 1.5,
   /** Frames of the sheikh closer than this are one segment (pauses between his words). */
   mergeGapSeconds: 1.0,
   /** Shorter segments are dropped (a cough, a chair, a page turned). */
   minSegmentSeconds: 0.6,
   /** Each marker starts this much earlier, so the student hears the sheikh's first word. */
   leadInSeconds: 0.3,
-  /**
-   * A voiced frame, for the mono check: either channel at least this far
-   * above that channel's noise floor.
-   */
-  voicedAboveNoiseDb: 12,
   /**
    * Mono check: when the two channels differ by less than this on average
    * over the voiced frames, the file was not exported with the
@@ -47,6 +86,26 @@ export const ANALYSIS = {
    * template by about 20 dB (each voice on its own side).
    */
   monoMaxMeanDifferenceDb: 3.0,
+
+  // Two stems (lib/stems.ts), before they are joined into one stereo file.
+
+  /** Their lengths may differ by this much (export tails); more: not the same session. */
+  stemsMaxLengthDiffSeconds: 1.0,
+  /** Length of one level of the envelopes that align the stems (10 ms). */
+  envelopeSeconds: 0.01,
+  /** The alignment is searched this far either way. */
+  stemsLagSearchSeconds: 2,
+  /**
+   * The stems may be this far apart (about one syllable is 150 ms); more:
+   * the markers would land beside the sheikh's words.
+   */
+  stemsMaxLagMs: 100,
+  /**
+   * Below this correlation of the envelopes at their best shift there is no
+   * bleed to align on (stems exported with a noise gate): the lag is not
+   * measured and the stems are joined as they are.
+   */
+  stemsMinCorrelation: 0.2,
 } as const;
 
 /** The level of each frame of the two channels, in dBFS. */
@@ -144,39 +203,117 @@ export function percentile(values: readonly number[], percentile: number): numbe
   return sorted[Math.min(sorted.length - 1, Math.max(0, rank))];
 }
 
+/** Each channel's noise floor (ANALYSIS.noiseFloorPercentile of its levels). */
+function noiseFloors(levels: ChannelLevels): {left: number; right: number} {
+  return {
+    left: percentile(levels.left, ANALYSIS.noiseFloorPercentile),
+    right: percentile(levels.right, ANALYSIS.noiseFloorPercentile),
+  };
+}
+
+/**
+ * The indexes of the active frames: someone speaks, i.e. either channel is
+ * at least ANALYSIS.voicedAboveNoiseDb above its own noise floor.
+ */
+function activeFrames(levels: ChannelLevels): number[] {
+  const floor = noiseFloors(levels);
+  const active: number[] = [];
+  for (let i = 0; i < levels.left.length; i++) {
+    if (
+      levels.left[i] >= floor.left + ANALYSIS.voicedAboveNoiseDb ||
+      levels.right[i] >= floor.right + ANALYSIS.voicedAboveNoiseDb
+    ) {
+      active.push(i);
+    }
+  }
+  return active;
+}
+
 /**
  * Whether both channels carry the same audio: a mono file, or a stereo one
  * not exported with the left / right template. Compared over the voiced
- * frames only, since silence is equal in both. A file with no voiced frame
- * at all counts as mono: there is no sheikh channel to find.
+ * (active) frames only, since silence is equal in both. A file with no
+ * voiced frame at all counts as mono: there is no sheikh channel to find.
  */
 export function isMonoLike(levels: ChannelLevels): boolean {
-  const floorLeft = percentile(levels.left, ANALYSIS.noiseFloorPercentile);
-  const floorRight = percentile(levels.right, ANALYSIS.noiseFloorPercentile);
+  const voiced = activeFrames(levels);
   let total = 0;
-  let voiced = 0;
-  for (let i = 0; i < levels.left.length; i++) {
-    const left = levels.left[i];
-    const right = levels.right[i];
-    if (
-      left >= floorLeft + ANALYSIS.voicedAboveNoiseDb ||
-      right >= floorRight + ANALYSIS.voicedAboveNoiseDb
-    ) {
-      total += Math.abs(left - right);
-      voiced++;
-    }
-  }
-  return voiced === 0 || total / voiced < ANALYSIS.monoMaxMeanDifferenceDb;
+  for (const i of voiced) total += Math.abs(levels.left[i] - levels.right[i]);
+  return voiced.length === 0 || total / voiced.length < ANALYSIS.monoMaxMeanDifferenceDb;
 }
 
-/** For each frame, whether the sheikh is speaking in it. */
-export function sheikhFrames(levels: ChannelLevels): boolean[] {
-  const noiseFloor = percentile(levels.right, ANALYSIS.noiseFloorPercentile);
+/** D (right minus left) of every active frame, in order. */
+export function activeDifferences(levels: ChannelLevels): number[] {
+  return activeFrames(levels).map((i) => levels.right[i] - levels.left[i]);
+}
+
+/**
+ * Whether the sheikh is on the LEFT: the right channel dominates (D > 0)
+ * in at least ANALYSIS.swapDominanceRatio times more active frames than
+ * the left one (D < 0). The student recites most of the session, so his
+ * channel is the one that dominates most.
+ */
+export function channelsSwapped(differences: readonly number[]): boolean {
+  let left = 0;
+  let right = 0;
+  for (const d of differences) {
+    if (d < 0) left++;
+    else if (d > 0) right++;
+  }
+  return right > 0 && right >= ANALYSIS.swapDominanceRatio * left;
+}
+
+/** [levels] with the two channels exchanged. */
+export function swapChannels(levels: ChannelLevels): ChannelLevels {
+  return {left: levels.right, right: levels.left};
+}
+
+/**
+ * For each frame, whether the sheikh is speaking in it: the right channel
+ * at least ANALYSIS.sheikhAboveNoiseDb above its noise floor, and D at
+ * least ANALYSIS.sheikhOverBleedDb above the student's [baselineDb].
+ */
+export function sheikhFrames(levels: ChannelLevels, baselineDb: number): boolean[] {
+  const floor = noiseFloors(levels).right;
   return levels.right.map(
     (right, i) =>
-      right >= noiseFloor + ANALYSIS.sheikhAboveNoiseDb &&
-      right - levels.left[i] >= ANALYSIS.sheikhOverStudentDb,
+      right >= floor + ANALYSIS.sheikhAboveNoiseDb &&
+      right - levels.left[i] >= baselineDb + ANALYSIS.sheikhOverBleedDb,
   );
+}
+
+/** What the analysis found in a recording that is not mono. */
+export interface VoiceAnalysis {
+  /** The sheikh was on the LEFT; the channels were swapped for the analysis. */
+  swapped: boolean;
+  /**
+   * The student's baseline D (after any swap), to 0.1 dB: how loud he is
+   * in the sheikh's microphone relative to his own, gain difference
+   * included. Typically -25..-6.
+   */
+  bleedDb: number;
+  /** The upper end of D minus the baseline, to 0.1 dB. */
+  separationDb: number;
+  /** Where the sheikh spoke; none when separationDb < ANALYSIS.minSeparationDb. */
+  segments: Segment[];
+}
+
+/**
+ * Where the sheikh spoke, from the two channels' levels, robust to bleed,
+ * gain differences and swapped channels (see the top of this file). Run
+ * the mono check (isMonoLike) first: a mono file has no sheikh channel.
+ */
+export function analyseVoices(levels: ChannelLevels): VoiceAnalysis {
+  const swapped = channelsSwapped(activeDifferences(levels));
+  const oriented = swapped ? swapChannels(levels) : levels;
+  const differences = activeDifferences(oriented);
+  if (differences.length === 0) return {swapped, bleedDb: 0, separationDb: 0, segments: []};
+
+  const baseline = percentile(differences, ANALYSIS.studentBaselinePercentile);
+  const separation = percentile(differences, ANALYSIS.separationPercentile) - baseline;
+  const segments =
+    separation < ANALYSIS.minSeparationDb ? [] : segmentsFromFrames(sheikhFrames(oriented, baseline));
+  return {swapped, bleedDb: roundDb(baseline), separationDb: roundDb(separation), segments};
 }
 
 /**
@@ -219,12 +356,13 @@ export function segmentsFromFrames(
     }));
 }
 
-/** Where the sheikh spoke, from the two channels' levels. */
-export function findSheikhSegments(levels: ChannelLevels): Segment[] {
-  return segmentsFromFrames(sheikhFrames(levels));
-}
-
 /** To the millisecond: frame arithmetic in floating point drifts. */
 function round(seconds: number): number {
   return Math.round(seconds * 1000) / 1000;
+}
+
+/** To 0.1 dB, for the recording document and the logs. */
+function roundDb(db: number): number {
+  // `|| 0`: never -0.
+  return Math.round(db * 10) / 10 || 0;
 }

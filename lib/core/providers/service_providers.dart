@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/firebase_setup.dart';
 import '../data/firebase_audio_storage_service.dart';
 import '../data/firebase_auth_service.dart';
+import '../data/header_audio_duration_reader.dart';
 import '../data/just_audio_player_service.dart';
 import '../data/functions_accounts_service.dart';
 import '../data/platform_audio_file_picker.dart';
 import '../data/record_audio_recorder_service.dart';
 import '../services/accounts_service.dart';
+import '../services/audio_duration_reader.dart';
 import '../services/audio_file_picker.dart';
 import '../services/audio_player_service.dart';
 import '../services/audio_recorder_service.dart';
@@ -56,6 +58,11 @@ final audioPlayerServiceProvider = Provider.autoDispose<AudioPlayerService>((
 /// The system's file picker for audio files (the upload page).
 final audioFilePickerProvider = Provider<AudioFilePicker>(
   (ref) => const PlatformAudioFilePicker(),
+);
+
+/// How long a picked file is (the upload page's two-file mode).
+final audioDurationReaderProvider = Provider<AudioDurationReader>(
+  (ref) => const HeaderAudioDurationReader(),
 );
 
 /// The microphone recorder of the practice page. autoDispose: leaving the

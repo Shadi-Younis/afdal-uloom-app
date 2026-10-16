@@ -11,6 +11,13 @@
 //   other voice faintly (bleed), as in the studio.
 // - mono_fatiha.mp3: al-Fatiha in one channel (not exported with the
 //   left / right template).
+// - stems_student.mp3 / stems_sheikh.mp3: the same session as two stems
+//   (Studio One «Export Stems», one mono file per microphone), with louder
+//   bleed: each voice at -15 dB in the other microphone.
+// - stems_sheikh_long.mp3: the sheikh's stem with 3 s more at the end (not
+//   the same export); stems_sheikh_late.mp3: the sheikh's stem 500 ms late.
+// - stereo_swapped.mp3: the stems joined the wrong way round (the sheikh
+//   LEFT, the student RIGHT).
 // - manifest.json: the files and where the sheikh speaks, for the tests.
 //
 // Also imported by the seed (tool/seed), which uploads the stereo file and
@@ -34,12 +41,22 @@ export const fixturesDir = process.env.TEST_AUDIO_FIXTURES_DIR ?? resolve(repo, 
 export const STEREO_FILE = "stereo_two_corrections.mp3";
 export const MONO_FILE = "mono_fatiha.mp3";
 export const MANIFEST_FILE = "manifest.json";
+export const STEMS_STUDENT_FILE = "stems_student.mp3";
+export const STEMS_SHEIKH_FILE = "stems_sheikh.mp3";
+export const STEMS_SHEIKH_LONG_FILE = "stems_sheikh_long.mp3";
+export const STEMS_SHEIKH_LATE_FILE = "stems_sheikh_late.mp3";
+export const SWAPPED_FILE = "stereo_swapped.mp3";
 
 const STUDENT = "001.mp3"; // al-Fatiha, the student (left)
 const SHEIKH = "112.mp3"; // al-Ikhlas, the sheikh (right)
 const RATE = 44100;
 /** The other microphone's voice, about -22 dB. */
 const BLEED = 0.08;
+/** The stems' bleed: -15 dB. */
+const STEMS_BLEED_DB = -15;
+/** How much longer stems_sheikh_long.mp3 is, and how late stems_sheikh_late.mp3 is. */
+const LONG_EXTRA_SECONDS = 3;
+const LATE_MS = 500;
 
 /**
  * Where the student stops and the sheikh speaks: after [studentUntil]
@@ -96,9 +113,13 @@ export function layout(studentSeconds) {
   return {student, sheikh, expected, duration: round(at + tail)};
 }
 
-function buildStereo(output) {
-  const studentFile = join(minshawiDir, STUDENT);
-  const plan = layout(durationOf(studentFile));
+/**
+ * The filter graph of a session played to two microphones with [bleed]
+ * (linear gain of the other voice in each one): the student's microphone
+ * ends in [Lm], the sheikh's in [Rm]. Input 0 is the student's
+ * recitation, input 1 the sheikh's.
+ */
+function sessionGraph(plan, bleed) {
   const mono = `aformat=sample_fmts=fltp:sample_rates=${RATE}:channel_layouts=mono`;
   const silence = (label, seconds) => `aevalsrc=0:s=${RATE}:d=${seconds.toFixed(3)},${mono}[${label}]`;
   const graph = [];
@@ -136,37 +157,78 @@ function buildStereo(output) {
 
   // Each microphone hears the other voice faintly.
   graph.push("[L]asplit=2[L1][L2]", "[R]asplit=2[R1][R2]");
-  graph.push(`[L1][R1]amix=inputs=2:weights=1 ${BLEED}:normalize=0:duration=longest[Lm]`);
-  graph.push(`[R2][L2]amix=inputs=2:weights=1 ${BLEED}:normalize=0:duration=longest[Rm]`);
-  graph.push("[Lm][Rm]join=inputs=2:channel_layout=stereo:map=0.0-FL|1.0-FR[out]");
+  graph.push(`[L1][R1]amix=inputs=2:weights=1 ${bleed}:normalize=0:duration=longest[Lm]`);
+  graph.push(`[R2][L2]amix=inputs=2:weights=1 ${bleed}:normalize=0:duration=longest[Rm]`);
+  return graph;
+}
 
-  execFileSync(
-    ffmpeg(),
-    [
-      "-hide_banner", "-loglevel", "error", "-y",
-      "-i", studentFile,
-      "-i", join(minshawiDir, SHEIKH),
-      "-filter_complex", graph.join(";"),
-      "-map", "[out]",
-      "-c:a", "libmp3lame", "-b:a", "128k",
-      output,
-    ],
-    {stdio: ["ignore", "inherit", "inherit"]},
-  );
+const MP3 = ["-c:a", "libmp3lame", "-b:a", "128k"];
+
+function runFfmpeg(args) {
+  execFileSync(ffmpeg(), ["-hide_banner", "-loglevel", "error", "-y", ...args], {
+    stdio: ["ignore", "inherit", "inherit"],
+  });
+}
+
+function buildStereo(output) {
+  const studentFile = join(minshawiDir, STUDENT);
+  const plan = layout(durationOf(studentFile));
+  const graph = sessionGraph(plan, BLEED);
+  graph.push("[Lm][Rm]join=inputs=2:channel_layout=stereo:map=0.0-FL|1.0-FR[out]");
+  runFfmpeg([
+    "-i", studentFile,
+    "-i", join(minshawiDir, SHEIKH),
+    "-filter_complex", graph.join(";"),
+    "-map", "[out]",
+    ...MP3,
+    output,
+  ]);
+  return plan;
+}
+
+/**
+ * The same session as two mono stems with -15 dB bleed, and its broken
+ * variants: too long, late, and joined the wrong way round.
+ */
+function buildStems() {
+  const studentFile = join(minshawiDir, STUDENT);
+  const plan = layout(durationOf(studentFile));
+  const student = join(fixturesDir, STEMS_STUDENT_FILE);
+  const sheikh = join(fixturesDir, STEMS_SHEIKH_FILE);
+  runFfmpeg([
+    "-i", studentFile,
+    "-i", join(minshawiDir, SHEIKH),
+    "-filter_complex", sessionGraph(plan, 10 ** (STEMS_BLEED_DB / 20)).join(";"),
+    "-map", "[Lm]", ...MP3, student,
+    "-map", "[Rm]", ...MP3, sheikh,
+  ]);
+  runFfmpeg([
+    "-i", sheikh,
+    "-af", `apad=pad_dur=${LONG_EXTRA_SECONDS}`,
+    ...MP3,
+    join(fixturesDir, STEMS_SHEIKH_LONG_FILE),
+  ]);
+  // Late, and cut at the original length: only the timing differs.
+  runFfmpeg([
+    "-i", sheikh,
+    "-af", `adelay=${LATE_MS}:all=1`,
+    "-t", plan.duration.toFixed(3),
+    ...MP3,
+    join(fixturesDir, STEMS_SHEIKH_LATE_FILE),
+  ]);
+  runFfmpeg([
+    "-i", sheikh,
+    "-i", student,
+    "-filter_complex", "[0:a][1:a]join=inputs=2:channel_layout=stereo:map=0.0-FL|1.0-FR[out]",
+    "-map", "[out]",
+    ...MP3,
+    join(fixturesDir, SWAPPED_FILE),
+  ]);
   return plan;
 }
 
 function buildMono(output) {
-  execFileSync(
-    ffmpeg(),
-    [
-      "-hide_banner", "-loglevel", "error", "-y",
-      "-i", join(minshawiDir, STUDENT),
-      "-ac", "1", "-c:a", "libmp3lame", "-b:a", "128k",
-      output,
-    ],
-    {stdio: ["ignore", "inherit", "inherit"]},
-  );
+  runFfmpeg(["-i", join(minshawiDir, STUDENT), "-ac", "1", ...MP3, output]);
 }
 
 /**
@@ -219,6 +281,7 @@ export function buildFixtures() {
   mkdirSync(fixturesDir, {recursive: true});
   const plan = buildStereo(join(fixturesDir, STEREO_FILE));
   buildMono(join(fixturesDir, MONO_FILE));
+  buildStems();
   const manifest = {
     stereo: {
       file: STEREO_FILE,
@@ -228,6 +291,22 @@ export function buildFixtures() {
       sheikhSegments: plan.expected,
     },
     mono: {file: MONO_FILE},
+    stems: {
+      student: STEMS_STUDENT_FILE,
+      sheikh: STEMS_SHEIKH_FILE,
+      bleedDb: STEMS_BLEED_DB,
+      durationSec: plan.duration,
+      sheikhSegments: plan.expected,
+      sheikhLong: {file: STEMS_SHEIKH_LONG_FILE, extraSeconds: LONG_EXTRA_SECONDS},
+      sheikhLate: {file: STEMS_SHEIKH_LATE_FILE, lagMs: LATE_MS},
+    },
+    swapped: {
+      file: SWAPPED_FILE,
+      student: "al-Fatiha (right)",
+      sheikh: "al-Ikhlas (left)",
+      durationSec: plan.duration,
+      sheikhSegments: plan.expected,
+    },
   };
   writeFileSync(join(fixturesDir, MANIFEST_FILE), JSON.stringify(manifest, null, 2) + "\n");
   return manifest;

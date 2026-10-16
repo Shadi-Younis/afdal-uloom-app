@@ -1,6 +1,10 @@
 /// Where the server's analysis of an official recording is
 /// (`recordings/{id}.analysis.status`). [value] is what Firestore stores.
 enum AnalysisStatus {
+  /// A two-file recording: both files arrived and the server joins them
+  /// into the stereo file (then [pending]).
+  merging('merging'),
+
   /// Uploaded; onRecordingUploaded is working on it.
   pending('pending'),
 
@@ -18,9 +22,11 @@ enum AnalysisStatus {
 
   final String value;
 
-  /// Throws [FormatException] for a string that is not a known status.
+  /// The status [value] names; [pending] for one this version of the app
+  /// does not know (a newer server's), so a document never fails to load
+  /// because of it. RecordingAnalysis keeps the raw value for the logs.
   static AnalysisStatus fromValue(String value) => values.firstWhere(
     (status) => status.value == value,
-    orElse: () => throw FormatException('Unknown analysis status', value),
+    orElse: () => pending,
   );
 }

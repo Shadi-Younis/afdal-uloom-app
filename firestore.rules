@@ -139,6 +139,30 @@ service cloud.firestore {
     // ---- recordings -----------------------------------------------------
 
     match /recordings/{recordingId} {
+      // [path] is [base] followed by one of the accepted audio extensions.
+      function isAudioPath(path, base) {
+        return path in [base + 'mp3', base + 'm4a', base + 'aac',
+                        base + 'wav', base + 'ogg', base + 'webm'];
+      }
+
+      // `source`: 'stereo' (one file, student left and sheikh right; also
+      // when missing) or 'stems' (two files, one per microphone, that the
+      // server joins). A stems recording is official; its storagePath is
+      // the joined `{id}.mp3`, which only the server writes (storage.rules),
+      // and stemPaths names the two files the uploader sends.
+      function hasValidSource(data, prefix) {
+        return (data.get('source', 'stereo') == 'stereo'
+                && !('stemPaths' in data))
+          || (data.get('source', 'stereo') == 'stems'
+              && data.type == 'official'
+              && data.storagePath == prefix + 'mp3'
+              && data.stemPaths is map
+              && data.stemPaths.keys().hasAll(['student', 'sheikh'])
+              && data.stemPaths.keys().hasOnly(['student', 'sheikh'])
+              && isAudioPath(data.stemPaths.student, prefix + 'student.')
+              && isAudioPath(data.stemPaths.sheikh, prefix + 'sheikh.'));
+      }
+
       // Checks for every create, whoever the caller: shape, ranges, path,
       // and that studentId / halaqaId / teacherId agree with each other.
       // `analysis` and `playbackPath` are not among the keys: only the
@@ -150,7 +174,7 @@ service cloud.firestore {
         let prefix = 'recordings/' + data.studentId + '/' + recordingId + '.';
         let student = get(userPath(data.studentId)).data;
         return data.keys().hasAll(required)
-          && data.keys().hasOnly(required.concat(['durationSec']))
+          && data.keys().hasOnly(required.concat(['durationSec', 'source', 'stemPaths']))
           && data.studentId is string
           && data.halaqaId is string
           && data.teacherId is string
@@ -162,8 +186,8 @@ service cloud.firestore {
           && data.ayahFrom <= data.ayahTo
           && (data.get('durationSec', null) == null
               || (data.durationSec is int && data.durationSec >= 0))
-          && data.storagePath in [prefix + 'mp3', prefix + 'm4a', prefix + 'aac',
-                                  prefix + 'wav', prefix + 'ogg', prefix + 'webm']
+          && isAudioPath(data.storagePath, prefix)
+          && hasValidSource(data, prefix)
           && data.uploadedBy == request.auth.uid
           && data.recordedAt is timestamp
           && data.createdAt == request.time

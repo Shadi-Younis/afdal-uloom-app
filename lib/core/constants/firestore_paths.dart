@@ -58,6 +58,16 @@ abstract final class Fields {
   static const unreadFeedback = 'unreadFeedback';
   static const reviewed = 'reviewed';
 
+  /// Official recordings: 'stereo' (missing = stereo) or 'stems'.
+  static const source = 'source';
+
+  /// Two-file recordings only: a map of [stemStudent] and [stemSheikh].
+  static const stemPaths = 'stemPaths';
+
+  // recordings/{id}.stemPaths (a map)
+  static const stemStudent = 'student';
+  static const stemSheikh = 'sheikh';
+
   /// Written by the server only (onRecordingUploaded).
   static const analysis = 'analysis';
   static const playbackPath = 'playbackPath';
@@ -66,6 +76,10 @@ abstract final class Fields {
   static const analysisStatus = 'status';
   static const segmentCount = 'segmentCount';
   static const analysisError = 'error';
+  static const swapped = 'swapped';
+  static const bleedDb = 'bleedDb';
+  static const separationDb = 'separationDb';
+  static const stemsLagMs = 'stemsLagMs';
 
   // recordings/{recordingId}/feedback
   static const note = 'note';

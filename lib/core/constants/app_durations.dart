@@ -26,6 +26,11 @@ abstract final class AppDurations {
   /// to its own start.
   static const previousMarkerTolerance = Duration(milliseconds: 1500);
 
+  /// The two files of a two-file recording may differ in length by this
+  /// much (export tails); the server checks the same
+  /// (ANALYSIS.stemsMaxLengthDiffSeconds in functions/src/lib).
+  static const stemsMaxLengthDifference = Duration(seconds: 1);
+
   /// The longest practice recording; the recorder stops by itself there.
   static const maxPracticeLength = Duration(minutes: 30);
 

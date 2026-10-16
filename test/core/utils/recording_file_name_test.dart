@@ -91,6 +91,22 @@ void main() {
     expect(parse('S01_002_1-20.mp3').studentCode, isNull);
   });
 
+  test('a stem: the track name after the ayat is ignored (Task 11)', () {
+    const expected = ParsedRecordingName(
+      studentCode: 'S014',
+      surahNumber: 2,
+      ayahFrom: 1,
+      ayahTo: 20,
+    );
+    expect(parse('S014_002_001-020 - Student.wav'), expected);
+    expect(parse('S014_002_001-020 - الشيخ.mp3'), expected);
+    expect(parse('S014_002_001-020_sheikh.wav'), expected);
+    expect(parse('S014_002_001-020.student.wav'), expected);
+    // Still digits: not ayat.
+    expect(parse('S014_002_001-0200.mp3').ayahFrom, isNull);
+    expect(parse('S014_002_001--20.mp3').ayahFrom, isNull);
+  });
+
   test('a name without a code still gives the surah and ayat', () {
     expect(
       parse('002_1-20.mp3'),

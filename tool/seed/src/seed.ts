@@ -38,7 +38,7 @@ if (remote.length > 0) {
 }
 
 // Without the recitations every recording would be silent; say how to get them.
-const { audioDir, missingClips, loadClipAudio, loadPracticeAudio } = await import("./test_audio.js");
+const { audioDir, missingClips, loadClipAudio, loadPracticeAudio, loadStemsAudio } = await import("./test_audio.js");
 const missingAudio = missingClips();
 if (missingAudio.length > 0) {
   const what = existsSync(audioDir)
@@ -69,6 +69,7 @@ const clipAudio = await loadClipAudio();
 const practiceAudio = await loadPracticeAudio(
   data.recordings.filter((r) => r.type === "practice").map((r) => r.clipId),
 );
+const stemsAudio = await loadStemsAudio();
 
 /** What a recording's file is: the studio MP3, or the phone's mono .m4a for practice. */
 interface RecordingAudio {
@@ -78,7 +79,14 @@ interface RecordingAudio {
   contentType: string;
 }
 
-function audioOf(r: { clipId: string; type: string }): RecordingAudio {
+/**
+ * A two-file recording's own audio is the joined file the server writes;
+ * its length is the stems' (its bytes are not uploaded: see seedAudio).
+ */
+function audioOf(r: { clipId: string; type: string; source: string }): RecordingAudio {
+  if (r.source === "stems") {
+    return { bytes: stemsAudio.student, durationSec: stemsAudio.durationSec, extension: "mp3", contentType: "audio/mpeg" };
+  }
   if (r.type === "practice") {
     const { m4a, durationSec } = practiceAudio.get(r.clipId)!;
     return { bytes: m4a, durationSec, extension: "m4a", contentType: "audio/mp4" };
@@ -102,8 +110,15 @@ initializeApp({ projectId });
 const auth = getAuth();
 const db = getFirestore();
 const bucket = getStorage().bucket(data.storageBucket);
-const audioPathOf = (r: { id: string; studentId: string; clipId: string; type: string }) =>
+const audioPathOf = (r: { id: string; studentId: string; clipId: string; type: string; source: string }) =>
   `recordings/${r.studentId}/${r.id}.${audioOf(r).extension}`;
+/** The two files of a two-file recording (StoragePaths.stem in the app). */
+const stemPathsOf = (r: { id: string; studentId: string }) => ({
+  student: `recordings/${r.studentId}/${r.id}.student.mp3`,
+  sheikh: `recordings/${r.studentId}/${r.id}.sheikh.mp3`,
+});
+/** How many files go to the Storage emulator at once (each starts a function). */
+const uploadsAtOnce = 4;
 
 const usersCreatedAt = Timestamp.fromDate(new Date("2026-08-25T09:00:00Z"));
 const hour = 60 * 60 * 1000;
@@ -176,6 +191,7 @@ async function seedFirestore(): Promise<void> {
       createdAt: Timestamp.fromDate(new Date(recordedAt.getTime() + (official ? 2 * hour : 0))),
       unreadFeedback: r.unreadFeedback,
       reviewed: r.reviewed,
+      ...(r.source === "stems" ? { source: "stems", stemPaths: stemPathsOf(r) } : {}),
     });
   }
 
@@ -199,23 +215,40 @@ async function seedFirestore(): Promise<void> {
 /**
  * Uploads (or overwrites) every recording's audio file, after deleting what
  * older seeds left in .emulator-data at the same id under another extension
- * (generated .wav tones; practice recordings were .mp3 before Task 10).
+ * (generated .wav tones; practice recordings were .mp3 before Task 10). A
+ * two-file recording gets its two stems instead, as the upload page sends
+ * them; the emulator's onRecordingUploaded joins them into its storagePath.
+ * A few files at a time: each upload of an official file starts a function,
+ * and too many at once overload the Functions emulator.
  */
 async function seedAudio(): Promise<void> {
-  await Promise.all(
-    data.recordings.map(async (r) => {
-      const audio = audioOf(r);
-      for (const stale of ["wav", "mp3", "m4a"].filter((ext) => ext !== audio.extension)) {
-        await bucket.file(`recordings/${r.studentId}/${r.id}.${stale}`).delete({ ignoreNotFound: true });
+  const save = (path: string, bytes: Buffer, contentType: string, token: string) =>
+    bucket.file(path).save(bytes, {
+      contentType,
+      // A fixed token: getDownloadURL() needs one, and seeding again keeps
+      // the URLs the app may have cached.
+      metadata: { metadata: { firebaseStorageDownloadTokens: token } },
+    });
+  const seedOne = async (r: (typeof data.recordings)[number]) => {
+    const audio = audioOf(r);
+    if (r.source === "stems") {
+      // The joined file of an earlier seed: the server writes it again.
+      for (const old of [audioPathOf(r), `recordings/${r.studentId}/${r.id}.play.mp3`]) {
+        await bucket.file(old).delete({ ignoreNotFound: true });
       }
-      await bucket.file(audioPathOf(r)).save(audio.bytes, {
-        contentType: audio.contentType,
-        // A fixed token: getDownloadURL() needs one, and seeding again keeps
-        // the URLs the app may have cached.
-        metadata: { metadata: { firebaseStorageDownloadTokens: `seed-${r.id}` } },
-      });
-    }),
-  );
+      const stems = stemPathsOf(r);
+      await save(stems.student, stemsAudio.student, "audio/mpeg", `seed-${r.id}-student`);
+      await save(stems.sheikh, stemsAudio.sheikh, "audio/mpeg", `seed-${r.id}-sheikh`);
+      return;
+    }
+    for (const stale of ["wav", "mp3", "m4a"].filter((ext) => ext !== audio.extension)) {
+      await bucket.file(`recordings/${r.studentId}/${r.id}.${stale}`).delete({ ignoreNotFound: true });
+    }
+    await save(audioPathOf(r), audio.bytes, audio.contentType, `seed-${r.id}`);
+  };
+  for (let start = 0; start < data.recordings.length; start += uploadsAtOnce) {
+    await Promise.all(data.recordings.slice(start, start + uploadsAtOnce).map(seedOne));
+  }
 }
 
 await seedAccounts();
@@ -227,6 +260,6 @@ console.log(
   `Seeded project ${projectId}: ${data.users.length} accounts ` +
     `(${count("admin")} admin, ${count("teacher")} teachers, ${count("student")} students), ` +
     `${data.halaqat.length} halaqat, ${data.recordings.length} recordings, ` +
-    `${data.notes.length} feedback notes, ${data.recordings.length} audio files ` +
+    `${data.notes.length} feedback notes, ${data.recordings.length + 1} audio files ` +
     `(${clipAudio.size} recitations from ${audioDir}). Password for every account: ${data.devPassword}`,
 );

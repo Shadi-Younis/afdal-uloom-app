@@ -4,14 +4,18 @@
 // Halaqat:  حلقة الفجر (t01, 5 students), حلقة العصر (t02, 5 students),
 //           حلقة المغرب (t01, 2 students); each with its teacher's name
 //           (teacherName), as the app writes it.
-// s012 has no recordings (empty state). 27 recordings: 20 official
-// (4 waiting for review), 7 practice (4 not reviewed); 5 with unread
+// s012 has no recordings (empty state). 29 recordings: 22 official
+// (6 waiting for review), 7 practice (4 not reviewed); 5 with unread
 // feedback; notes on 9 recordings, rec-09 has 3. Every recording plays a
 // recitation by al-Minshawi (test_audio.json): al-Fatiha, al-Ikhlas,
 // al-Falaq, an-Nas or one of al-Mulk 1..5; its surah and ayat are the
 // clip's. rec-26 (s001) is the studio template in stereo (studioClip):
 // on the emulator onRecordingUploaded finds the sheikh in it twice and
-// marks it unread. The other official files have one voice in the middle,
+// marks it unread. rec-28 (s001) is the same session sent as two files
+// (studioStemsClip, source "stems"): the emulator joins them, then finds
+// the sheikh twice. rec-29 (s002) has the channels swapped
+// (studioSwappedClip): found and swapped back («تم تبديل الطالب والشيخ
+// تلقائياً»). The other official files have one voice in the middle,
 // so their analysis says "mono". Practice recordings are the clip in one
 // channel as an .m4a, as the phone records them (buildPracticeM4a).
 // The student s001 has every case of the student's screens: official
@@ -20,7 +24,7 @@
 // The seed refuses a note whose "at second" is past the end of its
 // recording's audio.
 
-import { clips, studioClip } from "./test_audio.js";
+import { clips, studioClip, studioStemsClip, studioSwappedClip } from "./test_audio.js";
 
 export type Role = "admin" | "teacher" | "student";
 
@@ -49,6 +53,8 @@ export interface SeedRecording {
   recordedAt: string; // ISO date
   reviewed: boolean;
   unreadFeedback: boolean;
+  /** "stems": two files the server joins (studioStemsClip); else one stereo file. */
+  source: "stereo" | "stems";
 }
 
 export interface SeedNote {
@@ -116,7 +122,8 @@ type Row = [
 ];
 
 // Official recordings wait for the sheikh to check their voice markers
-// («تمت المراجعة»); rec-02, rec-09, rec-14 and rec-26 still do.
+// («تمت المراجعة»); rec-02, rec-09, rec-14, rec-26, rec-28 and rec-29
+// still do.
 const rows: Row[] = [
   ["rec-01", "s001", "official", "ikhlas", "2026-09-01", true, false],
   ["rec-02", "s001", "official", "fatiha", "2026-09-08", false, true],
@@ -145,9 +152,13 @@ const rows: Row[] = [
   ["rec-25", "s010", "practice", "mulk-5", "2026-09-25", true, false],
   ["rec-26", "s001", "official", "studio-stereo", "2026-10-10", false, true],
   ["rec-27", "s001", "practice", "mulk-1", "2026-10-06", true, false],
+  ["rec-28", "s001", "official", "studio-stems", "2026-10-11", false, false],
+  ["rec-29", "s002", "official", "studio-swapped", "2026-10-11", false, false],
 ];
 
-const clipById = new Map([...clips, studioClip].map((clip) => [clip.id, clip]));
+const clipById = new Map(
+  [...clips, studioClip, studioStemsClip, studioSwappedClip].map((clip) => [clip.id, clip]),
+);
 
 export const recordings: SeedRecording[] = rows.map(
   ([id, studentId, type, clipId, date, reviewed, unreadFeedback]) => {
@@ -165,6 +176,7 @@ export const recordings: SeedRecording[] = rows.map(
       recordedAt: `${date}T16:00:00Z`,
       reviewed,
       unreadFeedback,
+      source: clipId === studioStemsClip.id ? "stems" : "stereo",
     };
   },
 );

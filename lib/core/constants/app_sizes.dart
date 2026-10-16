@@ -36,7 +36,8 @@ abstract final class AppSizes {
   /// two columns.
   static const uploadMaxWidth = 960.0;
 
-  /// From this card width on, an uploaded file's fields go in two columns.
+  /// From this card width on, an uploaded file's fields go in two columns
+  /// (and the two files of two-file mode sit side by side).
   static const uploadTwoColumnsMinWidth = 560.0;
 
   /// Material's floating action button: its height (also extended) and its

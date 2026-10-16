@@ -5,6 +5,16 @@ export const fixturesDir: string;
 export const STEREO_FILE: string;
 export const MONO_FILE: string;
 export const MANIFEST_FILE: string;
+export const STEMS_STUDENT_FILE: string;
+export const STEMS_SHEIKH_FILE: string;
+export const STEMS_SHEIKH_LONG_FILE: string;
+export const STEMS_SHEIKH_LATE_FILE: string;
+export const SWAPPED_FILE: string;
+
+export interface ExpectedSegment {
+  start: number;
+  end: number;
+}
 
 export interface FixturesManifest {
   stereo: {
@@ -12,9 +22,25 @@ export interface FixturesManifest {
     student: string;
     sheikh: string;
     durationSec: number;
-    sheikhSegments: Array<{ start: number; end: number }>;
+    sheikhSegments: ExpectedSegment[];
   };
   mono: { file: string };
+  stems: {
+    student: string;
+    sheikh: string;
+    bleedDb: number;
+    durationSec: number;
+    sheikhSegments: ExpectedSegment[];
+    sheikhLong: { file: string; extraSeconds: number };
+    sheikhLate: { file: string; lagMs: number };
+  };
+  swapped: {
+    file: string;
+    student: string;
+    sheikh: string;
+    durationSec: number;
+    sheikhSegments: ExpectedSegment[];
+  };
 }
 
 /** Builds every fixture into fixturesDir and returns the manifest. */

@@ -15,6 +15,20 @@ abstract final class StoragePaths {
     String extension = defaultAudioExtension,
   }) => '$recordings/$studentId/$recordingId.$extension';
 
+  /// `recordings/{studentId}/{recordingId}.{stem}.{extension}`: one file of
+  /// a two-file recording, [stem] being [stemStudent] or [stemSheikh]. The
+  /// server joins both into the recording's storagePath
+  /// (`{recordingId}.mp3`, [defaultAudioExtension]) and deletes them.
+  static String stem(
+    String studentId,
+    String recordingId,
+    String stem, {
+    required String extension,
+  }) => '$recordings/$studentId/$recordingId.$stem.$extension';
+
+  static const stemStudent = 'student';
+  static const stemSheikh = 'sheikh';
+
   /// What follows the recording id in the name of its playback file.
   static const playbackSuffix = '.play.mp3';
 

@@ -5,7 +5,9 @@
 // teacherName: created before Task 10); students s1, s2 in h1 and s3 in
 // h2; one official recording per student (r-s1 with unread feedback);
 // practice recordings of s1 (p-s1 unreviewed, p-s1-reviewed) and of s2
-// (p-s2, unreviewed). On r-s1: a written note f1 by t1 (written before
+// (p-s2, unreviewed); a two-file official recording of s1, st-s1 (source
+// stems: the stems st-s1.student.wav and st-s1.sheikh.mp3, joined by the
+// server into st-s1.mp3). On r-s1: a written note f1 by t1 (written before
 // Task 09, so without kind), a voice marker v1 (the server's, author t1)
 // and a note f-old by a former teacher.
 import { readFileSync } from "node:fs";
@@ -120,6 +122,16 @@ export async function seedFixtures(env: RulesTestEnvironment): Promise<void> {
       [
         "recordings/r-s3",
         recordingDoc("r-s3", { studentId: "s3", halaqaId: "h2", teacherId: "t2", uploadedBy: "t2" }),
+      ],
+      [
+        "recordings/st-s1",
+        recordingDoc("st-s1", {
+          source: "stems",
+          stemPaths: {
+            student: "recordings/s1/st-s1.student.wav",
+            sheikh: "recordings/s1/st-s1.sheikh.mp3",
+          },
+        }),
       ],
       [
         "recordings/p-s1",

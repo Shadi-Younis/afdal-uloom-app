@@ -11,9 +11,16 @@ import 'student_overview.dart';
 
 /// The signed-in student's recordings, official and practice, newest
 /// first, live ('' while signed out asks for nothing that exists).
+///
+/// A two-file recording appears once the server joined its files
+/// (Recording.hasAudio): before that there is nothing to hear, and the
+/// student never sees that the studio sent two files.
 final myRecordingsProvider = StreamProvider.autoDispose<List<Recording>>((ref) {
   final uid = ref.watch(sessionProvider.select((s) => s.value?.uid)) ?? '';
-  return ref.watch(recordingRepositoryProvider).watchForStudent(uid);
+  return ref
+      .watch(recordingRepositoryProvider)
+      .watchForStudent(uid)
+      .map((list) => [...list.where((recording) => recording.hasAudio)]);
 });
 
 /// The counts of the student's home, from [myRecordingsProvider].

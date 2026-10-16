@@ -265,6 +265,123 @@ describe("official uploads (Task 09)", () => {
   });
 });
 
+describe("two-file recordings (source stems, Task 11)", () => {
+  /** An official two-file recording as the upload page sends it. */
+  function stems(id: string, over: Record<string, unknown> = {}) {
+    return official(id, {
+      source: "stems",
+      stemPaths: {
+        student: `recordings/s1/${id}.student.wav`,
+        sheikh: `recordings/s1/${id}.sheikh.mp3`,
+      },
+      ...over,
+    });
+  }
+
+  test("the teacher and the admin create one; the joined file is {id}.mp3", async () => {
+    await assertSucceeds(create(as(env, "t1", "teacher"), "n1", stems("n1")));
+    await assertSucceeds(
+      create(as(env, "admin", "admin"), "n2", stems("n2", { uploadedBy: "admin" })),
+    );
+    // Any accepted extension for each stem.
+    await assertSucceeds(
+      create(
+        as(env, "t1", "teacher"),
+        "n3",
+        stems("n3", {
+          stemPaths: { student: "recordings/s1/n3.student.m4a", sheikh: "recordings/s1/n3.sheikh.webm" },
+        }),
+      ),
+    );
+  });
+
+  test("source stereo, written or missing, is the one-file recording as before", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertSucceeds(create(t1, "n1", official("n1", { source: "stereo" })));
+    await assertSucceeds(create(t1, "n2", official("n2")));
+    await assertFails(create(t1, "n3", official("n3", { source: "mono" })));
+    await assertFails(create(t1, "n4", official("n4", { source: null })));
+  });
+
+  test("a stereo recording has no stemPaths", async () => {
+    const t1 = as(env, "t1", "teacher");
+    const stemPaths = { student: "recordings/s1/n1.student.wav", sheikh: "recordings/s1/n1.sheikh.mp3" };
+    await assertFails(create(t1, "n1", official("n1", { stemPaths })));
+    await assertFails(create(t1, "n1", official("n1", { source: "stereo", stemPaths })));
+  });
+
+  test("only official: a student cannot send a practice as stems", async () => {
+    const db = as(env, "s1", "student");
+    await assertFails(
+      create(
+        db,
+        "n1",
+        practice("n1", {
+          source: "stems",
+          storagePath: "recordings/s1/n1.mp3",
+          stemPaths: { student: "recordings/s1/n1.student.m4a", sheikh: "recordings/s1/n1.sheikh.m4a" },
+        }),
+      ),
+    );
+    await assertFails(create(db, "n1", stems("n1", { uploadedBy: "s1" })));
+  });
+
+  test("the joined file must be {id}.mp3", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertFails(create(t1, "n1", stems("n1", { storagePath: "recordings/s1/n1.wav" })));
+    await assertFails(create(t1, "n1", stems("n1", { storagePath: "recordings/s1/n1.student.wav" })));
+  });
+
+  test("stemPaths: exactly student and sheikh, this recording's, accepted extensions", async () => {
+    const t1 = as(env, "t1", "teacher");
+    const withPaths = (stemPaths: unknown) => create(t1, "n1", stems("n1", { stemPaths }));
+    const student = "recordings/s1/n1.student.wav";
+    const sheikh = "recordings/s1/n1.sheikh.mp3";
+    const { stemPaths: _drop, ...missing } = stems("n1");
+    await assertFails(create(t1, "n1", missing));
+    await assertFails(withPaths("recordings/s1/n1.student.wav"));
+    await assertFails(withPaths({ student }));
+    await assertFails(withPaths({ student, sheikh, extra: sheikh }));
+    await assertFails(withPaths({ student: sheikh, sheikh: student })); // roles swapped
+    await assertFails(withPaths({ student: "recordings/s1/n2.student.wav", sheikh }));
+    await assertFails(withPaths({ student: "recordings/s2/n1.student.wav", sheikh }));
+    await assertFails(withPaths({ student: "recordings/s1/n1.student.exe", sheikh }));
+    await assertFails(withPaths({ student: "recordings/s1/n1.wav", sheikh }));
+    await assertFails(withPaths({ student, sheikh: "recordings/s1/n1.play.mp3" }));
+  });
+
+  test("source and stemPaths never change after the create", async () => {
+    for (const [uid, role] of [["t1", "teacher"], ["admin", "admin"]] as const) {
+      const ref = doc(as(env, uid, role), "recordings/st-s1");
+      await assertFails(updateDoc(ref, { source: "stereo" }));
+      await assertFails(
+        updateDoc(ref, { stemPaths: { student: "recordings/s1/st-s1.student.mp3", sheikh: "recordings/s1/st-s1.sheikh.mp3" } }),
+      );
+      await assertFails(updateDoc(ref, { storagePath: "recordings/s1/st-s1.wav" }));
+      await assertFails(updateDoc(doc(as(env, uid, role), "recordings/r-s1"), { source: "stems" }));
+    }
+  });
+
+  test("analysis stays the server's", async () => {
+    await assertFails(
+      create(as(env, "t1", "teacher"), "n1", stems("n1", { analysis: { status: "merging" } })),
+    );
+    await assertFails(
+      updateDoc(doc(as(env, "t1", "teacher"), "recordings/st-s1"), {
+        analysis: { status: "done", segmentCount: 1, swapped: true },
+      }),
+    );
+  });
+
+  test("read, review and delete as any other recording", async () => {
+    await assertSucceeds(getDoc(doc(as(env, "s1", "student"), "recordings/st-s1")));
+    await assertFails(getDoc(doc(as(env, "s2", "student"), "recordings/st-s1")));
+    await assertSucceeds(updateDoc(doc(as(env, "t1", "teacher"), "recordings/st-s1"), { reviewed: false }));
+    await assertFails(deleteDoc(doc(as(env, "s1", "student"), "recordings/st-s1")));
+    await assertSucceeds(deleteDoc(doc(as(env, "t1", "teacher"), "recordings/st-s1")));
+  });
+});
+
 describe("server-only fields: analysis and playbackPath", () => {
   const analysis = { status: "done", segmentCount: 2 };
   const playbackPath = "recordings/s1/n1.play.mp3";

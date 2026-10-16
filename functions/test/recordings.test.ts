@@ -118,6 +118,52 @@ describe("onRecordingDeleted", () => {
     expect(await fileExists(other)).toBe(true);
   });
 
+  test("removes the stems of a two-file recording that were never joined", async () => {
+    await addRecording("del-stems");
+    const stems = {student: "recordings/s1/del-stems.student.wav", sheikh: "recordings/s1/del-stems.sheikh.mp3"};
+    await db.doc("recordings/del-stems").update({source: "stems", stemPaths: stems});
+    // Only one arrived: the trigger waits for the other.
+    await uploadFile(stems.student);
+
+    await db.doc("recordings/del-stems").delete();
+
+    await eventually(async () => !(await fileExists(stems.student)), "stem deleted");
+  });
+
+  test("a stem without its recording (the upload raced a delete) is deleted", async () => {
+    const orphan = "recordings/s1/no-such-recording.sheikh.mp3";
+    await uploadFile(orphan);
+    await eventually(async () => !(await fileExists(orphan)), "orphan stem deleted");
+  });
+
+  test("never deletes a stem path that is not the recording's own", async () => {
+    // A real practice recording of s1 (never analysed), so its file stays.
+    const kept = "recordings/s1/keep-me.m4a";
+    await addRecording("keep-me");
+    await db.doc("recordings/keep-me").update({type: "practice", uploadedBy: "s1", storagePath: kept});
+    await uploadFile(kept);
+    await addRecording("del-stems-2");
+    await db.doc("recordings/del-stems-2").update({
+      source: "stems",
+      stemPaths: {student: kept, sheikh: "recordings/s1/del-stems-2.sheikh.mp3"},
+    });
+
+    await db.doc("recordings/del-stems-2").delete();
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    expect(await fileExists(kept)).toBe(true);
+  });
+
+  test("a stem of a one-file recording is ignored, not joined", async () => {
+    const path = await addRecording("one-file");
+    const stem = "recordings/s1/one-file.student.mp3";
+    await uploadFile(stem);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    expect(await fileExists(stem)).toBe(true);
+    expect(await fileExists(path)).toBe(false);
+    expect((await db.doc("recordings/one-file").get()).get("analysis")).toBeUndefined();
+  });
+
   test("other recordings keep their file and feedback", async () => {
     const keptPath = await addRecording("keep-1");
     await uploadFile(keptPath);

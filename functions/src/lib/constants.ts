@@ -53,6 +53,10 @@ export const F = {
   unreadFeedback: "unreadFeedback",
   analysis: "analysis",
   playbackPath: "playbackPath",
+  /** recordings: "stereo" (missing = stereo) or "stems". */
+  source: "source",
+  /** recordings of source "stems": {student, sheikh} Storage paths. */
+  stemPaths: "stemPaths",
   // recordings/{id}/feedback
   kind: "kind",
   note: "note",
@@ -64,11 +68,23 @@ export const F = {
 /** recordings.type of a studio recording; only these are analysed. */
 export const OFFICIAL = "official";
 
+/**
+ * recordings.source: one stereo file (student left, sheikh right), or two
+ * stems (one per microphone) that the server joins into that stereo file.
+ * App: RecordingSource.
+ */
+export const SOURCE = {
+  stereo: "stereo",
+  stems: "stems",
+} as const;
+
 /** feedback.kind of a marker the server found in the sheikh's channel. */
 export const VOICE = "voice";
 
 /** analysis.status values (docs/PROJECT_PLAN.md section 3). */
 export const ANALYSIS_STATUS = {
+  /** Two stems: both arrived, the server joins them into the stereo file. */
+  merging: "merging",
   pending: "pending",
   done: "done",
   mono: "mono",

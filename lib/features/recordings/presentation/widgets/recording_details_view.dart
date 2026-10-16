@@ -20,11 +20,15 @@ import 'marker_navigation.dart';
 import 'note_dialog.dart';
 import 'recording_header.dart';
 import 'reviewed_toggle.dart';
+import 'swapped_chip.dart';
 
 /// The content of the recording screen, at most
 /// [AppSizes.contentMaxWidth] wide on the studio PC: the header, the
 /// analysis state, the player (the centred copy when there is one) with the
-/// sheikh's markers, and the notes. Its teacher and admins also add notes
+/// sheikh's markers, and the notes. A two-file recording has no player
+/// and no «تمت المراجعة» until the server joined its files (the banner
+/// says why); its teacher also sees when the server swapped the student's
+/// and sheikh's channels. Its teacher and admins also add notes
 /// at the current second and mark it reviewed. Its student only reads;
 /// opening it clears his «ملاحظات جديدة», and a practice the sheikh has not
 /// reviewed yet can be deleted («حذف التدريب»).
@@ -60,7 +64,11 @@ class RecordingDetailsView extends ConsumerWidget {
     final source = StoredPlayback(recording.playablePath);
     final notes = ref.watch(recordingFeedbackProvider(recording.id)).value;
     final markers = markersOf(notes ?? const []);
-    final notice = analysisNoticeFor(recording, ref.watch(clockProvider)());
+    final notice = analysisNoticeFor(
+      recording,
+      ref.watch(clockProvider)(),
+      canManage: canManage,
+    );
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.pagePadding),
       child: Align(
@@ -72,19 +80,25 @@ class RecordingDetailsView extends ConsumerWidget {
             children: [
               RecordingHeader(recording: recording),
               const SizedBox(height: AppSizes.spaceM),
+              if (canManage && recording.analysis?.swapped == true)
+                const SwappedChip(),
               if (notice != null) AnalysisBanner(notice: notice),
-              RecordingPlayer(
-                source: source,
-                markers: markers,
-                footer: MarkerNavigation(
+              if (recording.hasAudio)
+                RecordingPlayer(
                   source: source,
                   markers: markers,
-                  onAddNote: canManage
-                      ? () => _addNoteHere(context, ref)
-                      : null,
+                  footer: MarkerNavigation(
+                    source: source,
+                    markers: markers,
+                    onAddNote: canManage
+                        ? () => _addNoteHere(context, ref)
+                        : null,
+                  ),
                 ),
-              ),
-              if (canManage) ReviewedToggle(recording: recording),
+              // Nothing to review before a two-file recording is joined
+              // (or when joining it failed).
+              if (canManage && recording.hasAudio)
+                ReviewedToggle(recording: recording),
               const OrnamentDivider(title: AppStrings.feedbackTitle),
               const SizedBox(height: AppSizes.spaceXS),
               FeedbackSection(recording: recording, canManage: canManage),

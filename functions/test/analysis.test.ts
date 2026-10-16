@@ -1,84 +1,28 @@
 // onRecordingUploaded (a Storage trigger running in the Functions emulator)
 // on real audio: fixtures built from al-Minshawi's recitations by
 // tool/test_audio/build_fixtures.ps1, outside the repo. Skipped, with a
-// message, when they are missing.
-import {existsSync, readFileSync} from "node:fs";
-import {join, resolve} from "node:path";
-
+// message, when they are missing. Two-file recordings: stems.test.ts.
 import {FieldValue, Timestamp} from "firebase-admin/firestore";
 import {beforeEach, describe, expect, test} from "vitest";
 
-import {ANALYSIS} from "../src/lib/voice_analysis.js";
+import {
+  addRecording,
+  ANALYSIS_TIMEOUT,
+  expectMarkersAt,
+  feedbackOf,
+  fileExists,
+  haveFixtures,
+  haveStemFixtures,
+  manifest,
+  recordingData,
+  uploadFixture,
+  voiceMarkers,
+  waitForStatus,
+  warnIfMissing,
+} from "./audio_fixtures.js";
 import {bucket, db, eventually, resetFixture} from "./helpers.js";
 
-const repo = resolve(__dirname, "..", "..");
-const fixturesDir =
-  process.env.TEST_AUDIO_FIXTURES_DIR ?? resolve(repo, "..", "test-audio", "fixtures");
-const manifestPath = join(fixturesDir, "manifest.json");
-const haveFixtures = existsSync(manifestPath);
-if (!haveFixtures) {
-  console.warn(
-    `\nSKIPPED analysis tests: no audio fixtures in ${fixturesDir}.\n` +
-      "Build them with: powershell -ExecutionPolicy Bypass -File tool/test_audio/build_fixtures.ps1\n",
-  );
-}
-
-interface Manifest {
-  stereo: {file: string; durationSec: number; sheikhSegments: Array<{start: number; end: number}>};
-  mono: {file: string};
-}
-const manifest: Manifest | null = haveFixtures ? JSON.parse(readFileSync(manifestPath, "utf8")) : null;
-
-const ANALYSIS_TIMEOUT = 60_000;
-
-/** A recording of s1 (h1 / t1) at recordings/s1/{id}.mp3, not reviewed. */
-async function addRecording(id: string, type: "official" | "practice" = "official"): Promise<string> {
-  const storagePath = `recordings/s1/${id}.mp3`;
-  await db.doc(`recordings/${id}`).set({
-    studentId: "s1",
-    halaqaId: "h1",
-    teacherId: "t1",
-    uploadedBy: type === "official" ? "t1" : "s1",
-    type,
-    surahNumber: 1,
-    ayahFrom: 1,
-    ayahTo: 7,
-    storagePath,
-    durationSec: null,
-    recordedAt: Timestamp.now(),
-    createdAt: Timestamp.now(),
-    unreadFeedback: false,
-    reviewed: false,
-  });
-  return storagePath;
-}
-
-const uploadFixture = (file: string, path: string) =>
-  bucket.upload(join(fixturesDir, file), {destination: path, contentType: "audio/mpeg"});
-
-const recordingData = async (id: string) => (await db.doc(`recordings/${id}`).get()).data() ?? {};
-
-const analysisStatus = async (id: string) =>
-  ((await recordingData(id)).analysis as {status?: string} | undefined)?.status;
-
-const waitForStatus = (id: string, statuses: string[]) =>
-  eventually(
-    async () => statuses.includes((await analysisStatus(id)) ?? ""),
-    `${id} analysed (${statuses.join(" or ")})`,
-    ANALYSIS_TIMEOUT,
-  );
-
-async function feedbackOf(id: string) {
-  const snapshot = await db.collection(`recordings/${id}/feedback`).get();
-  return snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()})) as Array<Record<string, unknown>>;
-}
-
-const voiceMarkers = async (id: string) =>
-  (await feedbackOf(id))
-    .filter((note) => note.kind === "voice")
-    .sort((a, b) => (a.atSecond as number) - (b.atSecond as number));
-
-const fileExists = async (path: string) => (await bucket.file(path).exists())[0];
+warnIfMissing("analysis tests", haveFixtures);
 
 beforeEach(resetFixture);
 
@@ -100,25 +44,20 @@ describe.skipIf(!haveFixtures)("onRecordingUploaded on the al-Minshawi fixtures"
       await waitForStatus("an-stereo", ["done", "mono", "failed"]);
 
       const recording = await recordingData("an-stereo");
-      expect(recording.analysis).toEqual({status: "done", segmentCount: 2});
+      expect(recording.analysis).toEqual({
+        status: "done",
+        segmentCount: 2,
+        swapped: false,
+        // The fixture's bleed: about -22 dB, each voice far above it.
+        bleedDb: expect.closeTo(-22, 0),
+        separationDb: expect.any(Number),
+      });
+      expect(recording.analysis.separationDb).toBeGreaterThan(20);
       expect(recording.playbackPath).toBe("recordings/s1/an-stereo.play.mp3");
       expect(recording.durationSec).toBe(Math.round(manifest!.stereo.durationSec));
       expect(recording.unreadFeedback).toBe(true);
 
-      const markers = await voiceMarkers("an-stereo");
-      expect(markers).toHaveLength(2);
-      manifest!.stereo.sheikhSegments.forEach((expected, i) => {
-        const marker = markers[i];
-        // The marker starts ANALYSIS.leadInSeconds early and is floored to
-        // the second: within 0.5 s of that.
-        const start = expected.start - ANALYSIS.leadInSeconds;
-        expect(marker.atSecond).toBeGreaterThanOrEqual(Math.floor(start - 0.5));
-        expect(marker.atSecond).toBeLessThanOrEqual(Math.floor(start + 0.5));
-        expect(marker.endSecond).toBeGreaterThanOrEqual(Math.round(expected.end - 0.5));
-        expect(marker.endSecond).toBeLessThanOrEqual(Math.round(expected.end + 0.5));
-        expect(marker).toMatchObject({teacherId: "t1", note: "", rating: null});
-        expect(marker.createdAt).toBeInstanceOf(Timestamp);
-      });
+      expectMarkersAt(await voiceMarkers("an-stereo"), manifest!.stereo.sheikhSegments);
       // The written note is kept.
       expect((await feedbackOf("an-stereo")).filter((n) => n.kind === "text")).toHaveLength(1);
 
@@ -169,10 +108,25 @@ describe.skipIf(!haveFixtures)("onRecordingUploaded on the al-Minshawi fixtures"
     ANALYSIS_TIMEOUT * 2,
   );
 
+  test.skipIf(!haveStemFixtures)(
+    "swapped channels (the sheikh on the left): found, swapped back, the same markers",
+    async () => {
+      const path = await addRecording("an-swapped");
+      await uploadFixture(manifest!.swapped!.file, path);
+      await waitForStatus("an-swapped", ["done", "mono", "failed"]);
+
+      const recording = await recordingData("an-swapped");
+      expect(recording.analysis).toMatchObject({status: "done", segmentCount: 2, swapped: true});
+      expect(recording.analysis.bleedDb).toBeCloseTo(-15, 0);
+      expectMarkersAt(await voiceMarkers("an-swapped"), manifest!.swapped!.sheikhSegments);
+    },
+    ANALYSIS_TIMEOUT * 2,
+  );
+
   test(
     "practice recordings are not analysed",
     async () => {
-      const path = await addRecording("an-practice", "practice");
+      const path = await addRecording("an-practice", {type: "practice"});
       await uploadFixture(manifest!.stereo.file, path);
       // An official upload after it; once that one is analysed, the
       // practice one has had more than its chance.

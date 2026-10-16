@@ -8,7 +8,8 @@ import '../../application/analysis_notice.dart';
 
 /// What the server's analysis of the recording says: still running, no
 /// sheikh channel in the file, or failed (notes can still be added by
-/// hand).
+/// hand); for a two-file recording also that its files are being joined,
+/// or why they could not be.
 class AnalysisBanner extends StatelessWidget {
   const AnalysisBanner({super.key, required this.notice});
 
@@ -19,8 +20,21 @@ class AnalysisBanner extends StatelessWidget {
     final theme = Theme.of(context);
     final (icon, text) = switch (notice) {
       AnalysisNotice.pending => (null, AppStrings.analysisPending),
+      AnalysisNotice.merging => (null, AppStrings.analysisMerging),
       AnalysisNotice.mono => (Icons.info_outline, AppStrings.analysisMono),
       AnalysisNotice.failed => (Icons.error_outline, AppStrings.analysisFailed),
+      AnalysisNotice.stemsLengthMismatch => (
+        Icons.error_outline,
+        AppStrings.stemsLengthMismatchFailure,
+      ),
+      AnalysisNotice.stemsMisaligned => (
+        Icons.error_outline,
+        AppStrings.stemsMisalignedFailure,
+      ),
+      AnalysisNotice.stemsFailed => (
+        Icons.error_outline,
+        AppStrings.stemsFailure,
+      ),
     };
     return AppCard(
       margin: const EdgeInsets.only(bottom: AppSizes.spaceS),

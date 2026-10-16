@@ -1,7 +1,9 @@
 import 'package:afdal_uloom_tilawat/core/models/analysis_status.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_analysis.dart';
+import 'package:afdal_uloom_tilawat/core/models/recording_source.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
+import 'package:afdal_uloom_tilawat/core/models/stem_paths.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -80,12 +82,132 @@ void main() {
     expect(Recording.fromMap('r1', failed.toMap()), failed);
   });
 
-  test('an unknown analysis status throws FormatException', () {
+  group('two-file recordings (Task 11)', () {
+    const stemPaths = StemPaths(
+      student: 'recordings/s1/r1.student.wav',
+      sheikh: 'recordings/s1/r1.sheikh.mp3',
+    );
+    final stems = build().copyWith(
+      source: RecordingSource.stems,
+      stemPaths: stemPaths,
+    );
+
+    test('a stereo recording writes no source (missing means stereo)', () {
+      final map = build().toMap();
+      expect(map.containsKey('source'), isFalse);
+      expect(map.containsKey('stemPaths'), isFalse);
+      expect(Recording.fromMap('r1', map).source, RecordingSource.stereo);
+      expect(Recording.fromMap('r1', {...map, 'source': 'stereo'}), build());
+    });
+
+    test('source and stemPaths round trip with the contract names', () {
+      final map = stems.toMap();
+      expect(map['source'], 'stems');
+      expect(map['stemPaths'], {
+        'student': 'recordings/s1/r1.student.wav',
+        'sheikh': 'recordings/s1/r1.sheikh.mp3',
+      });
+      expect(Recording.fromMap('r1', map), stems);
+      expect(stems, isNot(build()));
+      expect(stems.toString(), contains('stems'));
+    });
+
+    test('an unknown source reads as one file; broken stemPaths throw', () {
+      final map = stems.toMap();
+      expect(
+        Recording.fromMap('r1', {...map, 'source': 'mono'}).source,
+        RecordingSource.stereo,
+      );
+      expect(
+        () => Recording.fromMap('r1', {
+          ...map,
+          'stemPaths': {'student': 'recordings/s1/r1.student.wav'},
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('hasAudio: a stereo recording always, stems once joined', () {
+      RecordingAnalysis status(AnalysisStatus s, [String? error]) =>
+          RecordingAnalysis(status: s, error: error);
+      expect(build().hasAudio, isTrue);
+      expect(
+        build().copyWith(analysis: status(AnalysisStatus.failed)).hasAudio,
+        isTrue,
+      );
+      expect(stems.hasAudio, isFalse); // uploading, or waiting for a file
+      expect(
+        stems.copyWith(analysis: status(AnalysisStatus.merging)).hasAudio,
+        isFalse,
+      );
+      for (final joined in [
+        AnalysisStatus.pending,
+        AnalysisStatus.done,
+        AnalysisStatus.mono,
+      ]) {
+        expect(stems.copyWith(analysis: status(joined)).hasAudio, isTrue);
+      }
+      expect(
+        stems
+            .copyWith(
+              analysis: status(AnalysisStatus.failed, 'stems_misaligned'),
+            )
+            .hasAudio,
+        isFalse,
+      );
+      // Joined, then its analysis failed: the joined file plays.
+      expect(
+        stems
+            .copyWith(analysis: status(AnalysisStatus.failed, 'decode'))
+            .hasAudio,
+        isTrue,
+      );
+    });
+  });
+
+  test('the analysis details round trip; whole dB from Firestore are ints', () {
+    final analysis = RecordingAnalysis(
+      status: AnalysisStatus.done,
+      segmentCount: 3,
+      swapped: true,
+      bleedDb: -15.4,
+      separationDb: 30,
+      stemsLagMs: -20,
+    );
+    final map = analysis.toMap();
+    expect(map, {
+      'status': 'done',
+      'segmentCount': 3,
+      'swapped': true,
+      'bleedDb': -15.4,
+      'separationDb': 30.0,
+      'stemsLagMs': -20,
+    });
+    expect(RecordingAnalysis.fromMap(map), analysis);
+    expect(RecordingAnalysis.fromMap({...map, 'bleedDb': -15}).bleedDb, -15.0);
+    expect(analysis.isStemsFailure, isFalse);
+    expect(
+      RecordingAnalysis(
+        status: AnalysisStatus.failed,
+        error: 'stems_length_mismatch',
+      ).isStemsFailure,
+      isTrue,
+    );
+    expect(analysis.toString(), contains('swapped: true'));
+  });
+
+  test('an unknown analysis status reads as pending, the raw one kept', () {
     final map = {
       ...build().toMap(),
-      'analysis': {'status': 'thinking'},
+      'analysis': {'status': 'thinking', 'segmentCount': 1},
     };
-    expect(() => Recording.fromMap('r1', map), throwsFormatException);
+    final analysis = Recording.fromMap('r1', map).analysis!;
+    expect(analysis.status, AnalysisStatus.pending);
+    expect(analysis.unknownStatus, 'thinking');
+    expect(analysis.toString(), contains('thinking'));
+    // Written back as it came.
+    expect(analysis.toMap()['status'], 'thinking');
+    expect(RecordingAnalysis.fromMap({'status': 'done'}).unknownStatus, isNull);
   });
 
   test('missing required field throws FormatException', () {
