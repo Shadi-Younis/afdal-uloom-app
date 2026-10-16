@@ -62,8 +62,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// What the browser reports while files are dragged to [at] and dropped.
-  Future<void> drop(WidgetTester tester, Offset at, List<String> names) async {
+  /// What the browser reports while files are dragged to [at] and dropped,
+  /// then waits (up to 5 s of real time) until [until] shows.
+  Future<void> drop(
+    WidgetTester tester,
+    Offset at,
+    List<String> names, {
+    required Finder until,
+  }) async {
     final paths = [
       for (final name in names)
         (File(
@@ -81,11 +87,15 @@ void main() {
     await send('entered', [at.dx, at.dy]);
     await send('updated', [at.dx, at.dy]);
     await tester.pump();
-    // The dropped files are read from disk: real time, not the test's.
-    await tester.runAsync(() async {
-      await send('performOperation', paths);
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    });
+    // The dropped files are read from disk: real time, not the test's,
+    // and slower when many tests run at once.
+    await tester.runAsync(() => send('performOperation', paths));
+    for (var i = 0; i < 50 && until.evaluate().isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
+    }
     await tester.pumpAndSettle();
   }
 
@@ -97,7 +107,7 @@ void main() {
     await drop(tester, tester.getCenter(find.text('اختيار ملفات')), [
       'S001_001_1-7.mp3',
       'S002_001_1-7.mp3',
-    ]);
+    ], until: find.text('S002_001_1-7.mp3'));
     expect(find.byType(UploadRowCard), findsNWidgets(2));
   });
 
@@ -112,7 +122,7 @@ void main() {
     await drop(tester, tester.getCenter(find.byType(UploadRowCard)), [
       'S001_001_1-7 - Sheikh.wav',
       'S001_001_1-7 - Student.wav',
-    ]);
+    ], until: find.text('S001_001_1-7 - Sheikh.wav'));
     expect(find.byType(UploadRowCard), findsOneWidget);
     expect(
       find.descendant(
@@ -147,7 +157,7 @@ void main() {
     // One file on a zone goes into that zone, whatever its name.
     await drop(tester, tester.getCenter(zone(StemRole.sheikh)), [
       'take - student.wav',
-    ]);
+    ], until: find.text('take - student.wav'));
     expect(
       find.descendant(
         of: zone(StemRole.sheikh),
@@ -160,7 +170,7 @@ void main() {
     // Outside the row it is the page's again.
     await drop(tester, tester.getCenter(find.text('اختيار ملفات')), [
       'S002_001_1-7.mp3',
-    ]);
+    ], until: find.text('S002_001_1-7.mp3'));
     expect(find.byType(UploadRowCard), findsNWidgets(2));
   });
 }
