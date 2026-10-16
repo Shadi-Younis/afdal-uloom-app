@@ -17,6 +17,7 @@ class RecordingAnalysis {
     this.bleedDb,
     this.separationDb,
     this.stemsLagMs,
+    this.unknownStatus,
   }) {
     final count = segmentCount;
     if (count != null && count < 0) {
@@ -24,21 +25,24 @@ class RecordingAnalysis {
     }
   }
 
-  /// Throws [FormatException] for a missing status, a wrong type or an
-  /// unknown status.
-  factory RecordingAnalysis.fromMap(Map<String, dynamic> map) =>
-      RecordingAnalysis(
-        status: AnalysisStatus.fromValue(
-          readRequired<String>(map, Fields.analysisStatus),
-        ),
-        segmentCount: readOptional<int>(map, Fields.segmentCount),
-        error: readOptional<String>(map, Fields.analysisError),
-        swapped: readOptional<bool>(map, Fields.swapped),
-        // Firestore keeps -15.0 written by the server as the integer -15.
-        bleedDb: readOptional<num>(map, Fields.bleedDb)?.toDouble(),
-        separationDb: readOptional<num>(map, Fields.separationDb)?.toDouble(),
-        stemsLagMs: readOptional<int>(map, Fields.stemsLagMs),
-      );
+  /// Throws [FormatException] for a missing status or a wrong type. A
+  /// status this app does not know reads as [AnalysisStatus.pending], kept
+  /// as [unknownStatus].
+  factory RecordingAnalysis.fromMap(Map<String, dynamic> map) {
+    final raw = readRequired<String>(map, Fields.analysisStatus);
+    final status = AnalysisStatus.fromValue(raw);
+    return RecordingAnalysis(
+      status: status,
+      unknownStatus: status.value == raw ? null : raw,
+      segmentCount: readOptional<int>(map, Fields.segmentCount),
+      error: readOptional<String>(map, Fields.analysisError),
+      swapped: readOptional<bool>(map, Fields.swapped),
+      // Firestore keeps -15.0 written by the server as the integer -15.
+      bleedDb: readOptional<num>(map, Fields.bleedDb)?.toDouble(),
+      separationDb: readOptional<num>(map, Fields.separationDb)?.toDouble(),
+      stemsLagMs: readOptional<int>(map, Fields.stemsLagMs),
+    );
+  }
 
   final AnalysisStatus status;
 
@@ -63,13 +67,17 @@ class RecordingAnalysis {
   /// A two-file recording: how late the sheikh's file was, in ms.
   final int? stemsLagMs;
 
+  /// The status as stored when this app does not know it (a newer
+  /// server's); [status] is then [AnalysisStatus.pending]. For the logs.
+  final String? unknownStatus;
+
   /// The server could not join the two files of a two-file recording.
   bool get isStemsFailure =>
       status == AnalysisStatus.failed &&
       (error?.startsWith(AnalysisErrors.stemsPrefix) ?? false);
 
   Map<String, dynamic> toMap() => {
-    Fields.analysisStatus: status.value,
+    Fields.analysisStatus: unknownStatus ?? status.value,
     Fields.segmentCount: ?segmentCount,
     Fields.analysisError: ?error,
     Fields.swapped: ?swapped,
@@ -87,7 +95,8 @@ class RecordingAnalysis {
       other.swapped == swapped &&
       other.bleedDb == bleedDb &&
       other.separationDb == separationDb &&
-      other.stemsLagMs == stemsLagMs;
+      other.stemsLagMs == stemsLagMs &&
+      other.unknownStatus == unknownStatus;
 
   @override
   int get hashCode => Object.hash(
@@ -98,11 +107,13 @@ class RecordingAnalysis {
     bleedDb,
     separationDb,
     stemsLagMs,
+    unknownStatus,
   );
 
   @override
   String toString() =>
       'RecordingAnalysis(${status.value}, segmentCount: $segmentCount, '
       'error: $error, swapped: $swapped, bleedDb: $bleedDb, '
-      'separationDb: $separationDb, stemsLagMs: $stemsLagMs)';
+      'separationDb: $separationDb, stemsLagMs: $stemsLagMs, '
+      'unknownStatus: $unknownStatus)';
 }

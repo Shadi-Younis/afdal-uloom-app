@@ -117,6 +117,33 @@ void main() {
     expect(list.map((r) => r.id), ['new', 'old']);
   });
 
+  test('a document from a newer server (unknown status or source) does not '
+      'fail the list', () async {
+    await seed(
+      build(id: 'known', recordedAt: DateTime(2026, 9, 1)),
+      createdAt: DateTime(2026, 9, 1),
+    );
+    await seed(
+      build(id: 'new-status', recordedAt: DateTime(2026, 9, 2)),
+      createdAt: DateTime(2026, 9, 2),
+    );
+    await db.doc('recordings/new-status').update({
+      'analysis': {'status': 'transcribing'},
+    });
+    await seed(
+      build(id: 'new-source', recordedAt: DateTime(2026, 9, 3)),
+      createdAt: DateTime(2026, 9, 3),
+    );
+    await db.doc('recordings/new-source').update({'source': 'multitrack'});
+
+    final list = await repository.watchForStudent('s1').first;
+    expect(list.map((r) => r.id), ['new-source', 'new-status', 'known']);
+    final [newSource, newStatus, _] = list;
+    expect(newSource.source, RecordingSource.stereo);
+    expect(newStatus.analysis?.status, AnalysisStatus.pending);
+    expect(newStatus.analysis?.unknownStatus, 'transcribing');
+  });
+
   test('watchForStudent with teacherId keeps only that teacher', () async {
     await seed(
       build(id: 'mine', recordedAt: DateTime(2026, 9, 1)),

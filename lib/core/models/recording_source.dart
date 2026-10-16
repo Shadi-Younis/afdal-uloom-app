@@ -15,13 +15,11 @@ enum RecordingSource {
 
   final String value;
 
-  /// [stereo] for null (documents from before Task 11). Throws
-  /// [FormatException] for a string that is not a known source.
-  static RecordingSource fromValue(String? value) => value == null
-      ? stereo
-      : values.firstWhere(
-          (source) => source.value == value,
-          orElse: () =>
-              throw FormatException('Unknown recording source', value),
-        );
+  /// The source [value] names; [stereo] for null (documents from before
+  /// Task 11) and for one this version of the app does not know, so a
+  /// document never fails to load because of it.
+  static RecordingSource fromValue(String? value) => values.firstWhere(
+    (source) => source.value == value,
+    orElse: () => stereo,
+  );
 }

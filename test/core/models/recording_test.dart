@@ -97,10 +97,7 @@ void main() {
       expect(map.containsKey('source'), isFalse);
       expect(map.containsKey('stemPaths'), isFalse);
       expect(Recording.fromMap('r1', map).source, RecordingSource.stereo);
-      expect(
-        Recording.fromMap('r1', {...map, 'source': 'stereo'}),
-        build(),
-      );
+      expect(Recording.fromMap('r1', {...map, 'source': 'stereo'}), build());
     });
 
     test('source and stemPaths round trip with the contract names', () {
@@ -115,11 +112,11 @@ void main() {
       expect(stems.toString(), contains('stems'));
     });
 
-    test('broken source or stemPaths throw FormatException', () {
+    test('an unknown source reads as one file; broken stemPaths throw', () {
       final map = stems.toMap();
       expect(
-        () => Recording.fromMap('r1', {...map, 'source': 'mono'}),
-        throwsFormatException,
+        Recording.fromMap('r1', {...map, 'source': 'mono'}).source,
+        RecordingSource.stereo,
       );
       expect(
         () => Recording.fromMap('r1', {
@@ -187,10 +184,7 @@ void main() {
       'stemsLagMs': -20,
     });
     expect(RecordingAnalysis.fromMap(map), analysis);
-    expect(
-      RecordingAnalysis.fromMap({...map, 'bleedDb': -15}).bleedDb,
-      -15.0,
-    );
+    expect(RecordingAnalysis.fromMap({...map, 'bleedDb': -15}).bleedDb, -15.0);
     expect(analysis.isStemsFailure, isFalse);
     expect(
       RecordingAnalysis(
@@ -202,12 +196,18 @@ void main() {
     expect(analysis.toString(), contains('swapped: true'));
   });
 
-  test('an unknown analysis status throws FormatException', () {
+  test('an unknown analysis status reads as pending, the raw one kept', () {
     final map = {
       ...build().toMap(),
-      'analysis': {'status': 'thinking'},
+      'analysis': {'status': 'thinking', 'segmentCount': 1},
     };
-    expect(() => Recording.fromMap('r1', map), throwsFormatException);
+    final analysis = Recording.fromMap('r1', map).analysis!;
+    expect(analysis.status, AnalysisStatus.pending);
+    expect(analysis.unknownStatus, 'thinking');
+    expect(analysis.toString(), contains('thinking'));
+    // Written back as it came.
+    expect(analysis.toMap()['status'], 'thinking');
+    expect(RecordingAnalysis.fromMap({'status': 'done'}).unknownStatus, isNull);
   });
 
   test('missing required field throws FormatException', () {
