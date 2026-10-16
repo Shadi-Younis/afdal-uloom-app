@@ -45,19 +45,24 @@ final canManageRecordingProvider = Provider.autoDispose.family<bool, String>((
   };
 });
 
-/// Whether the viewer may delete [recording] with «حذف التدريب»: its
-/// student, while it is a practice the sheikh has not reviewed yet.
+/// Whether the viewer may delete [recording]: an official one with
+/// «حذف التسجيل» (its teacher and admins, in any state), a practice with
+/// «حذف التدريب» (its student, at any time: a practice is his own).
 /// firestore.rules decide; this only shows the button.
-final canDeletePracticeProvider = Provider.autoDispose.family<bool, Recording>((
-  ref,
-  recording,
-) {
-  final viewer = ref.watch(sessionProvider).value;
-  return viewer?.role == UserRole.student &&
-      viewer?.uid == recording.studentId &&
-      recording.type == RecordingType.practice &&
-      !recording.reviewed;
-});
+final canDeleteRecordingProvider = Provider.autoDispose.family<bool, Recording>(
+  (ref, recording) {
+    final viewer = ref.watch(sessionProvider).value;
+    return switch (recording.type) {
+      RecordingType.official => switch (viewer?.role) {
+        UserRole.admin => true,
+        UserRole.teacher => viewer?.uid == recording.teacherId,
+        _ => false,
+      },
+      RecordingType.practice =>
+        viewer?.role == UserRole.student && viewer?.uid == recording.studentId,
+    };
+  },
+);
 
 /// While its student has recording [id] open, its «ملاحظات جديدة» is
 /// cleared (`unreadFeedback` false), also when a new note arrives

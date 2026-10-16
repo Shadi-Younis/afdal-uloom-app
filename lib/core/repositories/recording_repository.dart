@@ -84,6 +84,20 @@ abstract class RecordingRepository {
   /// Allowed for: the teacher of the recording and admins.
   Future<void> setReviewed(String id, {required bool reviewed});
 
+  /// Sets the surah and ayat of an official recording («تعديل السورة
+  /// والآيات»); a null removes that field. Allowed combinations: none, a
+  /// surah alone, or a surah with both ayat (1 <= from <= to); anything
+  /// else is `AppErrorCode.permissionDenied`. Callers check the ayat
+  /// against the surah's length (ayatProblemOf), which rules cannot.
+  ///
+  /// Allowed for: the teacher of the recording and admins.
+  Future<void> setSurahAndAyat(
+    String id, {
+    required int? surahNumber,
+    required int? ayahFrom,
+    required int? ayahTo,
+  });
+
   /// Deletes the document only. The audio file and the feedback
   /// subcollection are cleaned up by a Cloud Function (onRecordingDeleted).
   ///

@@ -162,9 +162,7 @@ void main() {
       'the same way', (tester) async {
     final rec20 = fixture.school.recordings.recordings['rec-20']!;
     fixture.school.recordings.put(
-      rec20.copyWith(
-        analysis: RecordingAnalysis(status: AnalysisStatus.mono),
-      ),
+      rec20.copyWith(analysis: RecordingAnalysis(status: AnalysisStatus.mono)),
     );
     fixture.school.feedback.notes['rec-20'] = [
       FeedbackNote(
@@ -231,13 +229,13 @@ void main() {
     expect(currentPath(tester), '/recording/rec-20');
   });
 
-  testWidgets('no «حذف التدريب» once the sheikh reviewed it, nor for the '
-      'teacher', (tester) async {
+  testWidgets('«حذف التدريب» at any time, also once reviewed (Task 12); '
+      'never for the teacher', (tester) async {
     final rec20 = fixture.school.recordings.recordings['rec-20']!;
     fixture.school.recordings.put(rec20.copyWith(reviewed: true));
     await open(tester, 'rec-20');
-    await scrollTo(tester, find.text('ملاحظات الشيخ'));
-    expect(find.text('حذف التدريب'), findsNothing);
+    await scrollTo(tester, find.text('حذف التدريب'));
+    expect(find.text('حذف التدريب'), findsOneWidget);
 
     fixture.school.recordings.put(rec20);
     await open(

@@ -229,6 +229,55 @@ void main() {
     },
   );
 
+  test('setSurahAndAyat: sets them, and removes the empty ones', () async {
+    await seed(
+      build(id: 'r1', recordedAt: DateTime(2026, 10, 1)),
+      createdAt: DateTime(2026, 10, 1),
+    );
+
+    await repository.setSurahAndAyat(
+      'r1',
+      surahNumber: 67,
+      ayahFrom: 1,
+      ayahTo: 5,
+    );
+    var data = (await db.doc('recordings/r1').get()).data()!;
+    expect((data['surahNumber'], data['ayahFrom'], data['ayahTo']), (67, 1, 5));
+
+    await repository.setSurahAndAyat(
+      'r1',
+      surahNumber: 67,
+      ayahFrom: null,
+      ayahTo: null,
+    );
+    data = (await db.doc('recordings/r1').get()).data()!;
+    expect(data['surahNumber'], 67);
+    expect(data.containsKey('ayahFrom'), isFalse);
+    expect(data.containsKey('ayahTo'), isFalse);
+
+    await repository.setSurahAndAyat(
+      'r1',
+      surahNumber: null,
+      ayahFrom: null,
+      ayahTo: null,
+    );
+    final read = await repository.get('r1');
+    expect(read!.surahNumber, isNull);
+    expect(read.ayahFrom, isNull);
+  });
+
+  test('setSurahAndAyat on a missing recording throws AppException', () {
+    expect(
+      repository.setSurahAndAyat(
+        'missing',
+        surahNumber: 1,
+        ayahFrom: null,
+        ayahTo: null,
+      ),
+      throwsA(isA<AppException>()),
+    );
+  });
+
   test('markFeedbackRead, setReviewed both ways and delete', () async {
     final r = build(
       id: 'r1',

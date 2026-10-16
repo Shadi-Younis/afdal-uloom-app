@@ -2,11 +2,11 @@
 // emulator) and the stalled-upload cleanup, on the Firestore and Storage
 // emulators. Each test uses its own recording ids, so a trigger still
 // running from another test cannot touch its files.
-import {Timestamp} from "firebase-admin/firestore";
+import {FieldValue, Timestamp} from "firebase-admin/firestore";
 import {beforeEach, describe, expect, test} from "vitest";
 
 import {runStalledUploadCleanup} from "../src/recordings/cleanup_stalled_uploads.js";
-import {bucket, db, eventually, resetFixture} from "./helpers.js";
+import {bucket, db, eventually, projectId, resetFixture, tokenOf} from "./helpers.js";
 
 beforeEach(resetFixture);
 
@@ -161,6 +161,53 @@ describe("onRecordingDeleted", () => {
     expect(await fileExists(stem)).toBe(true);
     expect(await fileExists(path)).toBe(false);
     expect((await db.doc("recordings/one-file").get()).get("analysis")).toBeUndefined();
+  });
+
+  // «حذف التسجيل» (Task 12): the app deletes the document as the teacher
+  // or an admin, through firestore.rules; the trigger does the rest.
+  describe("deleted from the app, through the rules", () => {
+    /** Deletes recordings/{id} with [uid]'s ID token, as the app does. */
+    async function deleteAs(uid: string, id: string): Promise<number> {
+      const host = process.env.FIRESTORE_EMULATOR_HOST;
+      const url = `http://${host}/v1/projects/${projectId}/databases/(default)/documents/recordings/${id}`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {Authorization: `Bearer ${await tokenOf(uid)}`},
+      });
+      return response.status;
+    }
+
+    test("the teacher: a recording without surah, its file and notes go", async () => {
+      const path = await addRecording("app-del-1");
+      await db.doc("recordings/app-del-1").update({
+        surahNumber: FieldValue.delete(),
+        ayahFrom: FieldValue.delete(),
+        ayahTo: FieldValue.delete(),
+      });
+      await uploadFile(path);
+      await addFeedback("app-del-1", 2);
+
+      // Not its student, not another teacher.
+      expect(await deleteAs("s1", "app-del-1")).toBe(403);
+      expect(await deleteAs("t2", "app-del-1")).toBe(403);
+      expect(await deleteAs("t1", "app-del-1")).toBe(200);
+
+      await eventually(async () => !(await fileExists(path)), "file deleted");
+      await eventually(async () => (await feedbackCount("app-del-1")) === 0, "notes deleted");
+    });
+
+    test("the admin: a two-file recording still waiting for a file", async () => {
+      await addRecording("app-del-2");
+      const stems = {student: "recordings/s1/app-del-2.student.wav", sheikh: "recordings/s1/app-del-2.sheikh.mp3"};
+      await db.doc("recordings/app-del-2").update({source: "stems", stemPaths: stems});
+      await uploadFile(stems.sheikh);
+      await addFeedback("app-del-2", 1);
+
+      expect(await deleteAs("admin", "app-del-2")).toBe(200);
+
+      await eventually(async () => !(await fileExists(stems.sheikh)), "stem deleted");
+      await eventually(async () => (await feedbackCount("app-del-2")) === 0, "notes deleted");
+    });
   });
 
   test("other recordings keep their file and feedback", async () => {

@@ -86,6 +86,21 @@ class FirestoreRecordingRepository implements RecordingRepository {
       guard(() => _doc(id).update({Fields.reviewed: reviewed}));
 
   @override
+  Future<void> setSurahAndAyat(
+    String id, {
+    required int? surahNumber,
+    required int? ayahFrom,
+    required int? ayahTo,
+  }) => guard(
+    () => _doc(id).update({
+      // Removed rather than null: a new recording leaves them out too.
+      Fields.surahNumber: surahNumber ?? FieldValue.delete(),
+      Fields.ayahFrom: ayahFrom ?? FieldValue.delete(),
+      Fields.ayahTo: ayahTo ?? FieldValue.delete(),
+    }),
+  );
+
+  @override
   Future<void> delete(String id) => guard(() => _doc(id).delete());
 
   Stream<List<Recording>> _watchList(Query<Map<String, dynamic>> query) =>

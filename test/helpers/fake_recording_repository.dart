@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:afdal_uloom_tilawat/core/constants/firestore_paths.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording.dart';
 import 'package:afdal_uloom_tilawat/core/models/recording_type.dart';
 import 'package:afdal_uloom_tilawat/core/repositories/recording_repository.dart';
@@ -129,6 +130,32 @@ class FakeRecordingRepository implements RecordingRepository {
     if (recording != null) put(recording.copyWith(reviewed: reviewed));
   }
 
+  /// Every setSurahAndAyat call, in order.
+  final ayatCalls = <(String id, int? surah, int? from, int? to)>[];
+  Object? ayatError;
+
+  @override
+  Future<void> setSurahAndAyat(
+    String id, {
+    required int? surahNumber,
+    required int? ayahFrom,
+    required int? ayahTo,
+  }) async {
+    if (ayatError case final error?) throw error;
+    ayatCalls.add((id, surahNumber, ayahFrom, ayahTo));
+    final recording = recordings[id];
+    if (recording == null) return;
+    // copyWith cannot clear a field to null.
+    put(
+      Recording.fromMap(id, {
+        ...recording.toMap(),
+        Fields.surahNumber: surahNumber,
+        Fields.ayahFrom: ayahFrom,
+        Fields.ayahTo: ayahTo,
+      }),
+    );
+  }
+
   @override
   Future<void> delete(String id) async {
     if (deleteError case final error?) throw error;
@@ -150,9 +177,9 @@ Recording sampleRecording(
   String id, {
   String studentId = 's001',
   RecordingType type = RecordingType.official,
-  int surahNumber = 2,
-  int ayahFrom = 1,
-  int ayahTo = 20,
+  int? surahNumber = 2,
+  int? ayahFrom = 1,
+  int? ayahTo = 20,
   DateTime? recordedAt,
   bool unreadFeedback = false,
   String uploadedBy = 't01',
