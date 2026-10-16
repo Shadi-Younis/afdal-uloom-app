@@ -4,6 +4,7 @@ import '../../../core/application/session_providers.dart';
 import '../../../core/models/app_user.dart';
 import '../../../core/models/halaqa.dart';
 import '../../../core/models/recording.dart';
+import '../../../core/models/recording_type.dart';
 import '../../../core/models/user_role.dart';
 import '../../../core/providers/repository_providers.dart';
 
@@ -74,10 +75,12 @@ final canDisableProvider = Provider.autoDispose.family<bool, String>(
   (ref, uid) => ref.watch(sessionProvider.select((s) => s.value?.uid)) != uid,
 );
 
-/// The recordings of [studentId], newest recorded first.
+/// The official recordings of [studentId], newest recorded first. His
+/// practice is his own: admins cannot read it.
 final studentRecordingsProvider = StreamProvider.autoDispose
     .family<List<Recording>, String>(
-      (ref, studentId) =>
-          ref.watch(recordingRepositoryProvider).watchForStudent(studentId),
+      (ref, studentId) => ref
+          .watch(recordingRepositoryProvider)
+          .watchForStudent(studentId, type: RecordingType.official),
       retry: _noRetry,
     );

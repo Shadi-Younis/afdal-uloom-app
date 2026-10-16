@@ -11,11 +11,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../helpers/admin_fixture.dart';
+import '../../../helpers/fake_recording_repository.dart';
 import '../../../helpers/pump_app.dart';
 
 /// The teacher t01: حلقة الفجر (s001 أحمد الخطيب, s002 عمر الحسن, s012
 /// disabled). s001 has rec-01 and rec-02 (official) and rec-20 (practice,
-/// recorded 2026-09-20).
+/// recorded 2026-09-20: his own, the teacher never sees it); s002 has
+/// rec-21 (official, reviewed, recorded 2026-09-20).
 void main() {
   setUpAll(loadBundledFonts);
 
@@ -31,6 +33,15 @@ void main() {
     // rec-02 waits for its review.
     school.recordings.put(
       school.recordings.recordings['rec-02']!.copyWith(reviewed: false),
+    );
+    school.recordings.put(
+      sampleRecording(
+        'rec-21',
+        studentId: 's002',
+        surahNumber: 112,
+        ayahTo: 4,
+        recordedAt: DateTime(2026, 9, 20, 16),
+      ),
     );
   });
 
@@ -68,10 +79,12 @@ void main() {
     expect(currentPath(tester), '/teacher');
     // s012 is disabled: two active students.
     expect(statOf(tester, 'طلابي'), '2');
+    // rec-21; rec-20 is a practice: the student's own (Task 12).
     expect(statOf(tester, 'تسجيلات هذا الأسبوع'), '1');
-    // rec-02 (official) and rec-20 (practice) wait for him.
-    expect(statOf(tester, 'بانتظار المراجعة'), '2');
-    expect(find.text('٢'), findsNWidgets(2));
+    // Only rec-02 waits for him; never a practice.
+    expect(statOf(tester, 'بانتظار المراجعة'), '1');
+    expect(find.text('٢'), findsOneWidget);
+    expect(find.text('١'), findsNWidgets(2));
     expect(find.text('رفع تسجيلات'), findsOneWidget);
     expect(find.text('حلقاتي'), findsOneWidget);
     expect(find.text('حلقة الفجر'), findsOneWidget);
@@ -80,11 +93,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('«بانتظار المراجعة» opens his queue: both types, oldest '
-      'first, with the student; a practice opens like any recording', (
-    tester,
-  ) async {
+  testWidgets('«بانتظار المراجعة» opens his queue: official recordings, '
+      'oldest first, with the student; no practice (Task 12)', (tester) async {
     usePhoneSize(tester);
+    school.recordings.put(
+      school.recordings.recordings['rec-21']!.copyWith(reviewed: false),
+    );
     await pumpTeacher(tester);
 
     await tester.tap(find.text('بانتظار المراجعة'));
@@ -92,19 +106,20 @@ void main() {
     expect(currentPath(tester), '/teacher/review');
     final tiles = find.byType(RecordingTile);
     expect(tiles, findsNWidgets(2));
-    // Oldest createdAt first: rec-02 (8 Sep), then rec-20 (20 Sep).
+    // Oldest createdAt first: rec-02 (8 Sep), then rec-21 (20 Sep).
     final first = tester.widget<RecordingTile>(tiles.at(0)).recording;
     final second = tester.widget<RecordingTile>(tiles.at(1)).recording;
-    expect([first.id, second.id], ['rec-02', 'rec-20']);
-    expect(find.text('رسمي'), findsOneWidget);
-    expect(find.text('تدريب'), findsOneWidget);
-    expect(find.textContaining('أحمد الخطيب ·'), findsNWidgets(2));
+    expect([first.id, second.id], ['rec-02', 'rec-21']);
+    expect(find.text('رسمي'), findsNWidgets(2));
+    expect(find.text('تدريب'), findsNothing);
+    expect(find.textContaining('أحمد الخطيب ·'), findsOneWidget);
+    expect(find.textContaining('عمر الحسن ·'), findsOneWidget);
     expect(find.text('بانتظار المراجعة'), findsWidgets);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('تدريب'));
+    await tester.tap(find.textContaining('عمر الحسن ·'));
     await tester.pumpAndSettle();
-    expect(currentPath(tester), '/recording/rec-20');
+    expect(currentPath(tester), '/recording/rec-21');
     await tester.tap(find.byTooltip('رجوع'));
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/teacher/review');
@@ -118,10 +133,6 @@ void main() {
   ) async {
     usePhoneSize(tester);
     await pumpTeacher(tester, location: '/teacher/review');
-    expect(find.byType(RecordingTile), findsNWidgets(2));
-
-    await school.recordings.setReviewed('rec-20', reviewed: true);
-    await tester.pumpAndSettle();
     expect(find.byType(RecordingTile), findsOneWidget);
 
     await school.recordings.setReviewed('rec-02', reviewed: true);
@@ -189,8 +200,9 @@ void main() {
     final tiles = tester
         .widgetList<RecordingTile>(find.byType(RecordingTile))
         .toList();
-    // Newest first.
-    expect(tiles.map((t) => t.recording.id), ['rec-20', 'rec-02', 'rec-01']);
+    // Newest first; rec-20 is his practice: not the teacher's to see.
+    expect(tiles.map((t) => t.recording.id), ['rec-02', 'rec-01']);
+    expect(find.text('تدريب'), findsNothing);
     // rec-02 has one note about a moment (00:12) and waits for review.
     expect(find.textContaining('الملاحظات: ١'), findsOneWidget);
     expect(find.text('بانتظار المراجعة'), findsWidgets);

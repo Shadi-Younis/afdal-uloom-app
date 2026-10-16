@@ -5,6 +5,7 @@ import '../../../core/application/session_providers.dart';
 import '../../../core/models/app_user.dart';
 import '../../../core/models/halaqa.dart';
 import '../../../core/models/recording.dart';
+import '../../../core/models/recording_type.dart';
 import '../../../core/providers/clock_provider.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/utils/async_value_combine.dart';
@@ -16,8 +17,8 @@ import 'teacher_overview.dart';
 String _uid(Ref ref) =>
     ref.watch(sessionProvider.select((s) => s.value?.uid)) ?? '';
 
-/// The teacher's recordings recorded since the start of the school week,
-/// newest first.
+/// The teacher's official recordings recorded since the start of the
+/// school week, newest first (practice is the student's own).
 final thisWeekRecordingsProvider = StreamProvider.autoDispose<List<Recording>>(
   (ref) => ref
       .watch(recordingRepositoryProvider)
@@ -27,8 +28,8 @@ final thisWeekRecordingsProvider = StreamProvider.autoDispose<List<Recording>>(
       ),
 );
 
-/// The teacher's review queue «بانتظار المراجعة»: his recordings not
-/// reviewed yet, official and practice, oldest first.
+/// The teacher's review queue «بانتظار المراجعة»: his official recordings
+/// not reviewed yet, oldest first.
 final pendingReviewProvider = StreamProvider.autoDispose<List<Recording>>(
   (ref) => ref.watch(recordingRepositoryProvider).watchUnreviewed(_uid(ref)),
 );
@@ -61,10 +62,15 @@ final teacherStudentProvider = StreamProvider.autoDispose
           ref.watch(userRepositoryProvider).watchUser(studentId),
     );
 
-/// Student [studentId]'s recordings of this teacher, newest first.
+/// Student [studentId]'s official recordings of this teacher, newest
+/// first (his practice is his own).
 final teacherStudentRecordingsProvider = StreamProvider.autoDispose
     .family<List<Recording>, String>(
       (ref, studentId) => ref
           .watch(recordingRepositoryProvider)
-          .watchForStudent(studentId, teacherId: _uid(ref)),
+          .watchForStudent(
+            studentId,
+            teacherId: _uid(ref),
+            type: RecordingType.official,
+          ),
     );

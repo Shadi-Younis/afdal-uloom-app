@@ -196,6 +196,22 @@ describe("writing feedback", () => {
     await assertFails(deleteDoc(doc(db, "recordings/r-s1/feedback/f1")));
   });
 
+  test("a practice is its student's own (Task 12): he still reads its old notes, nobody writes", async () => {
+    const path = "recordings/p-s1-reviewed/feedback/fp1";
+    await assertSucceeds(getDoc(doc(as(env, "s1", "student"), path)));
+    await assertSucceeds(
+      getDocs(query(collection(as(env, "s1", "student"), "recordings/p-s1-reviewed/feedback"), orderBy("createdAt"))),
+    );
+    for (const [uid, role] of [["t1", "teacher"], ["admin", "admin"]] as const) {
+      const db = as(env, uid, role);
+      await assertFails(getDoc(doc(db, path)));
+      await assertFails(addNote(db, "p-s1", note({ teacherId: uid })));
+      await assertFails(editNote(db, "p-s1-reviewed", "fp1", { note: "x" }));
+      await assertFails(deleteDoc(doc(db, path)));
+    }
+    await assertFails(addNote(as(env, "s1", "student"), "p-s1", note({ teacherId: "s1" })));
+  });
+
   test("admin deletes any note", async () => {
     await assertSucceeds(deleteDoc(doc(as(env, "admin", "admin"), "recordings/r-s1/feedback/f1")));
   });

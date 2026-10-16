@@ -36,29 +36,28 @@ class FakeRecordingRepository implements RecordingRepository {
   Stream<List<Recording>> watchForStudent(
     String studentId, {
     String? teacherId,
-  }) => _live(
-    () =>
-        recordings.values
-            .where(
-              (r) =>
-                  r.studentId == studentId &&
-                  (teacherId == null || r.teacherId == teacherId),
-            )
-            .toList()
-          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt)),
-  );
-
-  @override
-  Stream<List<Recording>> watchUnreviewed(
-    String teacherId, {
     RecordingType? type,
   }) => _live(
     () =>
         recordings.values
             .where(
               (r) =>
+                  r.studentId == studentId &&
+                  (teacherId == null || r.teacherId == teacherId) &&
+                  (type == null || r.type == type),
+            )
+            .toList()
+          ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt)),
+  );
+
+  @override
+  Stream<List<Recording>> watchUnreviewed(String teacherId) => _live(
+    () =>
+        recordings.values
+            .where(
+              (r) =>
                   r.teacherId == teacherId &&
-                  (type == null || r.type == type) &&
+                  r.type == RecordingType.official &&
                   !r.reviewed,
             )
             .toList()
@@ -73,7 +72,10 @@ class FakeRecordingRepository implements RecordingRepository {
     () =>
         recordings.values
             .where(
-              (r) => r.teacherId == teacherId && !r.recordedAt.isBefore(since),
+              (r) =>
+                  r.teacherId == teacherId &&
+                  r.type == RecordingType.official &&
+                  !r.recordedAt.isBefore(since),
             )
             .toList()
           ..sort((a, b) => b.recordedAt.compareTo(a.recordedAt)),

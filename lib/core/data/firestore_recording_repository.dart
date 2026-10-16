@@ -22,33 +22,29 @@ class FirestoreRecordingRepository implements RecordingRepository {
   Stream<List<Recording>> watchForStudent(
     String studentId, {
     String? teacherId,
+    RecordingType? type,
   }) {
     var query = _recordings.where(Fields.studentId, isEqualTo: studentId);
     if (teacherId != null) {
       query = query.where(Fields.teacherId, isEqualTo: teacherId);
     }
+    if (type != null) query = query.where(Fields.type, isEqualTo: type.value);
     return _watchList(query.orderBy(Fields.recordedAt, descending: true));
   }
 
   @override
-  Stream<List<Recording>> watchUnreviewed(
-    String teacherId, {
-    RecordingType? type,
-  }) {
-    var query = _recordings.where(Fields.teacherId, isEqualTo: teacherId);
-    if (type != null) query = query.where(Fields.type, isEqualTo: type.value);
-    return _watchList(
-      query.where(Fields.reviewed, isEqualTo: false).orderBy(Fields.createdAt),
-    );
-  }
+  Stream<List<Recording>> watchUnreviewed(String teacherId) => _watchList(
+    _official(teacherId)
+        .where(Fields.reviewed, isEqualTo: false)
+        .orderBy(Fields.createdAt),
+  );
 
   @override
   Stream<List<Recording>> watchForTeacherSince(
     String teacherId,
     DateTime since,
   ) => _watchList(
-    _recordings
-        .where(Fields.teacherId, isEqualTo: teacherId)
+    _official(teacherId)
         .where(
           Fields.recordedAt,
           isGreaterThanOrEqualTo: Timestamp.fromDate(since),
@@ -102,6 +98,12 @@ class FirestoreRecordingRepository implements RecordingRepository {
 
   @override
   Future<void> delete(String id) => guard(() => _doc(id).delete());
+
+  /// The official recordings of [teacherId]: the type filter lets rules
+  /// prove that no practice (its student's alone) is asked for.
+  Query<Map<String, dynamic>> _official(String teacherId) => _recordings
+      .where(Fields.teacherId, isEqualTo: teacherId)
+      .where(Fields.type, isEqualTo: RecordingType.official.value);
 
   Stream<List<Recording>> _watchList(Query<Map<String, dynamic>> query) =>
       guardStream(

@@ -159,8 +159,36 @@ void main() {
     expect(list.map((r) => r.id), ['mine']);
   });
 
+  test('watchForStudent with a type keeps only that type (Task 12: '
+      'teachers and admins ask for official only)', () async {
+    await seed(
+      build(id: 'official', recordedAt: DateTime(2026, 9, 2)),
+      createdAt: DateTime(2026, 9, 2),
+    );
+    await seed(
+      build(
+        id: 'practice',
+        type: RecordingType.practice,
+        recordedAt: DateTime(2026, 9, 3),
+      ),
+      createdAt: DateTime(2026, 9, 3),
+    );
+
+    final official = await repository
+        .watchForStudent('s1', teacherId: 't1', type: RecordingType.official)
+        .first;
+    expect(official.map((r) => r.id), ['official']);
+    final asAdmin = await repository
+        .watchForStudent('s1', type: RecordingType.official)
+        .first;
+    expect(asAdmin.map((r) => r.id), ['official']);
+    // The student himself: both.
+    final all = await repository.watchForStudent('s1').first;
+    expect(all.map((r) => r.id), ['practice', 'official']);
+  });
+
   test(
-    'watchUnreviewed: not reviewed, oldest createdAt first, of a type if given',
+    'watchUnreviewed: official, not reviewed, oldest createdAt first',
     () async {
       Future<void> practice(
         String id,
@@ -195,39 +223,36 @@ void main() {
         createdAt: DateTime(2026, 10, 2),
       );
 
-      final practiceQueue = await repository
-          .watchUnreviewed('t1', type: RecordingType.practice)
-          .first;
-      expect(practiceQueue.map((r) => r.id), ['p-old', 'p-new']);
-      final officialQueue = await repository
-          .watchUnreviewed('t1', type: RecordingType.official)
-          .first;
-      expect(officialQueue.map((r) => r.id), ['official']);
-      // No type: the whole queue of both kinds, oldest first.
+      // Practice is the student's own (Task 12): never in the queue.
       final queue = await repository.watchUnreviewed('t1').first;
-      expect(queue.map((r) => r.id), ['p-old', 'official', 'p-new']);
+      expect(queue.map((r) => r.id), ['official']);
     },
   );
 
-  test(
-    'watchForTeacherSince: that teacher, from that day, newest first',
-    () async {
-      Future<void> at(String id, DateTime day, {String teacherId = 't1'}) =>
-          seed(
-            build(id: id, teacherId: teacherId, recordedAt: day),
-            createdAt: day,
-          );
-      await at('before', DateTime(2026, 10, 9, 23));
-      await at('first', DateTime(2026, 10, 10));
-      await at('later', DateTime(2026, 10, 12, 16));
-      await at('other', DateTime(2026, 10, 12), teacherId: 't2');
+  test('watchForTeacherSince: that teacher\'s official ones, from that day, '
+      'newest first', () async {
+    Future<void> at(String id, DateTime day, {String teacherId = 't1'}) => seed(
+      build(id: id, teacherId: teacherId, recordedAt: day),
+      createdAt: day,
+    );
+    await at('before', DateTime(2026, 10, 9, 23));
+    await at('first', DateTime(2026, 10, 10));
+    await at('later', DateTime(2026, 10, 12, 16));
+    await at('other', DateTime(2026, 10, 12), teacherId: 't2');
+    await seed(
+      build(
+        id: 'practice',
+        type: RecordingType.practice,
+        recordedAt: DateTime(2026, 10, 11),
+      ),
+      createdAt: DateTime(2026, 10, 11),
+    );
 
-      final week = await repository
-          .watchForTeacherSince('t1', DateTime(2026, 10, 10))
-          .first;
-      expect(week.map((r) => r.id), ['later', 'first']);
-    },
-  );
+    final week = await repository
+        .watchForTeacherSince('t1', DateTime(2026, 10, 10))
+        .first;
+    expect(week.map((r) => r.id), ['later', 'first']);
+  });
 
   test('setSurahAndAyat: sets them, and removes the empty ones', () async {
     await seed(

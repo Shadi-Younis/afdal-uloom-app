@@ -67,10 +67,20 @@ service firebase.storage {
         return isPlaybackName() && recording().studentId == studentId;
       }
 
+      // A practice is its student's own (Task 12): not even an admin.
+      function isPractice() {
+        return firestore.exists(recordingPath()) && recording().type == 'practice';
+      }
+
+      // Admins read every file but a practice's (stems and files no
+      // document points at too); an official recording's teacher and the
+      // recording's student read its file and its centred copy.
       allow read: if request.auth != null
-        && (role() == 'admin'
+        && ((role() == 'admin' && !isPractice())
             || ((isRecordingFile() || isPlaybackFile())
-                && ((role() == 'teacher' && recording().teacherId == request.auth.uid)
+                && ((role() == 'teacher'
+                     && recording().type == 'official'
+                     && recording().teacherId == request.auth.uid)
                     || recording().studentId == request.auth.uid)));
 
       // The flow (RecordingRepository): create the document, then upload

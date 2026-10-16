@@ -13,11 +13,12 @@ import '../../../../core/widgets/common/confirm_dialog.dart';
 import '../../../../core/widgets/common/recording_player.dart';
 import '../../application/practice_recorder_controller.dart';
 import 'practice_notice.dart';
+import 'practice_private_note.dart';
 import 'practice_send_failure.dart';
 
 /// The finished take: listen to it with the app's player, then
 /// «إعادة التسجيل» (after confirming: it is thrown away) or
-/// «إرسال للشيخ» ([onSend]).
+/// «حفظ» ([onSend]).
 class PracticeTakeCard extends ConsumerWidget {
   const PracticeTakeCard({
     super.key,
@@ -83,12 +84,13 @@ class PracticeTakeCard extends ConsumerWidget {
             Expanded(
               child: FilledButton.icon(
                 onPressed: onSend,
-                icon: const Icon(Icons.send),
-                label: const Text(AppStrings.sendToSheikh),
+                icon: const Icon(Icons.save_alt),
+                label: const Text(AppStrings.savePractice),
               ),
             ),
           ],
         ),
+        const PracticePrivateNote(),
       ],
     );
   }

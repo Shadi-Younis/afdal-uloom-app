@@ -191,7 +191,7 @@ void main() {
     await tester.tap(find.text('حذف التدريب'));
     await tester.pumpAndSettle();
     expect(
-      find.text('سيُحذف هذا التدريب نهائياً ولن يصل إلى الشيخ.'),
+      find.text('سيُحذف هذا التدريب نهائياً.'),
       findsOneWidget,
     );
     await tester.tap(find.widgetWithText(FilledButton, 'حذف التدريب'));

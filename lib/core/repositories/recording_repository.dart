@@ -15,30 +15,30 @@ import '../models/recording_type.dart';
 ///
 /// Every method throws [AppException]; streams emit it as an error event.
 abstract class RecordingRepository {
-  /// The recordings of [studentId], newest `recordedAt` first.
+  /// The recordings of [studentId], newest `recordedAt` first; only those
+  /// of [type] when given.
   ///
-  /// Allowed for: the student themself and admins (pass no [teacherId]).
-  /// A teacher MUST pass their own uid as [teacherId]: the query then only
-  /// asks for recordings of that teacher, which security rules require
-  /// (rules are not filters; without it the whole query is denied).
+  /// Allowed for: the student themself (every type: his practice is his
+  /// own). Admins MUST pass [RecordingType.official]: a practice is
+  /// readable only by its student, and rules are not filters (without it
+  /// the whole query is denied). A teacher MUST also pass their own uid as
+  /// [teacherId]: the query then only asks for recordings of that teacher.
   Stream<List<Recording>> watchForStudent(
     String studentId, {
     String? teacherId,
-  });
-
-  /// The recordings of [teacherId] that are not reviewed yet, oldest
-  /// `createdAt` first (the review queue «بانتظار المراجعة»): official ones
-  /// whose voice markers the sheikh has not checked, practice ones not
-  /// listened to. Only those of [type] when given.
-  ///
-  /// Allowed for: the teacher themself and admins.
-  Stream<List<Recording>> watchUnreviewed(
-    String teacherId, {
     RecordingType? type,
   });
 
-  /// The recordings of [teacherId] recorded at [since] or later, newest
-  /// `recordedAt` first.
+  /// The official recordings of [teacherId] that are not reviewed yet,
+  /// oldest `createdAt` first (the review queue «بانتظار المراجعة»): their
+  /// voice markers wait for the sheikh. Practice recordings are the
+  /// student's own and never in it.
+  ///
+  /// Allowed for: the teacher themself and admins.
+  Stream<List<Recording>> watchUnreviewed(String teacherId);
+
+  /// The official recordings of [teacherId] recorded at [since] or later,
+  /// newest `recordedAt` first.
   ///
   /// Allowed for: the teacher themself and admins.
   Stream<List<Recording>> watchForTeacherSince(
@@ -49,12 +49,14 @@ abstract class RecordingRepository {
   /// The recording [id], then every change; null once it does not exist
   /// (only when the server confirms it, never from the offline cache).
   ///
-  /// Allowed for: an admin, its teacher and its student.
+  /// Allowed for: its student; an official one also its teacher and
+  /// admins.
   Stream<Recording?> watch(String id);
 
   /// The recording [id], or null if it does not exist.
   ///
-  /// Allowed for: an admin, its teacher and its student.
+  /// Allowed for: its student; an official one also its teacher and
+  /// admins.
   Future<Recording?> get(String id);
 
   /// A fresh document id. Needed before the upload, because the Storage
@@ -75,11 +77,12 @@ abstract class RecordingRepository {
 
   /// Sets `unreadFeedback` to false after the student opened the notes.
   ///
-  /// Allowed for: the student of the recording (also its teacher and
-  /// admins).
+  /// Allowed for: the student of the recording (also, for an official
+  /// one, its teacher and admins).
   Future<void> markFeedbackRead(String id);
 
-  /// Sets `reviewed` («تمت المراجعة»), both ways.
+  /// Sets `reviewed` («تمت المراجعة») of an official recording, both
+  /// ways.
   ///
   /// Allowed for: the teacher of the recording and admins.
   Future<void> setReviewed(String id, {required bool reviewed});
@@ -101,7 +104,7 @@ abstract class RecordingRepository {
   /// Deletes the document only. The audio file and the feedback
   /// subcollection are cleaned up by a Cloud Function (onRecordingDeleted).
   ///
-  /// Allowed for: the teacher of the recording and admins, and its student
-  /// for a practice recording that is not reviewed yet («حذف التدريب»).
+  /// Allowed for: an official recording's teacher and admins («حذف
+  /// التسجيل»), a practice's student, at any time («حذف التدريب»).
   Future<void> delete(String id);
 }

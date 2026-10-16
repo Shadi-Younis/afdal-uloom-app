@@ -10,6 +10,8 @@
 // server into st-s1.mp3). On r-s1: a written note f1 by t1 (written before
 // Task 09, so without kind, and before Task 12, so with a rating), a voice
 // marker v1 (the server's, author t1) and a note f-old by a former teacher.
+// On p-s1-reviewed: a note fp1 by t1, written while teachers still reviewed
+// practice (before Task 12).
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
@@ -175,6 +177,10 @@ export async function seedFixtures(env: RulesTestEnvironment): Promise<void> {
           endSecond: 91,
           createdAt: created,
         },
+      ],
+      [
+        "recordings/p-s1-reviewed/feedback/fp1",
+        { teacherId: "t1", kind: "text", note: "أحسنت", atSecond: 3, createdAt: created },
       ],
       [
         "recordings/r-s1/feedback/f-old",

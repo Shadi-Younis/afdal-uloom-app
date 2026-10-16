@@ -9,10 +9,11 @@ import '../../../../core/utils/file_size.dart';
 import '../../../../core/widgets/islamic/app_card.dart';
 import '../../application/practice_submit_controller.dart';
 import 'practice_notice.dart';
+import 'practice_private_note.dart';
 import 'practice_send_failure.dart';
 
 /// A file picked instead of recording: its name and size, why it cannot be
-/// sent (type, size), «إلغاء اختيار الملف» and «إرسال للشيخ» ([onSend]).
+/// sent (type, size), «إلغاء اختيار الملف» and «حفظ» ([onSend]).
 class PracticeFileCard extends ConsumerWidget {
   const PracticeFileCard({super.key, required this.file, required this.onSend});
 
@@ -64,12 +65,13 @@ class PracticeFileCard extends ConsumerWidget {
               Expanded(
                 child: FilledButton.icon(
                   onPressed: problem == null ? onSend : null,
-                  icon: const Icon(Icons.send),
-                  label: const Text(AppStrings.sendToSheikh),
+                  icon: const Icon(Icons.save_alt),
+                  label: const Text(AppStrings.savePractice),
                 ),
               ),
             ],
           ),
+          const PracticePrivateNote(),
         ],
       ),
     );

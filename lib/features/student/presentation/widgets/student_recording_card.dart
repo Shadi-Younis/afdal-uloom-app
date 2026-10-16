@@ -19,8 +19,8 @@ import '../../../../core/widgets/islamic/app_card.dart';
 import '../../../../core/widgets/islamic/surah_cartouche.dart';
 
 /// One recording in the student's list: the surah in a small cartouche
-/// («تسجيل» and the date without one), the ayat when given, then the date (and «الشيخ محمود» when the sheikh uploaded
-/// it), the type, a gold dot with «ملاحظات جديدة» while notes are unread,
+/// («تسجيل» and the date without one), the ayat when given, then the date
+/// (and «الشيخ محمود» when the sheikh uploaded it), the type, a gold dot with «ملاحظات جديدة» while notes are unread,
 /// how many notes it has, and «تمت المراجعة» once reviewed. A tap opens it
 /// (push: back returns to the list).
 class StudentRecordingCard extends ConsumerWidget {

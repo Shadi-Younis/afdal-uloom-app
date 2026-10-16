@@ -100,17 +100,20 @@ abstract final class AppStrings {
 
   /// [minutes] arrives in Arabic-Indic digits.
   static String recordingLimitReached(String minutes) =>
-      'وصل التسجيل إلى حدّه ($minutes دقيقة) فتوقف. استمع إليه ثم أرسله.';
+      'وصل التسجيل إلى حدّه ($minutes دقيقة) فتوقف. استمع إليه ثم احفظه.';
   static const yourRecording = 'تسجيلك';
   static const recordAgain = 'إعادة التسجيل';
-  static const recordAgainMessage = 'سيُحذف هذا التسجيل ولن يُرسل للشيخ.';
-  static const sendToSheikh = 'إرسال للشيخ';
+  static const recordAgainMessage = 'سيُحذف هذا التسجيل ولن يُحفظ.';
+
+  // A practice is the student's own (Task 12): saved, not sent.
+  static const savePractice = 'حفظ';
+  static const practicePrivate = 'يُحفظ التدريب عندك فقط';
   static const pickExistingFile = 'اختيار ملف';
-  static const orPickFile = 'أو أرسل ملفاً صوتياً موجوداً على جهازك';
+  static const orPickFile = 'أو احفظ ملفاً صوتياً من جهازك';
   static const removePickedFile = 'إلغاء اختيار الملف';
   static const completeTheAyat = 'اختر السورة والآيات أولاً';
-  static const practiceSent = 'وصل تدريبك إلى الشيخ';
-  static const sending = 'جارٍ الإرسال';
+  static const practiceSaved = 'تم حفظ التدريب';
+  static const saving = 'جارٍ الحفظ';
   static const microphoneDenied =
       'لا يستطيع التطبيق استخدام الميكروفون. '
       'اسمح له بالميكروفون من إعدادات الهاتف، ثم عد إلى هنا.';
@@ -118,16 +121,15 @@ abstract final class AppStrings {
       'المتصفح منع الميكروفون عن هذا الموقع. '
       'اسمح به من إعدادات الموقع (رمز القفل بجانب العنوان)، ثم أعد المحاولة.';
   static const openSettings = 'فتح الإعدادات';
-  static const leaveRecordingTitle = 'التدريب لم يُرسل';
+  static const leaveRecordingTitle = 'التدريب لم يُحفظ';
   static const leaveRecordingMessage =
-      'إذا خرجت الآن يضيع هذا التسجيل ولا يصل إلى الشيخ.';
+      'إذا خرجت الآن يضيع هذا التسجيل ولا يُحفظ.';
   static const leaveSendingMessage =
-      'إذا خرجت الآن يتوقف الإرسال ولا يصل التدريب إلى الشيخ.';
+      'إذا خرجت الآن يتوقف الحفظ ولا يُحفظ التدريب.';
 
   // Deleting a practice recording (the student)
   static const deletePractice = 'حذف التدريب';
-  static const deletePracticeMessage =
-      'سيُحذف هذا التدريب نهائياً ولن يصل إلى الشيخ.';
+  static const deletePracticeMessage = 'سيُحذف هذا التدريب نهائياً.';
   static const practiceDeleted = 'تم حذف التدريب';
 
   // Deleting an official recording (its teacher, admins)
@@ -404,7 +406,7 @@ abstract final class AppStrings {
 
   /// [count] arrives in Arabic-Indic digits.
   static String recordingsToDelete(String count) =>
-      'عدد التسجيلات التي ستُحذف: $count';
+      'عدد التسجيلات الرسمية التي ستُحذف: $count، وتُحذف تدريباته أيضاً';
   static String typeCodeToConfirm(String code) =>
       'للتأكيد، اكتب رقم الطالب: $code';
   static const studentDeleted = 'تم حذف الطالب نهائياً';

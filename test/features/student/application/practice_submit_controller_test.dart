@@ -101,7 +101,7 @@ void main() {
     expect(fixture.school.recordings.created, isEmpty);
   });
 
-  test('«إرسال للشيخ»: a practice of his halaqa, unreviewed, uploaded with '
+  test('«حفظ»: a practice of his halaqa, unreviewed, uploaded with '
       'progress; then the take is freed', () async {
     chooseFatiha();
     await recordTake();

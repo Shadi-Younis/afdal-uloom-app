@@ -9,12 +9,12 @@ class TeacherOverview {
   /// Active students in the teacher's halaqat («طلابي»).
   final int students;
 
-  /// Recordings of the teacher's students recorded since the start of the
-  /// school week («تسجيلات هذا الأسبوع»).
+  /// Official recordings of the teacher's students recorded since the
+  /// start of the school week («تسجيلات هذا الأسبوع»).
   final int thisWeek;
 
-  /// Recordings the teacher has not reviewed yet («بانتظار المراجعة»):
-  /// official ones (their voice markers) and practice ones.
+  /// Official recordings whose voice markers the teacher has not reviewed
+  /// yet («بانتظار المراجعة»).
   final int pendingReview;
 
   @override
