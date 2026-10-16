@@ -206,6 +206,9 @@ void main() {
   ) async {
     usePhoneSize(tester);
     await pumpStudent(tester);
+    // Below «حديث اليوم» and the counts on a phone.
+    await tester.ensureVisible(find.text('سورة الإخلاص'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('سورة الإخلاص'));
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/recording/rec-30');

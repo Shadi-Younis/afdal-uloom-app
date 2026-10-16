@@ -10,11 +10,12 @@ import '../../../core/widgets/islamic/home_header.dart';
 import '../../../core/widgets/islamic/islamic_pattern_background.dart';
 import '../../../core/widgets/islamic/ornament_divider.dart';
 import '../../../core/widgets/islamic/ornate_header.dart';
+import '../../../core/widgets/islamic/todays_hadith_card.dart';
 import 'widgets/teacher_halaqat_list.dart';
 import 'widgets/teacher_overview_cards.dart';
 
 /// The teacher's home: the green header with the Hijri date and greeting,
-/// the three counts overlapping it, «رفع تسجيلات», and «حلقاتي». Android
+/// «حديث اليوم» overlapping it, the three counts, «رفع تسجيلات», and «حلقاتي». Android
 /// back asks before leaving the app.
 class TeacherHomeScreen extends StatelessWidget {
   const TeacherHomeScreen({super.key});
@@ -40,6 +41,8 @@ class TeacherHomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          const TodaysHadithCard(),
+                          const SizedBox(height: AppSizes.spaceM),
                           const TeacherOverviewCards(),
                           const SizedBox(height: AppSizes.spaceM),
                           FilledButton.icon(

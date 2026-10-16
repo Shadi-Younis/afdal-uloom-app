@@ -7,11 +7,12 @@ import '../../../core/widgets/islamic/islamic_pattern_background.dart';
 import '../../../core/widgets/islamic/ornament_divider.dart';
 import '../../../core/widgets/islamic/ornate_header.dart';
 import '../../../core/widgets/common/content_width.dart';
+import '../../../core/widgets/islamic/todays_hadith_card.dart';
 import 'widgets/home_shortcuts.dart';
 import 'widgets/overview_cards.dart';
 
 /// The admin's home: the green header with the Hijri date and greeting,
-/// the school's counts overlapping it, and shortcuts to the most common
+/// «حديث اليوم» overlapping it, the school's counts, and shortcuts to the most common
 /// tasks.
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
@@ -36,6 +37,8 @@ class AdminHomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        TodaysHadithCard(),
+                        SizedBox(height: AppSizes.spaceM),
                         OverviewCards(),
                         SizedBox(height: AppSizes.spaceS),
                         OrnamentDivider(title: AppStrings.shortcutsTitle),

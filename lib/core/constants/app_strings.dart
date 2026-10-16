@@ -18,6 +18,15 @@ abstract final class AppStrings {
   // Ornamental texts (Amiri).
   static const basmala = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
   static const hadith = '«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»';
+
+  // «حديث اليوم» (the hadiths themselves: DailyHadiths)
+  static const dailyHadithTitle = 'حديث اليوم';
+  static const prophetSaid = 'قال رسول الله ﷺ:';
+
+  /// Arabic quotation marks around a hadith. Never ﴿ ﴾: those are for
+  /// verses of the Quran.
+  static const quoteOpen = '«';
+  static const quoteClose = '»';
   static const salam = 'السلام عليكم ورحمة الله';
 
   /// Android back on a home screen; a second press within 2 s exits.

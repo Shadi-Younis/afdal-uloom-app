@@ -62,6 +62,10 @@ void main() {
     expect(find.text('إضافة معلم'), findsOneWidget);
     expect(find.text('إنشاء حلقة'), findsOneWidget);
     expect(tester.takeException(), isNull);
+    // Under «حديث اليوم» and the counts (Task 12): one scroll away, clear
+    // of the bottom bar.
+    await tester.ensureVisible(find.text('إنشاء حلقة'));
+    await tester.pumpAndSettle();
     expect(
       tester.getRect(find.text('إنشاء حلقة')).bottom,
       lessThan(640 - kBottomNavigationBarHeight),
