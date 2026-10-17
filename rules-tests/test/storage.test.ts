@@ -51,6 +51,12 @@ describe("read", () => {
     await assertSucceeds(read(as("s1", "student"), P_S1));
   });
 
+  test("a practice file is its student's alone (Task 12): not the teacher, not the admin", async () => {
+    await assertFails(read(as("t1", "teacher"), P_S1));
+    await assertFails(read(as("admin", "admin"), P_S1));
+    await assertFails(read(as("s2", "student"), P_S1));
+  });
+
   test("another student is denied", async () => {
     await assertFails(read(as("s2", "student"), R_S1));
     await assertFails(read(as("s3", "student"), P_S1));
@@ -58,7 +64,6 @@ describe("read", () => {
 
   test("the teacher of the halaqa reads, another teacher is denied", async () => {
     await assertSucceeds(read(as("t1", "teacher"), R_S1));
-    await assertSucceeds(read(as("t1", "teacher"), P_S1));
     await assertFails(read(as("t2", "teacher"), R_S1));
     await assertSucceeds(read(as("t2", "teacher"), R_S3));
   });
@@ -67,7 +72,7 @@ describe("read", () => {
     await assertFails(read(as("t1", "student"), R_S1));
   });
 
-  test("the admin reads every file", async () => {
+  test("the admin reads every official file", async () => {
     await assertSucceeds(read(as("admin", "admin"), R_S1));
     await assertSucceeds(read(as("admin", "admin"), R_S3));
   });

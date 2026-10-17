@@ -27,7 +27,7 @@ class PracticeSubmitState {
   /// Why [file] cannot be sent (type, size).
   final AppErrorCode? fileProblem;
 
-  /// «إرسال للشيخ» was pressed without valid ayat.
+  /// «حفظ» was pressed without valid ayat.
   final bool showAyatProblem;
 
   /// Sending could not even start (e.g. the student has no halaqa).

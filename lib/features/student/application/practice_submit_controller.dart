@@ -14,7 +14,7 @@ import 'practice_recorder_controller.dart';
 import 'practice_submit_state.dart';
 
 /// The sending side of «سجّل تدريباً»: the surah and ayat, a file picked
-/// instead of recording («اختيار ملف»), and «إرسال للشيخ», which uploads
+/// instead of recording («اختيار ملف»), and «حفظ», which uploads
 /// the take (or the file) through RecordingUploadController as a practice
 /// of the student's halaqa: `type: practice`, not reviewed, no unread
 /// feedback (firestore.rules: isStudentPractice). Progress, cancel and
@@ -47,7 +47,7 @@ class PracticeSubmitController extends Notifier<PracticeSubmitState> {
   void clearFile() =>
       state = state.copyWith(file: () => null, fileProblem: () => null);
 
-  /// «إرسال للشيخ»: the new recording's id once it reached the sheikh, or
+  /// «حفظ»: the new practice's id once it is saved (his own), or
   /// null when it was refused, failed or was cancelled (the reason is in
   /// this state, or in the upload's). Sends the picked file if there is
   /// one, otherwise the recorder's take.

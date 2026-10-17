@@ -125,7 +125,9 @@ export function expectMarkersAt(markers: Array<Record<string, unknown>>, expecte
     expect(marker.atSecond).toBeLessThanOrEqual(Math.floor(start + 0.5));
     expect(marker.endSecond).toBeGreaterThanOrEqual(Math.round(place.end - 0.5));
     expect(marker.endSecond).toBeLessThanOrEqual(Math.round(place.end + 0.5));
-    expect(marker).toMatchObject({teacherId: "t1", note: "", rating: null});
+    expect(marker).toMatchObject({teacherId: "t1", note: ""});
+    // The stars are gone (Task 12): markers carry no rating.
+    expect(marker).not.toHaveProperty("rating");
     expect(marker.createdAt).toBeInstanceOf(Timestamp);
   });
 }

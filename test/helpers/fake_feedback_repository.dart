@@ -22,8 +22,7 @@ class FakeFeedbackRepository implements FeedbackRepository {
   void Function(String recordingId)? onUnread;
 
   final added = <(String recordingId, FeedbackNote note)>[];
-  final updated =
-      <(String recordingId, String feedbackId, String note, int? rating)>[];
+  final updated = <(String recordingId, String feedbackId, String note)>[];
   final deleted = <(String recordingId, String feedbackId)>[];
 
   var _nextId = 0;
@@ -64,26 +63,13 @@ class FakeFeedbackRepository implements FeedbackRepository {
     String recordingId,
     String feedbackId, {
     required String note,
-    int? rating,
   }) async {
     await _beforeWrite();
-    updated.add((recordingId, feedbackId, note, rating));
+    updated.add((recordingId, feedbackId, note));
     final list = notes[recordingId] ?? [];
     final index = list.indexWhere((n) => n.id == feedbackId);
     if (index >= 0) {
-      final old = list[index];
-      // copyWith cannot clear the rating; build the note again.
-      list[index] = FeedbackNote(
-        id: old.id,
-        teacherId: old.teacherId,
-        note: note,
-        kind: old.kind,
-        atSecond: old.atSecond,
-        endSecond: old.endSecond,
-        rating: rating,
-        createdAt: old.createdAt,
-        updatedAt: now,
-      );
+      list[index] = list[index].copyWith(note: note, updatedAt: now);
     }
     onUnread?.call(recordingId);
     _changed.add(null);

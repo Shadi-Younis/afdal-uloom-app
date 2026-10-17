@@ -44,7 +44,6 @@ class FirestoreFeedbackRepository implements FeedbackRepository {
           Fields.note: note.note,
           Fields.kind: FeedbackKind.text.value,
           Fields.atSecond: note.atSecond,
-          Fields.rating: note.rating,
           Fields.createdAt: FieldValue.serverTimestamp(),
         });
       _markUnread(batch, recordingId);
@@ -57,12 +56,10 @@ class FirestoreFeedbackRepository implements FeedbackRepository {
     String recordingId,
     String feedbackId, {
     required String note,
-    int? rating,
   }) => guard(() {
     final batch = _db.batch()
       ..update(_notes(recordingId).doc(feedbackId), {
         Fields.note: note,
-        Fields.rating: rating,
         Fields.updatedAt: FieldValue.serverTimestamp(),
       });
     _markUnread(batch, recordingId);

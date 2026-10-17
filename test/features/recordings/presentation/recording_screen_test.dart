@@ -89,9 +89,10 @@ void main() {
     );
     expect(find.text('الشيخ محمود · ٩ سبتمبر ٢٠٢٦'), findsOneWidget);
     expect(find.text('عند ٠٠:١٢'), findsOneWidget);
-    expect(find.bySemanticsLabel('التقييم: ٤ من ٥'), findsOneWidget);
-    expect(find.byIcon(Icons.star), findsNWidgets(4));
-    expect(find.byIcon(Icons.star_border), findsOneWidget);
+    // No stars any more (Task 12).
+    expect(find.bySemanticsLabel(RegExp('التقييم')), findsNothing);
+    expect(find.byIcon(Icons.star), findsNothing);
+    expect(find.byIcon(Icons.star_border), findsNothing);
     expect(tester.takeException(), isNull);
     semantics.dispose();
   });

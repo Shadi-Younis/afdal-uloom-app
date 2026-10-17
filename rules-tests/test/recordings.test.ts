@@ -2,6 +2,7 @@ import { assertFails, assertSucceeds, type RulesTestEnvironment } from "@firebas
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -137,14 +138,23 @@ describe("student s1", () => {
     await assertFails(deleteDoc(doc(as(env, "s1", "student"), "recordings/r-s1")));
   });
 
-  test("deletes own practice recording while not reviewed («حذف التدريب»)", async () => {
-    await assertSucceeds(deleteDoc(doc(as(env, "s1", "student"), "recordings/p-s1")));
+  test("deletes own practice at any time, also once reviewed («حذف التدريب», Task 12)", async () => {
+    const db = as(env, "s1", "student");
+    await assertSucceeds(deleteDoc(doc(db, "recordings/p-s1")));
+    await assertSucceeds(deleteDoc(doc(db, "recordings/p-s1-reviewed")));
   });
 
-  test("cannot delete own practice once reviewed, or another student's practice", async () => {
+  test("cannot delete another student's practice", async () => {
+    await assertFails(deleteDoc(doc(as(env, "s1", "student"), "recordings/p-s2")));
+  });
+
+  test("lists own practice and official recordings alike", async () => {
     const db = as(env, "s1", "student");
-    await assertFails(deleteDoc(doc(db, "recordings/p-s1-reviewed")));
-    await assertFails(deleteDoc(doc(db, "recordings/p-s2")));
+    const mine = await assertSucceeds(
+      getDocs(query(collection(db, "recordings"), where("studentId", "==", "s1"), orderBy("recordedAt", "desc"))),
+    );
+    expect(mine.docs.map((d) => d.id)).toEqual(expect.arrayContaining(["p-s1", "p-s1-reviewed", "r-s1"]));
+    await assertSucceeds(getDoc(doc(db, "recordings/p-s1")));
   });
 
   test("a student claim is required: s1's uid with another role cannot delete it", async () => {
@@ -153,16 +163,20 @@ describe("student s1", () => {
 });
 
 describe("teacher t1", () => {
-  test("lists a student's recordings only with own teacherId filter", async () => {
+  test("lists a student's recordings only with own teacherId and the official type", async () => {
     const db = as(env, "t1", "teacher");
     const base = [where("studentId", "==", "s1"), orderBy("recordedAt", "desc")] as const;
-    await assertSucceeds(
-      getDocs(query(collection(db, "recordings"), where("teacherId", "==", "t1"), ...base)),
+    const official = where("type", "==", "official");
+    const own = await assertSucceeds(
+      getDocs(query(collection(db, "recordings"), where("teacherId", "==", "t1"), official, ...base)),
     );
-    await assertFails(getDocs(query(collection(db, "recordings"), ...base)));
+    expect(own.docs.map((d) => d.id).sort()).toEqual(["r-s1", "st-s1"]);
+    await assertFails(getDocs(query(collection(db, "recordings"), official, ...base)));
+    // Without the type filter the query could return his practice: denied.
+    await assertFails(getDocs(query(collection(db, "recordings"), where("teacherId", "==", "t1"), ...base)));
   });
 
-  test("lists own unreviewed recordings of either type (watchUnreviewed), not t2's", async () => {
+  test("lists own unreviewed official recordings (watchUnreviewed), not t2's, never practice", async () => {
     const db = as(env, "t1", "teacher");
     const pending = (teacherId: string, type: string) =>
       query(
@@ -172,42 +186,47 @@ describe("teacher t1", () => {
         where("reviewed", "==", false),
         orderBy("createdAt"),
       );
-    await assertSucceeds(getDocs(pending("t1", "practice")));
     await assertSucceeds(getDocs(pending("t1", "official")));
+    await assertFails(getDocs(pending("t1", "practice")));
     await assertFails(getDocs(pending("t2", "official")));
+    // The queue without a type (Task 10) is denied now.
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, "recordings"),
+          where("teacherId", "==", "t1"),
+          where("reviewed", "==", false),
+          orderBy("createdAt"),
+        ),
+      ),
+    );
   });
 
-  test("lists the whole review queue, both types (Task 10), not t2's", async () => {
+  test("a practice is its student's own (Task 12): no read, review or delete", async () => {
     const db = as(env, "t1", "teacher");
-    const queue = (teacherId: string) =>
+    // p-s1 carries teacherId t1, as moveStudent and changeHalaqaTeacher
+    // keep it: it grants nothing.
+    await assertFails(getDoc(doc(db, "recordings/p-s1")));
+    await assertFails(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
+    await assertFails(updateDoc(doc(db, "recordings/p-s1"), { unreadFeedback: true }));
+    await assertFails(deleteDoc(doc(db, "recordings/p-s1-reviewed")));
+    await assertFails(deleteDoc(doc(db, "recordings/p-s2")));
+  });
+
+  test("lists own official recordings of this week (watchForTeacherSince), not t2's", async () => {
+    const db = as(env, "t1", "teacher");
+    const since = (teacherId: string, ...type: ReturnType<typeof where>[]) =>
       query(
         collection(db, "recordings"),
         where("teacherId", "==", teacherId),
-        where("reviewed", "==", false),
-        orderBy("createdAt"),
-      );
-    const own = await assertSucceeds(getDocs(queue("t1")));
-    expect(own.docs.map((d) => d.id).sort()).toEqual(["p-s1", "p-s2"]);
-    await assertFails(getDocs(queue("t2")));
-  });
-
-  test("deletes a practice recording of its halaqa, reviewed or not", async () => {
-    const db = as(env, "t1", "teacher");
-    await assertSucceeds(deleteDoc(doc(db, "recordings/p-s1-reviewed")));
-    await assertSucceeds(deleteDoc(doc(db, "recordings/p-s2")));
-  });
-
-  test("lists own recordings of this week (watchForTeacherSince), not t2's", async () => {
-    const db = as(env, "t1", "teacher");
-    const since = (teacherId: string) =>
-      query(
-        collection(db, "recordings"),
-        where("teacherId", "==", teacherId),
+        ...type,
         where("recordedAt", ">=", Timestamp.fromDate(new Date("2026-10-10T00:00:00Z"))),
         orderBy("recordedAt", "desc"),
       );
-    await assertSucceeds(getDocs(since("t1")));
-    await assertFails(getDocs(since("t2")));
+    const official = where("type", "==", "official");
+    await assertSucceeds(getDocs(since("t1", official)));
+    await assertFails(getDocs(since("t2", official)));
+    await assertFails(getDocs(since("t1")));
   });
 
   test("cannot create practice, or an official recording marked reviewed", async () => {
@@ -218,10 +237,10 @@ describe("teacher t1", () => {
 
   test("toggles reviewed both ways, but cannot change other fields", async () => {
     const db = as(env, "t1", "teacher");
-    await assertSucceeds(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
     await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false }));
     await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: true }));
-    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { durationSec: 3 }));
+    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false, surahNumber: 3 }));
     await assertFails(updateDoc(doc(db, "recordings/r-s3"), { reviewed: true }));
   });
 
@@ -262,6 +281,118 @@ describe("official uploads (Task 09)", () => {
     await assertSucceeds(
       create(as(env, "admin", "admin"), "n1", official("n1", { ...forS3, storagePath: "recordings/s3/n1.mp3" })),
     );
+  });
+});
+
+describe("optional surah and ayat (Task 12)", () => {
+  /** official() without some of the three fields. */
+  const without = (id: string, keys: string[], over: Record<string, unknown> = {}) => {
+    const data = official(id, over);
+    for (const key of keys) delete data[key];
+    return data;
+  };
+
+  test("an official upload may leave out all three, or the ayat", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertSucceeds(create(t1, "n1", without("n1", ["surahNumber", "ayahFrom", "ayahTo"])));
+    await assertSucceeds(create(t1, "n2", without("n2", ["ayahFrom", "ayahTo"])));
+    // Null is the same as absent.
+    await assertSucceeds(create(t1, "n3", official("n3", { surahNumber: null, ayahFrom: null, ayahTo: null })));
+    await assertSucceeds(create(t1, "n4", official("n4", { ayahFrom: null, ayahTo: null })));
+    const admin = as(env, "admin", "admin");
+    await assertSucceeds(
+      create(admin, "n5", without("n5", ["surahNumber", "ayahFrom", "ayahTo"], { uploadedBy: "admin" })),
+    );
+  });
+
+  test("ayat without a surah, one ayah alone, or from > to are refused", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertFails(create(t1, "n1", without("n1", ["surahNumber"])));
+    await assertFails(create(t1, "n1", official("n1", { surahNumber: null })));
+    await assertFails(create(t1, "n1", without("n1", ["ayahTo"])));
+    await assertFails(create(t1, "n1", without("n1", ["ayahFrom"])));
+    await assertFails(create(t1, "n1", without("n1", ["surahNumber", "ayahTo"])));
+    await assertFails(create(t1, "n1", official("n1", { ayahFrom: 21, ayahTo: 20 })));
+    await assertFails(create(t1, "n1", official("n1", { ayahFrom: 0 })));
+    await assertFails(create(t1, "n1", without("n1", ["ayahFrom", "ayahTo"], { surahNumber: 115 })));
+    await assertFails(create(t1, "n1", without("n1", ["ayahFrom", "ayahTo"], { surahNumber: "2" })));
+  });
+
+  test("a two-file recording may leave them out too", async () => {
+    const stems = {
+      source: "stems",
+      stemPaths: { student: "recordings/s1/n1.student.wav", sheikh: "recordings/s1/n1.sheikh.mp3" },
+    };
+    await assertSucceeds(
+      create(as(env, "t1", "teacher"), "n1", without("n1", ["surahNumber", "ayahFrom", "ayahTo"], stems)),
+    );
+  });
+
+  test("a practice still says what it is: all three required", async () => {
+    const s1 = as(env, "s1", "student");
+    const bare = practice("n1");
+    for (const keys of [["surahNumber", "ayahFrom", "ayahTo"], ["ayahFrom", "ayahTo"], ["ayahTo"]]) {
+      const data = { ...bare };
+      for (const key of keys) delete data[key];
+      await assertFails(create(s1, "n1", data));
+    }
+    await assertFails(create(s1, "n1", practice("n1", { ayahFrom: null, ayahTo: null })));
+    await assertSucceeds(create(s1, "n1", bare));
+  });
+
+  test("the teacher and the admin fill, change or clear them later", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 3, ayahFrom: 5, ayahTo: 9 }));
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { ayahFrom: null, ayahTo: null }));
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: deleteField() }));
+    await assertSucceeds(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 112, ayahFrom: 1, ayahTo: 4 }));
+    const admin = as(env, "admin", "admin");
+    await assertSucceeds(
+      updateDoc(doc(admin, "recordings/r-s3"), {
+        surahNumber: deleteField(),
+        ayahFrom: deleteField(),
+        ayahTo: deleteField(),
+      }),
+    );
+    await assertSucceeds(updateDoc(doc(admin, "recordings/r-s3"), { surahNumber: 1 }));
+  });
+
+  test("an edit keeps the same combinations", async () => {
+    const t1 = as(env, "t1", "teacher");
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: null }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { ayahTo: null }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { ayahFrom: 30 }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 0 }));
+    await assertFails(updateDoc(doc(t1, "recordings/r-s1"), { surahNumber: 3, storagePath: "recordings/s1/x.mp3" }));
+  });
+
+  test("not another teacher, not the student, not a practice", async () => {
+    await assertFails(updateDoc(doc(as(env, "t2", "teacher"), "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "s1", "student"), "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "t1", "student"), "recordings/r-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "s1", "student"), "recordings/p-s1"), { surahNumber: 3 }));
+    await assertFails(updateDoc(doc(as(env, "admin", "admin"), "recordings/p-s1"), { surahNumber: 3 }));
+  });
+
+  test("a recording without them reads and lists like any other", async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore() as unknown as Firestore;
+      await setDoc(
+        doc(db, "recordings/bare"),
+        without("bare", ["surahNumber", "ayahFrom", "ayahTo"], { createdAt: Timestamp.now() }),
+      );
+    });
+    await assertSucceeds(getDoc(doc(as(env, "s1", "student"), "recordings/bare")));
+    await assertSucceeds(getDoc(doc(as(env, "t1", "teacher"), "recordings/bare")));
+    const list = query(
+      collection(as(env, "t1", "teacher"), "recordings"),
+      where("studentId", "==", "s1"),
+      where("teacherId", "==", "t1"),
+      where("type", "==", "official"),
+      orderBy("recordedAt", "desc"),
+    );
+    const snapshot = await assertSucceeds(getDocs(list));
+    expect(snapshot.docs.map((d) => d.id)).toContain("bare");
   });
 });
 
@@ -413,31 +544,55 @@ describe("demoted teacher (t1 whose role claim is now student)", () => {
         query(
           collection(db, "recordings"),
           where("teacherId", "==", "t1"),
-          where("type", "==", "practice"),
+          where("type", "==", "official"),
           where("reviewed", "==", false),
           orderBy("createdAt"),
         ),
       ),
     );
-    await assertFails(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
+    await assertFails(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false }));
     await assertFails(deleteDoc(doc(db, "recordings/r-s2")));
   });
 });
 
 describe("admin", () => {
-  test("reads and lists every recording", async () => {
+  test("reads and lists every official recording, with the type filter", async () => {
     const db = as(env, "admin", "admin");
     await assertSucceeds(getDoc(doc(db, "recordings/r-s3")));
-    await assertSucceeds(getDocs(collection(db, "recordings")));
+    const official = await assertSucceeds(
+      getDocs(query(collection(db, "recordings"), where("type", "==", "official"))),
+    );
+    expect(official.docs.map((d) => d.id).sort()).toEqual(["r-s1", "r-s2", "r-s3", "st-s1"]);
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(db, "recordings"),
+          where("studentId", "==", "s1"),
+          where("type", "==", "official"),
+          orderBy("recordedAt", "desc"),
+        ),
+      ),
+    );
   });
 
-  test("creates either type with consistent ids", async () => {
+  test("never a practice (Task 12): no read, no list without the type, no review, no delete", async () => {
+    const db = as(env, "admin", "admin");
+    await assertFails(getDoc(doc(db, "recordings/p-s1")));
+    await assertFails(getDocs(collection(db, "recordings")));
+    await assertFails(
+      getDocs(query(collection(db, "recordings"), where("studentId", "==", "s1"), orderBy("recordedAt", "desc"))),
+    );
+    await assertFails(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
+    await assertFails(deleteDoc(doc(db, "recordings/p-s1")));
+  });
+
+  test("creates an official recording with consistent ids, never a practice", async () => {
     const db = as(env, "admin", "admin");
     const forS3 = { studentId: "s3", halaqaId: "h2", teacherId: "t2", uploadedBy: "admin" };
     await assertSucceeds(
       create(db, "n1", newRecording("n1", { ...forS3, storagePath: "recordings/s3/n1.mp3" })),
     );
-    await assertSucceeds(
+    await assertFails(
       create(
         db,
         "n2",
@@ -449,9 +604,9 @@ describe("admin", () => {
     );
   });
 
-  test("updates review flags and deletes", async () => {
+  test("updates review flags and deletes an official recording", async () => {
     const db = as(env, "admin", "admin");
-    await assertSucceeds(updateDoc(doc(db, "recordings/p-s1"), { reviewed: true }));
+    await assertSucceeds(updateDoc(doc(db, "recordings/r-s1"), { reviewed: false }));
     await assertSucceeds(deleteDoc(doc(db, "recordings/r-s3")));
   });
 });

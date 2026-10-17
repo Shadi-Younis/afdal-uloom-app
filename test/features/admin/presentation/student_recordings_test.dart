@@ -41,13 +41,13 @@ void main() {
     await pumpAdminApp(tester, school, location: '/admin/students/s001');
     await scrollToRecordings(tester);
 
+    // Official only: rec-20 is his practice, his own (Task 12).
     expect(listedTitles(tester), [
-      'البقرة: الآيات ٤١–٥٠',
       'البقرة: الآيات ١–٢٠',
       'الفاتحة: الآيات ١–٧',
     ]);
-    expect(find.text('٢٠ سبتمبر ٢٠٢٦'), findsOneWidget);
-    expect(find.text('تدريب'), findsOneWidget);
+    expect(find.text('٨ سبتمبر ٢٠٢٦'), findsOneWidget);
+    expect(find.text('تدريب'), findsNothing);
     expect(find.text('رسمي'), findsNWidgets(2));
     // Only rec-02 has unread feedback.
     expect(find.byTooltip('ملاحظة جديدة لم يقرأها الطالب'), findsOneWidget);
@@ -86,32 +86,30 @@ void main() {
     expect(currentPath(tester), '/admin/students/s001');
   });
 
-  testWidgets('a practice opens like any recording: the admin adds a note '
-      'and marks it reviewed', (tester) async {
+  testWidgets('an official recording: the admin adds a note and marks it '
+      'reviewed', (tester) async {
     usePhoneSize(tester);
     await pumpAdminApp(tester, school, location: '/admin/students/s001');
     await scrollToRecordings(tester);
 
-    await tester.tap(find.text('البقرة: الآيات ٤١–٥٠'));
+    await tester.tap(find.text('الفاتحة: الآيات ١–٧'));
     await tester.pumpAndSettle();
     expect(find.byType(RecordingScreen), findsOneWidget);
-    expect(find.text('تدريب'), findsOneWidget);
     expect(find.text('إضافة ملاحظة هنا'), findsOneWidget);
-    expect(find.text('حذف التدريب'), findsNothing);
 
     await tester.tap(find.text('إضافة ملاحظة هنا'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'ركّز على المدود');
     await tester.tap(find.widgetWithText(FilledButton, 'حفظ'));
     await tester.pumpAndSettle();
-    final note = school.feedback.notes['rec-20']!.single;
+    final note = school.feedback.notes['rec-01']!.single;
     expect(note.note, 'ركّز على المدود');
     expect(note.teacherId, 'shadi');
 
     await tester.ensureVisible(find.text('تمت المراجعة'));
     await tester.tap(find.text('تمت المراجعة'));
     await tester.pumpAndSettle();
-    expect(school.recordings.reviewedCalls, [('rec-20', true)]);
+    expect(school.recordings.reviewedCalls, [('rec-01', false)]);
     expect(tester.takeException(), isNull);
   });
 
@@ -130,7 +128,7 @@ void main() {
     school.recordings.watchError = null;
     await tester.tap(find.text('إعادة المحاولة'));
     await tester.pumpAndSettle();
-    expect(listedTitles(tester), hasLength(3));
+    expect(listedTitles(tester), hasLength(2));
   });
 
   testWidgets('while the recordings load: a spinner in the section', (
@@ -151,6 +149,6 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     school.recordings.watchGate!.complete();
     await tester.pumpAndSettle();
-    expect(listedTitles(tester), hasLength(3));
+    expect(listedTitles(tester), hasLength(2));
   });
 }

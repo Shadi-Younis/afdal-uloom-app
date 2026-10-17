@@ -32,6 +32,11 @@ try {
     Confirm-Deploy
 
     Invoke-Checked 'flutter build web --release' { flutter build web --release }
+    # New icon-font file names for this build, so no browser shows icons
+    # from a cached older font (tool/deploy/fingerprint_web_fonts.dart).
+    Invoke-Checked 'fingerprint the icon fonts' {
+        dart run tool/deploy/fingerprint_web_fonts.dart build/web
+    }
     Invoke-FirebaseDeploy 'firebase deploy --only hosting' {
         firebase deploy --project $ProjectId --only hosting
     }

@@ -27,9 +27,12 @@ class RecordingUploadRequest {
   final String halaqaId;
   final String teacherId;
   final RecordingType type;
-  final int surahNumber;
-  final int ayahFrom;
-  final int ayahTo;
+
+  /// Optional for an official recording (none, a surah alone, or a surah
+  /// with both ayat); a practice needs all three.
+  final int? surahNumber;
+  final int? ayahFrom;
+  final int? ayahTo;
   final DateTime recordedAt;
 
   /// The file; for a two-file recording the student's.

@@ -95,7 +95,6 @@ class AdminFixture {
         teacherId: 't01',
         note: 'أحسنت، انتبه لمدّ الألف',
         atSecond: 12,
-        rating: 4,
         createdAt: DateTime(2026, 9, 9),
       ),
       FeedbackNote(

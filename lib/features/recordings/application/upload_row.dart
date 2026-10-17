@@ -2,12 +2,12 @@ import 'package:flutter/foundation.dart' show ValueGetter;
 
 import '../../../core/application/recording_upload_state.dart';
 import '../../../core/constants/app_durations.dart';
-import '../../../core/constants/surahs.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/models/picked_audio_file.dart';
 import '../../../core/models/recording_source.dart';
 import '../../../core/models/stem_role.dart';
 import '../../../core/utils/audio_file_check.dart';
+import '../../../core/utils/ayat_problem.dart';
 import 'upload_row_status.dart';
 
 /// One recording of the upload page: its file (or, in two-file mode, the
@@ -101,24 +101,17 @@ class UploadRow {
     return null;
   }
 
-  /// Surah and ayat are given and exist.
-  bool get hasValidAyat => switch ((surahNumber, ayahFrom, ayahTo)) {
-    (final s?, final from?, final to?) => isValidAyahRange(s, from, to),
-    _ => false,
-  };
+  /// What is wrong with the surah and ayat (shown under the ayat); null
+  /// when they may be uploaded. All three may stay empty, or the ayat
+  /// alone.
+  AyatProblem? get ayatProblem => ayatProblemOf(surahNumber, ayahFrom, ayahTo);
 
-  /// Ayat are given but not in the surah (shown as an error).
-  bool get hasInvalidAyat =>
-      surahNumber != null &&
-      ayahFrom != null &&
-      ayahTo != null &&
-      !hasValidAyat;
-
-  /// Every field is filled in and the file (or both files) can be uploaded.
+  /// The student is chosen, surah and ayat are allowed (they are optional)
+  /// and the file (or both files) can be uploaded.
   bool get isComplete =>
       fileProblem == null &&
       studentId != null &&
-      hasValidAyat &&
+      ayatProblem == null &&
       (!isStems || (hasBothStems && stemsProblem == null));
 
   /// «رفع الكل» (or retry) may start it.

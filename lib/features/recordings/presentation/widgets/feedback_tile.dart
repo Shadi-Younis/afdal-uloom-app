@@ -9,7 +9,6 @@ import '../../../../core/utils/date_format.dart';
 import '../../../../core/utils/player_format.dart';
 import '../../../../core/widgets/islamic/app_card.dart';
 import '../../application/recording_details_providers.dart';
-import 'rating_stars.dart';
 
 /// One note, as a white card with a gold bar on its start side.
 ///
@@ -17,7 +16,7 @@ import 'rating_stars.dart';
 /// ٠١:٢٣–٠١:٣١», then the text the teacher added, if any; tapping the card
 /// plays from there ([onSeek]). A written note: the teacher and the date,
 /// "عند ٠١:٢٣" when it is about a moment (tapping it calls [onSeek]), the
-/// stars when rated, the text. Students see "المعلم" instead of the
+/// text. Students see "المعلم" instead of the
 /// teacher's name (they may not read teachers' profiles); a deleted
 /// teacher shows as "معلم سابق". [actions] (edit, delete) go at the end of
 /// the first line.
@@ -37,7 +36,6 @@ class FeedbackTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final atSecond = note.atSecond;
-    final rating = note.rating;
     final header = note.isVoice
         ? _VoiceHeader(note: note)
         : _TextHeader(note: note, onSeek: onSeek);
@@ -55,7 +53,6 @@ class FeedbackTile extends ConsumerWidget {
               ?actions,
             ],
           ),
-          if (note.isVoice && rating != null) RatingStars(rating: rating),
           if (note.note.isNotEmpty) ...[
             const SizedBox(height: AppSizes.spaceXS),
             Text(note.note, style: theme.textTheme.bodyLarge),
@@ -103,7 +100,7 @@ class _VoiceHeader extends StatelessWidget {
   }
 }
 
-/// The teacher and the date, "عند ٠١:٢٣" and the stars.
+/// The teacher and the date, and "عند ٠١:٢٣".
 class _TextHeader extends ConsumerWidget {
   const _TextHeader({required this.note, required this.onSeek});
 
@@ -114,7 +111,6 @@ class _TextHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final atSecond = note.atSecond;
-    final rating = note.rating;
     final author =
         ref.watch(personNameProvider(noteAuthor(note.teacherId))).value ??
         AppStrings.roleTeacher;
@@ -146,7 +142,6 @@ class _TextHeader extends ConsumerWidget {
             ),
             onPressed: () => onSeek(Duration(seconds: atSecond)),
           ),
-        if (rating != null) RatingStars(rating: rating),
       ],
     );
   }

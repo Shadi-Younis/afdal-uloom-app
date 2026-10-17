@@ -10,8 +10,10 @@ import 'stem_paths.dart';
 /// A recitation (`recordings/{id}`). The audio file lives in Storage at
 /// [storagePath]; Firestore never stores a download URL.
 class Recording {
-  /// Throws [ArgumentError] for a surah outside 1..114, an ayahFrom below 1,
-  /// an ayahFrom after ayahTo or a negative duration.
+  /// Throws [ArgumentError] for a surah outside 1..114, ayat without a
+  /// surah, only one of the two ayat, an ayahFrom below 1, an ayahFrom
+  /// after ayahTo or a negative duration. Surah and ayat are optional:
+  /// none, a surah alone, or a surah with both ayat.
   ///
   /// Not const: a const constructor cannot run these checks, and asserts
   /// alone would vanish in release builds.
@@ -22,9 +24,9 @@ class Recording {
     required this.teacherId,
     required this.uploadedBy,
     required this.type,
-    required this.surahNumber,
-    required this.ayahFrom,
-    required this.ayahTo,
+    this.surahNumber,
+    this.ayahFrom,
+    this.ayahTo,
     required this.storagePath,
     this.durationSec,
     required this.recordedAt,
@@ -36,15 +38,24 @@ class Recording {
     this.analysis,
     this.playbackPath,
   }) {
-    if (surahNumber < ModelLimits.surahMin ||
-        surahNumber > ModelLimits.surahMax) {
-      throw ArgumentError.value(surahNumber, 'surahNumber', 'must be 1..114');
+    final (surah, from, to) = (surahNumber, ayahFrom, ayahTo);
+    if (surah != null &&
+        (surah < ModelLimits.surahMin || surah > ModelLimits.surahMax)) {
+      throw ArgumentError.value(surah, 'surahNumber', 'must be 1..114');
     }
-    if (ayahFrom < ModelLimits.ayahMin) {
-      throw ArgumentError.value(ayahFrom, 'ayahFrom', 'must be >= 1');
+    if ((from == null) != (to == null)) {
+      throw ArgumentError.value(to, 'ayahTo', 'both ayat or neither');
     }
-    if (ayahFrom > ayahTo) {
-      throw ArgumentError.value(ayahTo, 'ayahTo', 'must be >= ayahFrom');
+    if (from != null && to != null) {
+      if (surah == null) {
+        throw ArgumentError.value(from, 'ayahFrom', 'ayat need a surah');
+      }
+      if (from < ModelLimits.ayahMin) {
+        throw ArgumentError.value(from, 'ayahFrom', 'must be >= 1');
+      }
+      if (from > to) {
+        throw ArgumentError.value(to, 'ayahTo', 'must be >= ayahFrom');
+      }
     }
     final duration = durationSec;
     if (duration != null && duration < 0) {
@@ -61,9 +72,9 @@ class Recording {
     teacherId: readRequired<String>(map, Fields.teacherId),
     uploadedBy: readRequired<String>(map, Fields.uploadedBy),
     type: RecordingType.fromValue(readRequired<String>(map, Fields.type)),
-    surahNumber: readRequired<int>(map, Fields.surahNumber),
-    ayahFrom: readRequired<int>(map, Fields.ayahFrom),
-    ayahTo: readRequired<int>(map, Fields.ayahTo),
+    surahNumber: readOptional<int>(map, Fields.surahNumber),
+    ayahFrom: readOptional<int>(map, Fields.ayahFrom),
+    ayahTo: readOptional<int>(map, Fields.ayahTo),
     storagePath: readRequired<String>(map, Fields.storagePath),
     durationSec: readOptional<int>(map, Fields.durationSec),
     recordedAt: readRequired<DateTime>(map, Fields.recordedAt),
@@ -101,9 +112,12 @@ class Recording {
   final RecordingType type;
 
   /// 1..114 (2 = Al-Baqarah); the name comes from a list in the app.
-  final int surahNumber;
-  final int ayahFrom;
-  final int ayahTo;
+  /// Null when the teacher left it out (official recordings only).
+  final int? surahNumber;
+
+  /// Both or neither, and only with a surah.
+  final int? ayahFrom;
+  final int? ayahTo;
 
   /// `recordings/{studentId}/{id}.{ext}`, see StoragePaths.recording.
   final String storagePath;
@@ -159,9 +173,10 @@ class Recording {
     Fields.teacherId: teacherId,
     Fields.uploadedBy: uploadedBy,
     Fields.type: type.value,
-    Fields.surahNumber: surahNumber,
-    Fields.ayahFrom: ayahFrom,
-    Fields.ayahTo: ayahTo,
+    // Left out when not given (firestore.rules: absent or null).
+    Fields.surahNumber: ?surahNumber,
+    Fields.ayahFrom: ?ayahFrom,
+    Fields.ayahTo: ?ayahTo,
     Fields.storagePath: storagePath,
     Fields.durationSec: durationSec,
     Fields.recordedAt: recordedAt,

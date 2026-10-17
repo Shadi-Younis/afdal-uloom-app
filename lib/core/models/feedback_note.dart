@@ -1,5 +1,4 @@
 import '../constants/firestore_paths.dart';
-import '../constants/model_limits.dart';
 import '../utils/map_reader.dart';
 import 'feedback_kind.dart';
 
@@ -8,8 +7,7 @@ import 'feedback_kind.dart';
 /// spoke that the server found ([FeedbackKind.voice]), to which the
 /// teacher may add text.
 class FeedbackNote {
-  /// Throws [ArgumentError] for a rating outside 1..5, a negative
-  /// [atSecond], an [endSecond] before [atSecond] or without it, or an empty
+  /// Throws [ArgumentError] for a negative [atSecond], an [endSecond] before [atSecond] or without it, or an empty
   /// text note.
   ///
   /// Not const: a const constructor cannot run these checks, and asserts
@@ -21,7 +19,6 @@ class FeedbackNote {
     this.kind = FeedbackKind.text,
     this.atSecond,
     this.endSecond,
-    this.rating,
     required this.createdAt,
     this.updatedAt,
   }) {
@@ -36,15 +33,11 @@ class FeedbackNote {
     if (kind == FeedbackKind.text && note.isEmpty) {
       throw ArgumentError.value(note, 'note', 'a text note needs text');
     }
-    final stars = rating;
-    if (stars != null &&
-        (stars < ModelLimits.ratingMin || stars > ModelLimits.ratingMax)) {
-      throw ArgumentError.value(stars, 'rating', 'must be 1..5');
-    }
   }
 
   /// Throws [FormatException] for a missing field or a wrong type, and
-  /// [ArgumentError] for out-of-range values.
+  /// [ArgumentError] for out-of-range values. A `rating` left by notes
+  /// written before Task 12 (the stars were removed) is ignored.
   factory FeedbackNote.fromMap(String id, Map<String, dynamic> map) =>
       FeedbackNote(
         id: id,
@@ -57,7 +50,6 @@ class FeedbackNote {
         },
         atSecond: readOptional<int>(map, Fields.atSecond),
         endSecond: readOptional<int>(map, Fields.endSecond),
-        rating: readOptional<int>(map, Fields.rating),
         createdAt: readRequired<DateTime>(map, Fields.createdAt),
         updatedAt: readOptional<DateTime>(map, Fields.updatedAt),
       );
@@ -79,11 +71,9 @@ class FeedbackNote {
   /// Where the sheikh stopped speaking (voice markers only).
   final int? endSecond;
 
-  /// 1..5, if the teacher rated the recitation.
-  final int? rating;
   final DateTime createdAt;
 
-  /// When the teacher last edited the text or rating.
+  /// When the teacher last edited the text.
   final DateTime? updatedAt;
 
   bool get isVoice => kind == FeedbackKind.voice;
@@ -94,7 +84,6 @@ class FeedbackNote {
     Fields.kind: kind.value,
     Fields.atSecond: atSecond,
     Fields.endSecond: ?endSecond,
-    Fields.rating: rating,
     Fields.createdAt: createdAt,
     Fields.updatedAt: ?updatedAt,
   };
@@ -107,7 +96,6 @@ class FeedbackNote {
     FeedbackKind? kind,
     int? atSecond,
     int? endSecond,
-    int? rating,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => FeedbackNote(
@@ -117,7 +105,6 @@ class FeedbackNote {
     kind: kind ?? this.kind,
     atSecond: atSecond ?? this.atSecond,
     endSecond: endSecond ?? this.endSecond,
-    rating: rating ?? this.rating,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -131,7 +118,6 @@ class FeedbackNote {
       other.kind == kind &&
       other.atSecond == atSecond &&
       other.endSecond == endSecond &&
-      other.rating == rating &&
       other.createdAt == createdAt &&
       other.updatedAt == updatedAt;
 
@@ -143,7 +129,6 @@ class FeedbackNote {
     kind,
     atSecond,
     endSecond,
-    rating,
     createdAt,
     updatedAt,
   );
@@ -152,5 +137,5 @@ class FeedbackNote {
   String toString() =>
       'FeedbackNote(id: $id, ${kind.value}, teacherId: $teacherId, '
       'note: $note, atSecond: $atSecond, endSecond: $endSecond, '
-      'rating: $rating, createdAt: $createdAt, updatedAt: $updatedAt)';
+      'createdAt: $createdAt, updatedAt: $updatedAt)';
 }

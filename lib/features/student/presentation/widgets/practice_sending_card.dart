@@ -24,7 +24,7 @@ class PracticeSendingCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            AppStrings.sending,
+            AppStrings.saving,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium,
           ),

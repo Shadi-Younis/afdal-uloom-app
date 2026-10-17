@@ -21,6 +21,8 @@
 // The student s001 has every case of the student's screens: official
 // rec-26 (unread voice markers) and rec-01 (reviewed), practice rec-27
 // (reviewed, with a written note) and rec-20 (waiting for the sheikh).
+// rec-30 (s001) was uploaded without surah and ayat (optional since
+// Task 12): it shows as «تسجيل» and its date.
 // The seed refuses a note whose "at second" is past the end of its
 // recording's audio.
 
@@ -47,9 +49,10 @@ export interface SeedRecording {
   type: "official" | "practice";
   /** The id of the clip in test_audio.json that this recording plays. */
   clipId: string;
-  surahNumber: number;
-  ayahFrom: number;
-  ayahTo: number;
+  /** Null when the teacher left them out (official recordings only). */
+  surahNumber: number | null;
+  ayahFrom: number | null;
+  ayahTo: number | null;
   recordedAt: string; // ISO date
   reviewed: boolean;
   unreadFeedback: boolean;
@@ -62,7 +65,6 @@ export interface SeedNote {
   recordingId: string;
   note: string;
   atSecond?: number;
-  rating?: number;
 }
 
 export const emailDomain = "afdal-uloom.app";
@@ -122,8 +124,8 @@ type Row = [
 ];
 
 // Official recordings wait for the sheikh to check their voice markers
-// («تمت المراجعة»); rec-02, rec-09, rec-14, rec-26, rec-28 and rec-29
-// still do.
+// («تمت المراجعة»); rec-02, rec-09, rec-14, rec-26, rec-28, rec-29 and
+// rec-30 still do.
 const rows: Row[] = [
   ["rec-01", "s001", "official", "ikhlas", "2026-09-01", true, false],
   ["rec-02", "s001", "official", "fatiha", "2026-09-08", false, true],
@@ -154,7 +156,11 @@ const rows: Row[] = [
   ["rec-27", "s001", "practice", "mulk-1", "2026-10-06", true, false],
   ["rec-28", "s001", "official", "studio-stems", "2026-10-11", false, false],
   ["rec-29", "s002", "official", "studio-swapped", "2026-10-11", false, false],
+  ["rec-30", "s001", "official", "nas", "2026-10-12", false, false],
 ];
+
+/** Official recordings uploaded without surah and ayat. */
+const withoutSurah = new Set(["rec-30"]);
 
 const clipById = new Map(
   [...clips, studioClip, studioStemsClip, studioSwappedClip].map((clip) => [clip.id, clip]),
@@ -164,15 +170,16 @@ export const recordings: SeedRecording[] = rows.map(
   ([id, studentId, type, clipId, date, reviewed, unreadFeedback]) => {
     const clip = clipById.get(clipId);
     if (!clip) throw new Error(`${id}: no clip "${clipId}" in test_audio.json`);
+    const bare = withoutSurah.has(id);
     return {
       id,
       studentId,
       type,
       clipId,
       // Taken from the clip, so the ayat shown always match the audio.
-      surahNumber: clip.surahNumber,
-      ayahFrom: clip.ayahFrom,
-      ayahTo: clip.ayahTo,
+      surahNumber: bare ? null : clip.surahNumber,
+      ayahFrom: bare ? null : clip.ayahFrom,
+      ayahTo: bare ? null : clip.ayahTo,
       recordedAt: `${date}T16:00:00Z`,
       reviewed,
       unreadFeedback,
@@ -182,15 +189,15 @@ export const recordings: SeedRecording[] = rows.map(
 );
 
 export const notes: SeedNote[] = [
-  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الياء في «الرحيم»", atSecond: 12, rating: 4 },
-  { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في هذه الآية", rating: 3 },
-  { id: "fb-03", recordingId: "rec-07", note: "تلاوة جميلة، بارك الله فيك", rating: 5 },
+  { id: "fb-01", recordingId: "rec-02", note: "أحسنت، انتبه لمدّ الياء في «الرحيم»", atSecond: 12 },
+  { id: "fb-02", recordingId: "rec-04", note: "راجع مخارج الحروف في هذه الآية" },
+  { id: "fb-03", recordingId: "rec-07", note: "تلاوة جميلة، بارك الله فيك" },
   { id: "fb-04", recordingId: "rec-09", note: "انتبه للغنّة في النون المشدّدة", atSecond: 5 },
   { id: "fb-05", recordingId: "rec-09", note: "الوقف هنا غير مناسب، أعد الآية", atSecond: 17 },
-  { id: "fb-06", recordingId: "rec-09", note: "تحسّن واضح في آخر التلاوة", rating: 4 },
-  { id: "fb-07", recordingId: "rec-11", note: "ممتاز، استمر على هذا", rating: 5 },
-  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة هذه الآية ببطء", atSecond: 14, rating: 3 },
-  { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن", rating: 5 },
+  { id: "fb-06", recordingId: "rec-09", note: "تحسّن واضح في آخر التلاوة" },
+  { id: "fb-07", recordingId: "rec-11", note: "ممتاز، استمر على هذا" },
+  { id: "fb-08", recordingId: "rec-14", note: "أعد قراءة هذه الآية ببطء", atSecond: 14 },
+  { id: "fb-09", recordingId: "rec-16", note: "حفظ متقن" },
   { id: "fb-10", recordingId: "rec-21", note: "تدريب جيد، ركّز على أحكام النون الساكنة", atSecond: 8 },
-  { id: "fb-11", recordingId: "rec-27", note: "أحسنت، اضبط الوقف على «قدير»", atSecond: 4, rating: 4 },
+  { id: "fb-11", recordingId: "rec-27", note: "أحسنت، اضبط الوقف على «قدير»", atSecond: 4 },
 ];

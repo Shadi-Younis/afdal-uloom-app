@@ -18,6 +18,15 @@ abstract final class AppStrings {
   // Ornamental texts (Amiri).
   static const basmala = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
   static const hadith = '«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»';
+
+  // «حديث اليوم» (the hadiths themselves: DailyHadiths)
+  static const dailyHadithTitle = 'حديث اليوم';
+  static const prophetSaid = 'قال رسول الله ﷺ:';
+
+  /// Arabic quotation marks around a hadith. Never ﴿ ﴾: those are for
+  /// verses of the Quran.
+  static const quoteOpen = '«';
+  static const quoteClose = '»';
   static const salam = 'السلام عليكم ورحمة الله';
 
   /// Android back on a home screen; a second press within 2 s exits.
@@ -100,17 +109,20 @@ abstract final class AppStrings {
 
   /// [minutes] arrives in Arabic-Indic digits.
   static String recordingLimitReached(String minutes) =>
-      'وصل التسجيل إلى حدّه ($minutes دقيقة) فتوقف. استمع إليه ثم أرسله.';
+      'وصل التسجيل إلى حدّه ($minutes دقيقة) فتوقف. استمع إليه ثم احفظه.';
   static const yourRecording = 'تسجيلك';
   static const recordAgain = 'إعادة التسجيل';
-  static const recordAgainMessage = 'سيُحذف هذا التسجيل ولن يُرسل للشيخ.';
-  static const sendToSheikh = 'إرسال للشيخ';
+  static const recordAgainMessage = 'سيُحذف هذا التسجيل ولن يُحفظ.';
+
+  // A practice is the student's own (Task 12): saved, not sent.
+  static const savePractice = 'حفظ';
+  static const practicePrivate = 'يُحفظ التدريب عندك فقط';
   static const pickExistingFile = 'اختيار ملف';
-  static const orPickFile = 'أو أرسل ملفاً صوتياً موجوداً على جهازك';
+  static const orPickFile = 'أو احفظ ملفاً صوتياً من جهازك';
   static const removePickedFile = 'إلغاء اختيار الملف';
   static const completeTheAyat = 'اختر السورة والآيات أولاً';
-  static const practiceSent = 'وصل تدريبك إلى الشيخ';
-  static const sending = 'جارٍ الإرسال';
+  static const practiceSaved = 'تم حفظ التدريب';
+  static const saving = 'جارٍ الحفظ';
   static const microphoneDenied =
       'لا يستطيع التطبيق استخدام الميكروفون. '
       'اسمح له بالميكروفون من إعدادات الهاتف، ثم عد إلى هنا.';
@@ -118,17 +130,22 @@ abstract final class AppStrings {
       'المتصفح منع الميكروفون عن هذا الموقع. '
       'اسمح به من إعدادات الموقع (رمز القفل بجانب العنوان)، ثم أعد المحاولة.';
   static const openSettings = 'فتح الإعدادات';
-  static const leaveRecordingTitle = 'التدريب لم يُرسل';
+  static const leaveRecordingTitle = 'التدريب لم يُحفظ';
   static const leaveRecordingMessage =
-      'إذا خرجت الآن يضيع هذا التسجيل ولا يصل إلى الشيخ.';
+      'إذا خرجت الآن يضيع هذا التسجيل ولا يُحفظ.';
   static const leaveSendingMessage =
-      'إذا خرجت الآن يتوقف الإرسال ولا يصل التدريب إلى الشيخ.';
+      'إذا خرجت الآن يتوقف الحفظ ولا يُحفظ التدريب.';
 
   // Deleting a practice recording (the student)
   static const deletePractice = 'حذف التدريب';
-  static const deletePracticeMessage =
-      'سيُحذف هذا التدريب نهائياً ولن يصل إلى الشيخ.';
+  static const deletePracticeMessage = 'سيُحذف هذا التدريب نهائياً.';
   static const practiceDeleted = 'تم حذف التدريب';
+
+  // Deleting an official recording (its teacher, admins)
+  static const deleteRecording = 'حذف التسجيل';
+  static const deleteRecordingMessage =
+      'سيُحذف هذا التسجيل وملاحظاته نهائياً ولن يراه الطالب.';
+  static const recordingDeleted = 'تم حذف التسجيل';
 
   // Shared actions and states
   static const cancel = 'إلغاء';
@@ -174,7 +191,12 @@ abstract final class AppStrings {
   static const ayahFromLabel = 'من آية';
   static const ayahToLabel = 'إلى آية';
   static const ayatNotInSurah = 'الآيات ليست في هذه السورة';
-  static const completeTheRow = 'أكمل بيانات هذا الملف';
+  static const ayatNeedSurah = 'اختر السورة قبل الآيات';
+  static const ayatBothOrNone = 'اكتب الآيتين «من» و«إلى» أو اتركهما فارغتين';
+
+  /// The only field an official recording still needs: surah and ayat
+  /// are optional.
+  static const chooseTheStudent = 'اختر الطالب لهذا الملف';
   static const uploadAll = 'رفع الكل';
   static const removeFile = 'إزالة الملف';
   static const openRecording = 'فتح التسجيل';
@@ -393,7 +415,7 @@ abstract final class AppStrings {
 
   /// [count] arrives in Arabic-Indic digits.
   static String recordingsToDelete(String count) =>
-      'عدد التسجيلات التي ستُحذف: $count';
+      'عدد التسجيلات الرسمية التي ستُحذف: $count، وتُحذف تدريباته أيضاً';
   static String typeCodeToConfirm(String code) =>
       'للتأكيد، اكتب رقم الطالب: $code';
   static const studentDeleted = 'تم حذف الطالب نهائياً';
@@ -426,6 +448,10 @@ abstract final class AppStrings {
   static const recordingScreenTitle = 'التسجيل';
   static String recordingOf(String student) => 'تسجيل $student';
   static String surahName(String name) => 'سورة $name';
+
+  /// A recording without a surah, by its recorded [day]
+  /// ("١٦ أكتوبر ٢٠٢٦").
+  static String untitledRecording(String day) => 'تسجيل $day';
   static String ayahRange(String from, String to) => 'الآيات $from–$to';
   static String oneAyah(String ayah) => 'الآية $ayah';
   static const typeOfficial = 'رسمي';
@@ -464,6 +490,12 @@ abstract final class AppStrings {
   static const previousMarker = 'السابق';
   static const addNoteHere = 'إضافة ملاحظة هنا';
   static const reviewedToggle = 'تمت المراجعة';
+  // «تعديل السورة والآيات» on the recording screen
+  static const editAyat = 'تعديل السورة والآيات';
+  static const ayatOptional =
+      'السورة والآيات اختيارية: اتركها فارغة إن لم تُعرف.';
+  static const ayatSaved = 'تم حفظ السورة والآيات';
+
   static const newNoteTitle = 'ملاحظة جديدة';
   static const editNoteTitle = 'تعديل الملاحظة';
   static const addTextToVoice = 'إضافة نص';
@@ -475,11 +507,6 @@ abstract final class AppStrings {
 
   /// [max] arrives in Arabic-Indic digits.
   static String noteTooLong(String max) => 'الملاحظة $max حرفاً على الأكثر';
-  static const ratingOptional = 'التقييم (اختياري)';
-  static const clearRating = 'بلا تقييم';
-
-  /// [stars] arrives in Arabic-Indic digits.
-  static String rateStars(String stars) => 'تقييم $stars';
   static const noteSaved = 'تم حفظ الملاحظة';
   static const noteDeleted = 'تم حذف الملاحظة';
   static const markersLabel = 'مواضع ملاحظات الشيخ';
@@ -491,7 +518,6 @@ abstract final class AppStrings {
 
   /// A note about a moment of the recording, e.g. "عند ٠١:٢٣".
   static String atTime(String clock) => 'عند $clock';
-  static String ratingOf(String stars, String max) => 'التقييم: $stars من $max';
 
   // Recording player
   static const playerLoading = 'جارٍ تحميل التسجيل';

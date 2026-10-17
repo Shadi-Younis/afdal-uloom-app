@@ -50,7 +50,6 @@ void main() {
         recordingId: 'rec-02',
         atSecond: 42,
         text: '  انتبه للمدّ ',
-        rating: 4,
       );
       expect(saved, isTrue);
       final (id, note) = school.feedback.added.single;
@@ -59,7 +58,6 @@ void main() {
       expect(note.kind, FeedbackKind.text);
       expect(note.note, 'انتبه للمدّ');
       expect(note.atSecond, 42);
-      expect(note.rating, 4);
       expect(state(), const NoteEditorState());
     });
 
@@ -119,10 +117,9 @@ void main() {
         recordingId: 'rec-02',
         note: marker,
         text: '  ',
-        rating: 2,
       );
       expect(voice, isTrue);
-      expect(school.feedback.updated.single, ('rec-02', 'v1', '', 2));
+      expect(school.feedback.updated.single, ('rec-02', 'v1', ''));
 
       final written = school.feedback.notes['rec-02']!.first;
       final emptied = await editor().edit(

@@ -19,22 +19,21 @@ abstract class FeedbackRepository {
   /// `createdAt` is set to the server time.
   ///
   /// Allowed for: the recording's teacher and admins, with `note.teacherId`
-  /// set to their own uid. The note must be 1..2000 characters, atSecond
-  /// 0..36000 and rating 1..5 when given.
+  /// set to their own uid. The note must be 1..2000 characters and
+  /// atSecond 0..36000.
   Future<void> add(String recordingId, FeedbackNote note);
 
-  /// Replaces the text and rating of [feedbackId] (a written note or a
-  /// voice marker), sets its `updatedAt` to the server time and the
-  /// recording's `unreadFeedback` to true, in one batch. [rating] null
-  /// removes the rating.
+  /// Replaces the text of [feedbackId] (a written note or a voice marker),
+  /// sets its `updatedAt` to the server time and the recording's
+  /// `unreadFeedback` to true, in one batch. A `rating` an old note still
+  /// has stays as it is (nobody shows or writes it any more).
   ///
   /// Allowed for: the recording's teacher and admins. [note]: up to 2000
-  /// characters, at least one for a written note; [rating] 1..5.
+  /// characters, at least one for a written note.
   Future<void> update(
     String recordingId,
     String feedbackId, {
     required String note,
-    int? rating,
   });
 
   /// Deletes the note [feedbackId], of either kind.

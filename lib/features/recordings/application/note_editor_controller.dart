@@ -9,7 +9,7 @@ import '../../../core/providers/repository_providers.dart';
 import 'note_editor_state.dart';
 
 /// The note dialog of the recording screen: a new written note at a
-/// moment of the recording, or new text and rating for an existing note
+/// moment of the recording, or new text for an existing note
 /// (a voice marker's text may be empty). The repository also tells the
 /// student (`unreadFeedback`) in the same batch.
 class NoteEditorController extends Notifier<NoteEditorState> {
@@ -25,7 +25,6 @@ class NoteEditorController extends Notifier<NoteEditorState> {
     required String recordingId,
     required int atSecond,
     required String text,
-    int? rating,
   }) => _save(text, allowEmpty: false, (note) async {
     final uid = ref.read(sessionProvider).value?.uid;
     if (uid == null) throw const AppException(AppErrorCode.permissionDenied);
@@ -38,25 +37,23 @@ class NoteEditorController extends Notifier<NoteEditorState> {
             teacherId: uid,
             note: note,
             atSecond: atSecond,
-            rating: rating,
             // Ignored: the repository sets the server time.
             createdAt: ref.read(clockProvider)(),
           ),
         );
   });
 
-  /// Replaces the text and rating of [note].
+  /// Replaces the text of [note].
   Future<bool> edit({
     required String recordingId,
     required FeedbackNote note,
     required String text,
-    int? rating,
   }) => _save(
     text,
     allowEmpty: note.isVoice,
     (text) => ref
         .read(feedbackRepositoryProvider)
-        .update(recordingId, note.id, note: text, rating: rating),
+        .update(recordingId, note.id, note: text),
   );
 
   Future<bool> _save(

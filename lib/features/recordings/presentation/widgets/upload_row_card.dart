@@ -73,7 +73,7 @@ class UploadRowCard extends ConsumerWidget {
       from: row.ayahFrom,
       to: row.ayahTo,
       enabled: editable,
-      invalid: row.hasInvalidAyat,
+      error: editable ? row.ayatProblem?.message : null,
       onFromChanged: (n) => controller.setAyahFrom(key, n),
       onToChanged: (n) => controller.setAyahTo(key, n),
     );

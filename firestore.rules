@@ -163,27 +163,46 @@ service cloud.firestore {
               && isAudioPath(data.stemPaths.sheikh, prefix + 'sheikh.'));
       }
 
+      // Surah and ayat: none, a surah alone, or a surah with both ayat
+      // (absent or null each). The ayat's upper bound depends on the
+      // surah, which only the app knows; rules check the order. Optional
+      // for official recordings only: a practice says «ماذا ستتلو؟».
+      function hasValidAyat(data) {
+        let surah = data.get('surahNumber', null);
+        let from = data.get('ayahFrom', null);
+        let to = data.get('ayahTo', null);
+        return (surah == null && from == null && to == null)
+          || (isIntInRange(surah, 1, 114)
+              && ((from == null && to == null)
+                  || (from is int && to is int && from >= 1 && from <= to)));
+      }
+
+      function hasAllAyat(data) {
+        return data.get('surahNumber', null) != null
+          && data.get('ayahFrom', null) != null
+          && data.get('ayahTo', null) != null;
+      }
+
       // Checks for every create, whoever the caller: shape, ranges, path,
       // and that studentId / halaqaId / teacherId agree with each other.
       // `analysis` and `playbackPath` are not among the keys: only the
       // server (onRecordingUploaded) writes them.
       function isValidNewRecording(data) {
         let required = ['studentId', 'halaqaId', 'teacherId', 'uploadedBy',
-          'type', 'surahNumber', 'ayahFrom', 'ayahTo', 'storagePath',
-          'recordedAt', 'createdAt', 'unreadFeedback', 'reviewed'];
+          'type', 'storagePath', 'recordedAt', 'createdAt', 'unreadFeedback',
+          'reviewed'];
         let prefix = 'recordings/' + data.studentId + '/' + recordingId + '.';
         let student = get(userPath(data.studentId)).data;
         return data.keys().hasAll(required)
-          && data.keys().hasOnly(required.concat(['durationSec', 'source', 'stemPaths']))
+          && data.keys().hasOnly(required.concat(['surahNumber', 'ayahFrom',
+                                                  'ayahTo', 'durationSec',
+                                                  'source', 'stemPaths']))
           && data.studentId is string
           && data.halaqaId is string
           && data.teacherId is string
           && data.type in ['official', 'practice']
-          && isIntInRange(data.surahNumber, 1, 114)
-          && data.ayahFrom is int
-          && data.ayahTo is int
-          && data.ayahFrom >= 1
-          && data.ayahFrom <= data.ayahTo
+          && hasValidAyat(data)
+          && (data.type == 'official' || hasAllAyat(data))
           && (data.get('durationSec', null) == null
               || (data.durationSec is int && data.durationSec >= 0))
           && isAudioPath(data.storagePath, prefix)
@@ -216,20 +235,28 @@ service cloud.firestore {
           && data.reviewed == false;
       }
 
+      // An official recording's teacher and admins manage it. A practice
+      // is its student's own (Task 12): no teacher, no admin, whatever
+      // teacherId it carries (moveStudent copies the new one onto it).
       // isTeacher(): a demoted teacher loses access at once.
-      function isOwningTeacher() {
-        return isTeacher() && resource.data.teacherId == request.auth.uid;
+      function isManager() {
+        return resource.data.type == 'official'
+          && (isAdmin()
+              || (isTeacher() && resource.data.teacherId == request.auth.uid));
       }
 
       function isOwningStudent() {
         return signedIn() && resource.data.studentId == request.auth.uid;
       }
 
-      allow read: if isAdmin() || isOwningTeacher() || isOwningStudent();
+      // In a list query the teacherId (teachers) and type filters make this
+      // provable; without `type == 'official'` a teacher's or an admin's
+      // query is denied.
+      allow read: if isManager() || isOwningStudent();
 
       allow create: if signedIn()
         && isValidNewRecording(request.resource.data)
-        && (isAdmin()
+        && ((isAdmin() && request.resource.data.type == 'official')
             || isTeacherUpload(request.resource.data)
             || isStudentPractice(request.resource.data));
 
@@ -237,21 +264,25 @@ service cloud.firestore {
         (isOwningStudent()
           && onlyChanged(['unreadFeedback'])
           && request.resource.data.unreadFeedback == false)
-        || ((isOwningTeacher() || isAdmin())
+        || (isManager()
           && onlyChanged(['reviewed', 'unreadFeedback'])
           && request.resource.data.reviewed is bool
-          && request.resource.data.unreadFeedback is bool);
+          && request.resource.data.unreadFeedback is bool)
+        // «تعديل السورة والآيات».
+        || (isManager()
+          && onlyChanged(['surahNumber', 'ayahFrom', 'ayahTo'])
+          && hasValidAyat(request.resource.data));
 
-      // A student may take back a practice recording the sheikh has not
-      // reviewed yet; onRecordingDeleted removes its file and notes.
-      function isOwnUnreviewedPractice() {
+      // A student deletes his own practice at any time («حذف التدريب»);
+      // onRecordingDeleted removes its file and notes.
+      function isOwnPractice() {
         return isStudent()
           && resource.data.studentId == request.auth.uid
-          && resource.data.type == 'practice'
-          && resource.data.reviewed == false;
+          && resource.data.type == 'practice';
       }
 
-      allow delete: if isOwningTeacher() || isAdmin() || isOwnUnreviewedPractice();
+      // «حذف التسجيل» (official) and «حذف التدريب» (practice).
+      allow delete: if isManager() || isOwnPractice();
 
       // ---- recordings/{id}/feedback -------------------------------------
 
@@ -260,42 +291,40 @@ service cloud.firestore {
           return get(/databases/$(database)/documents/recordings/$(recordingId)).data;
         }
 
-        // The recording's teacher (also after a halaqa changed teacher:
-        // the notes keep their author) and admins manage every note.
+        // An official recording's teacher (also after a halaqa changed
+        // teacher: the notes keep their author) and admins manage every
+        // note. A practice is its student's own: nobody writes notes on it
+        // any more, and only he reads those written before Task 12.
         function canManage() {
-          return isAdmin() || (isTeacher() && recording().teacherId == request.auth.uid);
-        }
-
-        function isValidRating(data) {
-          return data.get('rating', null) == null || isIntInRange(data.rating, 1, 5);
+          return recording().type == 'official'
+            && (isAdmin() || (isTeacher() && recording().teacherId == request.auth.uid));
         }
 
         // A written note. Voice markers (kind 'voice') come only from the
-        // server, which finds them in the sheikh's channel.
+        // server, which finds them in the sheikh's channel. No `rating`:
+        // the stars were removed (Task 12).
         function isValidNote(data) {
           return data.keys().hasAll(['teacherId', 'note', 'kind', 'createdAt'])
-            && data.keys().hasOnly(['teacherId', 'note', 'kind', 'atSecond', 'rating', 'createdAt'])
+            && data.keys().hasOnly(['teacherId', 'note', 'kind', 'atSecond', 'createdAt'])
             && data.teacherId == request.auth.uid
             && data.kind == 'text'
             && isStringOfLength(data.note, 1, 2000)
             && (data.get('atSecond', null) == null || isIntInRange(data.atSecond, 0, 36000))
-            && isValidRating(data)
             && data.createdAt == request.time;
         }
 
-        // Text and rating only. A voice marker's text may be emptied again;
-        // a written note keeps at least one character.
+        // Text only. A voice marker's text may be emptied again; a written
+        // note keeps at least one character. A `rating` an old note still
+        // has stays untouched, so its text remains editable.
         function isValidEdit(data) {
-          return onlyChanged(['note', 'rating', 'updatedAt'])
+          return onlyChanged(['note', 'updatedAt'])
             && (isStringOfLength(data.note, 1, 2000)
                 || (resource.data.get('kind', 'text') == 'voice'
                     && isStringOfLength(data.note, 0, 2000)))
-            && isValidRating(data)
             && data.updatedAt == request.time;
         }
 
-        allow read: if isAdmin()
-          || (isTeacher() && recording().teacherId == request.auth.uid)
+        allow read: if canManage()
           || (signedIn() && recording().studentId == request.auth.uid);
 
         allow create: if canManage() && isValidNote(request.resource.data);

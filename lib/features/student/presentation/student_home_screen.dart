@@ -13,12 +13,13 @@ import '../../../core/widgets/islamic/home_header.dart';
 import '../../../core/widgets/islamic/islamic_pattern_background.dart';
 import '../../../core/widgets/islamic/ornament_divider.dart';
 import '../../../core/widgets/islamic/ornate_header.dart';
+import '../../../core/widgets/islamic/todays_hadith_card.dart';
 import 'widgets/recordings_filter_chips.dart';
 import 'widgets/student_overview_cards.dart';
 import 'widgets/student_recordings_list.dart';
 
 /// The student's home: the green header with the Hijri date, greeting and
-/// «حسابي», his three counts overlapping it, «سجّل تدريباً», then
+/// «حسابي», «حديث اليوم» overlapping it, his three counts, «سجّل تدريباً», then
 /// «تسجيلاتي» with the «الكل / رسمي / تدريب» chips and the list, newest
 /// first and live. Android back asks before leaving the app.
 class StudentHomeScreen extends ConsumerWidget {
@@ -72,6 +73,8 @@ class _StudentHomeContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const TodaysHadithCard(),
+        const SizedBox(height: AppSizes.spaceM),
         const StudentOverviewCards(),
         const SizedBox(height: AppSizes.spaceM),
         SizedBox(

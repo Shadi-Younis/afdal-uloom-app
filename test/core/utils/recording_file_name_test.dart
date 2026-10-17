@@ -107,6 +107,26 @@ void main() {
     expect(parse('S014_002_001--20.mp3').ayahFrom, isNull);
   });
 
+  test('only the code (Task 12): the student alone, no surah or ayat', () {
+    const student = ParsedRecordingName(studentCode: 'S014');
+    expect(parse('S014.mp3'), student);
+    expect(parse('s014.wav'), student);
+    expect(parse('S014_take2.wav'), student);
+    expect(parse('S014 - Student.wav'), student);
+    expect(parse('S014.student.wav'), student);
+    expect(parse('S014-final.m4a'), student);
+    // Still a longer code or a word, not a code and a label.
+    expect(parse('S0145678.mp3'), const ParsedRecordingName());
+    expect(parse('S014abc.mp3'), const ParsedRecordingName());
+  });
+
+  test('the code and a surah without ayat', () {
+    expect(
+      parse('S014_002.mp3'),
+      const ParsedRecordingName(studentCode: 'S014', surahNumber: 2),
+    );
+  });
+
   test('a name without a code still gives the surah and ayat', () {
     expect(
       parse('002_1-20.mp3'),

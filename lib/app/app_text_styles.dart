@@ -14,6 +14,7 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   const AppTextStyles({
     required this.basmala,
     required this.hadith,
+    required this.dailyHadith,
     required this.salam,
     required this.surahTitle,
     required this.heading,
@@ -46,6 +47,13 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
     return AppTextStyles(
       basmala: amiri(26, AppColors.green),
       hadith: amiri(17, AppColors.goldDark),
+      // Amiri draws the tashkeel cleanly; the taller line leaves room for
+      // marks above and below.
+      dailyHadith: amiri(
+        22,
+        AppColors.green,
+        FontWeight.w700,
+      ).copyWith(height: 1.9),
       salam: amiri(20, AppColors.goldLight),
       surahTitle: amiri(28, AppColors.onGreen, FontWeight.w700),
       heading: kufi(20, AppColors.green),
@@ -60,6 +68,9 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
 
   /// The hadith under the logo (gold text that is readable on ivory).
   final TextStyle hadith;
+
+  /// The hadith of «حديث اليوم» on the homes, larger than body text.
+  final TextStyle dailyHadith;
 
   /// The greeting in the green header.
   final TextStyle salam;
@@ -86,6 +97,7 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   AppTextStyles copyWith({
     TextStyle? basmala,
     TextStyle? hadith,
+    TextStyle? dailyHadith,
     TextStyle? salam,
     TextStyle? surahTitle,
     TextStyle? heading,
@@ -95,6 +107,7 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   }) => AppTextStyles(
     basmala: basmala ?? this.basmala,
     hadith: hadith ?? this.hadith,
+    dailyHadith: dailyHadith ?? this.dailyHadith,
     salam: salam ?? this.salam,
     surahTitle: surahTitle ?? this.surahTitle,
     heading: heading ?? this.heading,
@@ -110,6 +123,7 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
     return AppTextStyles(
       basmala: mix(basmala, other.basmala),
       hadith: mix(hadith, other.hadith),
+      dailyHadith: mix(dailyHadith, other.dailyHadith),
       salam: mix(salam, other.salam),
       surahTitle: mix(surahTitle, other.surahTitle),
       heading: mix(heading, other.heading),

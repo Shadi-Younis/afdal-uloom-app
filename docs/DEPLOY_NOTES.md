@@ -64,7 +64,7 @@ powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_backend.ps1
 powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_web.ps1
 ```
 
-يفحص الشروط نفسها (git نظيف، `main` مطابق لـ `origin/main`، الدخول إلى Firebase)، ويشغّل `flutter analyze` و`flutter test`، ويطلب كتابة `afdal-al-uloom`، ثم يبني `flutter build web --release` وينفّذ `firebase deploy --only hosting`.
+يفحص الشروط نفسها (git نظيف، `main` مطابق لـ `origin/main`، الدخول إلى Firebase)، ويشغّل `flutter analyze` و`flutter test`، ويطلب كتابة `afdal-al-uloom`، ثم يبني `flutter build web --release`، ويعطي خطوط الأيقونات أسماء جديدة (`tool/deploy/fingerprint_web_fonts.dart`، انظر أدناه)، وينفّذ `firebase deploy --only hosting`.
 
 الرابط: https://afdal-al-uloom.web.app
 
@@ -72,7 +72,8 @@ powershell -ExecutionPolicy Bypass -File tool/deploy/deploy_web.ps1
 
 - كل المسارات تُعاد إلى `index.html` (التطبيق يتولى التنقل).
 - `index.html` وملفات `js` و`json` و`wasm`: `no-cache`. أسماء ملفات Flutter web ثابتة (بلا hash)، فلو خُزّنت طويلاً لبقي المستخدم على نسخة قديمة بعد النشر. المتصفح يتحقق في كل مرة، وإذا لم يتغير الملف يأخذه من ذاكرته.
-- الصور والخطوط: تُخزَّن 7 أيام. تغيير الشعار أو الأيقونات قد يتأخر ظهوره حتى أسبوع.
+- الصور والخطوط: تُخزَّن 7 أيام. تغيير الشعار أو صور الأيقونات قد يتأخر ظهوره حتى أسبوع.
+- خطوط الأيقونات (`MaterialIcons` و`CupertinoIcons`): نسخة الإصدار تحتفظ فقط بالأيقونات التي يستعملها التطبيق، فيتغير الملف مع كل نشر يضيف أيقونة. لذلك يضيف السكربت إلى اسم كل خط بصمة من محتواه (مثل `MaterialIcons-Regular.0238bafd.otf`) ويحدّث `assets/FontManifest.json` (لا يُخزَّن). بدون ذلك ظهرت أيقونة الميكروفون في زر التسجيل دائرة فارغة على متصفح خزّن خطاً أقدم (المهمة 12).
 
 ## تثبيت التطبيق على حاسوب الاستوديو (تطبيق Windows)
 

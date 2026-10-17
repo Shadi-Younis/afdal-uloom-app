@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_sizes.dart';
 import '../../constants/app_strings.dart';
-import '../../constants/surahs.dart';
 import '../../models/recording.dart';
 import '../../utils/arabic_digits.dart';
 import '../../utils/date_format.dart';
+import '../../utils/recording_titles.dart';
 import 'recording_type_chip.dart';
 import 'reviewed_chip.dart';
 
-/// A recording in a list: title (surah and ayat), recorded date, type, and
+/// A recording in a list: title (surah and ayat, see recordingTitleOf),
+/// recorded date, type, and
 /// a dot when it has feedback the student has not read. For the teacher
 /// also [markerCount] (the notes about a moment), with [showReviewed]
 /// whether it was reviewed, and [studentName] in a list of many students
@@ -40,7 +41,7 @@ class RecordingTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const CircleAvatar(child: Icon(Icons.graphic_eq)),
-      title: Text(formatRecordingTitle(r.surahNumber, r.ayahFrom, r.ayahTo)),
+      title: Text(recordingTitleOf(r)),
       subtitle: Wrap(
         spacing: AppSizes.spaceS,
         runSpacing: AppSizes.spaceXS,

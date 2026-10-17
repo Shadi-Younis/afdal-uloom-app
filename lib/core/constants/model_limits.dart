@@ -5,8 +5,6 @@ abstract final class ModelLimits {
   static const surahMin = 1;
   static const surahMax = 114;
   static const ayahMin = 1;
-  static const ratingMin = 1;
-  static const ratingMax = 5;
   static const halaqaNameMinLength = 1;
   static const halaqaNameMaxLength = 60;
   static const noteMaxLength = 2000;

@@ -10,9 +10,9 @@ import '../../../../core/utils/error_messages.dart';
 import '../../application/practice_submit_controller.dart';
 import 'practice_notice.dart';
 
-/// Why the last «إرسال للشيخ» did not arrive: refused before it started,
-/// failed (the Arabic reason) or cancelled. Nothing otherwise. Sending
-/// again is the retry.
+/// Why the last «حفظ» did not arrive: refused before it started, failed
+/// (the Arabic reason) or cancelled. Nothing otherwise. Saving again is
+/// the retry.
 class PracticeSendFailure extends ConsumerWidget {
   const PracticeSendFailure({super.key});
 

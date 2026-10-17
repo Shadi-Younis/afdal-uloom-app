@@ -204,7 +204,13 @@ void main() {
       await openDialog(tester);
 
       expect(find.text('حذف أحمد الخطيب نهائياً'), findsOneWidget);
-      expect(find.text('عدد التسجيلات التي ستُحذف: ٣'), findsOneWidget);
+      // Official only: the admin cannot see his practice (Task 12).
+      expect(
+        find.text(
+          'عدد التسجيلات الرسمية التي ستُحذف: ٢، وتُحذف تدريباته أيضاً',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('للتأكيد، اكتب رقم الطالب: S001'), findsOneWidget);
       expect(deleteEnabled(tester), isFalse);
       expect(tester.takeException(), isNull);

@@ -59,7 +59,13 @@ const data = await import("./data.js");
 // The same ayah table as the app and the functions.
 const { isValidAyahRange } = await import("../../../functions/src/lib/surahs.js");
 
-const badRange = data.recordings.find((r) => !isValidAyahRange(r.surahNumber, r.ayahFrom, r.ayahTo));
+const badRange = data.recordings.find(
+  (r) =>
+    r.surahNumber !== null &&
+    r.ayahFrom !== null &&
+    r.ayahTo !== null &&
+    !isValidAyahRange(r.surahNumber, r.ayahFrom, r.ayahTo),
+);
 if (badRange) {
   console.error(`Refusing to seed: ${badRange.id} has ayat outside surah ${badRange.surahNumber}.`);
   process.exit(1);
@@ -181,9 +187,9 @@ async function seedFirestore(): Promise<void> {
       teacherId,
       uploadedBy: official ? teacherId : r.studentId,
       type: r.type,
-      surahNumber: r.surahNumber,
-      ayahFrom: r.ayahFrom,
-      ayahTo: r.ayahTo,
+      // Left out, as the app does, when the teacher gave none.
+      ...(r.surahNumber === null ? {} : { surahNumber: r.surahNumber }),
+      ...(r.ayahFrom === null ? {} : { ayahFrom: r.ayahFrom, ayahTo: r.ayahTo }),
       storagePath: audioPathOf(r),
       durationSec: audioOf(r).durationSec,
       recordedAt: Timestamp.fromDate(recordedAt),
@@ -204,7 +210,6 @@ async function seedFirestore(): Promise<void> {
       kind: "text",
       note: n.note,
       atSecond: n.atSecond ?? null,
-      rating: n.rating ?? null,
       createdAt: Timestamp.fromDate(createdAt),
     });
   });

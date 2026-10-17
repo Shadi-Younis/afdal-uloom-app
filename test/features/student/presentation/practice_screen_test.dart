@@ -112,7 +112,9 @@ void main() {
     expect(find.byType(RecordingPlayer), findsOneWidget);
     expect(fixture.school.player.loads.single.$1.scheme, 'file');
     expect(find.text('إعادة التسجيل'), findsOneWidget);
-    expect(find.text('إرسال للشيخ'), findsOneWidget);
+    expect(find.text('حفظ'), findsOneWidget);
+    // A practice is the student's own (Task 12).
+    expect(find.text('يُحفظ التدريب عندك فقط'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -130,7 +132,7 @@ void main() {
     await wait(tester, const Duration(minutes: 5));
     await tester.pumpAndSettle();
     expect(
-      find.text('وصل التسجيل إلى حدّه (٣٠ دقيقة) فتوقف. استمع إليه ثم أرسله.'),
+      find.text('وصل التسجيل إلى حدّه (٣٠ دقيقة) فتوقف. استمع إليه ثم احفظه.'),
       findsOneWidget,
     );
     expect(find.text('تسجيلك · ٣٠:٠٠'), findsOneWidget);
@@ -166,7 +168,7 @@ void main() {
     await recordFor(tester, const Duration(seconds: 10));
     await tapButton(tester, 'إعادة التسجيل');
     await tester.pumpAndSettle();
-    expect(find.text('سيُحذف هذا التسجيل ولن يُرسل للشيخ.'), findsOneWidget);
+    expect(find.text('سيُحذف هذا التسجيل ولن يُحفظ.'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'إعادة التسجيل'));
     await tester.pumpAndSettle();
     expect(fixture.recorder.released, hasLength(1));
@@ -178,7 +180,7 @@ void main() {
   ) async {
     await openPractice(tester);
     await recordFor(tester, const Duration(seconds: 10));
-    await tapButton(tester, 'إرسال للشيخ');
+    await tapButton(tester, 'حفظ');
     await tester.pumpAndSettle();
     expect(find.text('اختر السورة والآيات أولاً'), findsOneWidget);
     expect(fixture.school.recordings.created, isEmpty);
@@ -190,10 +192,10 @@ void main() {
     await openPractice(tester);
     await chooseFatiha(tester);
     await recordFor(tester, const Duration(seconds: 40));
-    await tapButton(tester, 'إرسال للشيخ');
+    await tapButton(tester, 'حفظ');
     await tester.pump();
     await tester.pump();
-    expect(find.text('جارٍ الإرسال'), findsOneWidget);
+    expect(find.text('جارٍ الحفظ'), findsOneWidget);
     final upload = fixture.school.storage.lastUpload;
     upload.progress(0.5);
     await tester.pump();
@@ -203,7 +205,7 @@ void main() {
     upload.complete();
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/student');
-    expect(find.text('وصل تدريبك إلى الشيخ'), findsOneWidget);
+    expect(find.text('تم حفظ التدريب'), findsOneWidget);
     final sent = fixture.school.recordings.created.single;
     expect(sent.type, RecordingType.practice);
     expect(sent.durationSec, 40);
@@ -222,7 +224,7 @@ void main() {
     await openPractice(tester);
     await chooseFatiha(tester);
     await recordFor(tester, const Duration(seconds: 5));
-    await tapButton(tester, 'إرسال للشيخ');
+    await tapButton(tester, 'حفظ');
     await tester.pump();
     await tester.pump();
     fixture.school.storage.lastUpload.fail(
@@ -232,7 +234,7 @@ void main() {
     expect(find.text('لا يوجد اتصال بالإنترنت'), findsOneWidget);
     expect(find.text('تسجيلك · ٠٠:٠٥'), findsOneWidget);
 
-    await tapButton(tester, 'إرسال للشيخ');
+    await tapButton(tester, 'حفظ');
     await tester.pump();
     await tester.pump();
     fixture.school.storage.lastUpload.complete();
@@ -246,13 +248,13 @@ void main() {
     await openPractice(tester);
     await chooseFatiha(tester);
     await recordFor(tester, const Duration(seconds: 5));
-    await tapButton(tester, 'إرسال للشيخ');
+    await tapButton(tester, 'حفظ');
     await tester.pump();
     await tester.pump();
     await tester.tap(find.text('إلغاء'));
     await tester.pumpAndSettle();
     expect(find.text('أُلغي الرفع'), findsOneWidget);
-    expect(find.text('إرسال للشيخ'), findsOneWidget);
+    expect(find.text('حفظ'), findsOneWidget);
     expect(
       fixture.school.recordings.recordings.values.where(
         (r) => r.type == RecordingType.practice && r.studentId == 's001',
@@ -268,7 +270,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.byTooltip('رجوع'));
     await tester.pumpAndSettle();
-    expect(find.text('التدريب لم يُرسل'), findsOneWidget);
+    expect(find.text('التدريب لم يُحفظ'), findsOneWidget);
     await tester.tap(find.text('إلغاء'));
     await tester.pumpAndSettle();
     expect(currentPath(tester), '/student/practice');
@@ -289,7 +291,7 @@ void main() {
     expect(currentPath(tester), '/student');
   });
 
-  testWidgets('«اختيار ملف»: the file, then «إرسال للشيخ»', (tester) async {
+  testWidgets('«اختيار ملف»: the file, then «حفظ»', (tester) async {
     await openPractice(tester);
     await chooseFatiha(tester);
     fixture.picker.next = [
@@ -302,7 +304,7 @@ void main() {
     expect(find.byTooltip('ابدأ التسجيل'), findsNothing);
     expect(tester.takeException(), isNull);
 
-    await tapButton(tester, 'إرسال للشيخ');
+    await tapButton(tester, 'حفظ');
     await tester.pump();
     await tester.pump();
     fixture.school.storage.lastUpload.complete();
@@ -322,7 +324,7 @@ void main() {
     );
     final send = tester.widget<FilledButton>(
       find.ancestor(
-        of: find.text('إرسال للشيخ'),
+        of: find.text('حفظ'),
         matching: find.byWidgetPredicate((w) => w is FilledButton),
       ),
     );

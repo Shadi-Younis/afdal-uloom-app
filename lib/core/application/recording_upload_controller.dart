@@ -7,11 +7,13 @@ import '../errors/app_exception.dart';
 import '../models/audio_source.dart';
 import '../models/recording.dart';
 import '../models/recording_source.dart';
+import '../models/recording_type.dart';
 import '../models/stem_paths.dart';
 import '../providers/repository_providers.dart';
 import '../providers/service_providers.dart';
 import '../repositories/recording_repository.dart';
 import '../services/audio_upload.dart';
+import '../utils/ayat_problem.dart';
 import 'recording_upload_request.dart';
 import 'recording_upload_state.dart';
 import 'recording_upload_status.dart';
@@ -193,14 +195,21 @@ class RecordingUploadController extends Notifier<RecordingUploadState> {
     if (request.isStems && sheikhContentType == null) {
       return AppErrorCode.unsupportedFile;
     }
-    if (!isValidAyahRange(
+    final (surah, from, to) = (
       request.surahNumber,
       request.ayahFrom,
       request.ayahTo,
-    )) {
-      return AppErrorCode.invalidData;
-    }
-    return null;
+    );
+    final ayatAllowed = switch (request.type) {
+      RecordingType.official => ayatProblemOf(surah, from, to) == null,
+      // «ماذا ستتلو؟» stays required for a practice.
+      RecordingType.practice =>
+        surah != null &&
+            from != null &&
+            to != null &&
+            isValidAyahRange(surah, from, to),
+    };
+    return ayatAllowed ? null : AppErrorCode.invalidData;
   }
 
   void _onProgress(int index, double progress) {

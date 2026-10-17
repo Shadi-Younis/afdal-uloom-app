@@ -36,7 +36,6 @@ describe.skipIf(!haveFixtures)("onRecordingUploaded on the al-Minshawi fixtures"
         kind: "text",
         note: "ملاحظة مكتوبة",
         atSecond: 5,
-        rating: null,
         createdAt: Timestamp.now(),
       });
 

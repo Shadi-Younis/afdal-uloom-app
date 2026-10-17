@@ -13,9 +13,9 @@ import '../../../core/widgets/islamic/loading_state.dart';
 import '../application/teacher_providers.dart';
 import 'widgets/teacher_recording_tile.dart';
 
-/// «بانتظار المراجعة»: the teacher's recordings not reviewed yet, official
-/// and practice, oldest first, each with its student and type. A tap
-/// opens the recording (notes, rating, «تمت المراجعة»); once reviewed it
+/// «بانتظار المراجعة»: the teacher's official recordings not reviewed yet,
+/// oldest first, each with its student. A tap
+/// opens the recording (notes, «تمت المراجعة»); once reviewed it
 /// leaves the list by itself.
 class TeacherReviewScreen extends ConsumerWidget {
   const TeacherReviewScreen({super.key});

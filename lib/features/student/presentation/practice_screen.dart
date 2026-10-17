@@ -21,8 +21,8 @@ import 'widgets/practice_take_card.dart';
 import 'widgets/recorder_card.dart';
 
 /// «سجّل تدريباً»: the surah and ayat, then the recorder (or «اختيار ملف»),
-/// listening to the take, and «إرسال للشيخ» with progress and cancel.
-/// Nothing leaves the phone before «إرسال للشيخ»; once it arrived the page
+/// listening to the take, and «حفظ» with progress and cancel.
+/// Nothing leaves the phone before «حفظ»; once it arrived the page
 /// closes and the practice is in the student's list. Leaving while
 /// recording, with a take not sent, or while sending asks first.
 class PracticeScreen extends ConsumerWidget {
@@ -53,13 +53,13 @@ class PracticeScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final id = await ref.read(practiceSubmitControllerProvider.notifier).send();
     if (id == null) return;
-    showAppSnackBarOn(messenger, AppStrings.practiceSent);
+    showAppSnackBarOn(messenger, AppStrings.practiceSaved);
     back?.call();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Loaded while the student records: «إرسال للشيخ» needs his halaqa.
+    // Loaded while the student records: «حفظ» needs his halaqa.
     ref.watch(studentHalaqaProvider);
     final sending = ref.watch(_upload.select((s) => s.isUploading));
     final recorder = ref.watch(practiceRecorderControllerProvider);
@@ -105,7 +105,7 @@ class PracticeScreen extends ConsumerWidget {
   }
 }
 
-/// «أو أرسل ملفاً صوتياً موجوداً على جهازك» and «اختيار ملف».
+/// «أو احفظ ملفاً صوتياً من جهازك» and «اختيار ملف».
 class _PickFile extends ConsumerWidget {
   const _PickFile();
 

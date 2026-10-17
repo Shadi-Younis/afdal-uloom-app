@@ -10,12 +10,11 @@ void main() {
   late FakeFirebaseFirestore db;
   late FirestoreFeedbackRepository repository;
 
-  FeedbackNote note(String text, {int? atSecond, int? rating}) => FeedbackNote(
+  FeedbackNote note(String text, {int? atSecond}) => FeedbackNote(
     id: '', // ignored by add()
     teacherId: 't1',
     note: text,
     atSecond: atSecond,
-    rating: rating,
     createdAt: DateTime(2000), // ignored by add()
   );
 
@@ -26,7 +25,7 @@ void main() {
   });
 
   test('add stores the note and sets unreadFeedback in one batch', () async {
-    await repository.add('r1', note('انتبه للمدّ', atSecond: 42, rating: 4));
+    await repository.add('r1', note('انتبه للمدّ', atSecond: 42));
 
     final recording = await db.doc('recordings/r1').get();
     expect(recording.data()!['unreadFeedback'], isTrue);
@@ -36,7 +35,6 @@ void main() {
     final data = notes.docs.single.data();
     expect(data['note'], 'انتبه للمدّ');
     expect(data['atSecond'], 42);
-    expect(data['rating'], 4);
     expect(data['kind'], 'text');
     expect(data['createdAt'], isA<Timestamp>());
     // Only the fields a client may create (firestore.rules).
@@ -45,7 +43,6 @@ void main() {
       'note',
       'kind',
       'atSecond',
-      'rating',
       'createdAt',
     });
   });
@@ -63,30 +60,44 @@ void main() {
     expect(() => repository.add('r1', marker), throwsArgumentError);
   });
 
-  test('update: text, rating and updatedAt, and unreadFeedback', () async {
+  test('update: text and updatedAt only, and unreadFeedback', () async {
     await db.doc('recordings/r1/feedback/v1').set({
       'teacherId': 't1',
       'note': '',
       'kind': 'voice',
       'atSecond': 83,
       'endSecond': 91,
-      'rating': null,
       'createdAt': Timestamp.fromDate(DateTime(2026, 10, 1)),
     });
 
-    await repository.update('r1', 'v1', note: 'المدّ ست حركات', rating: 3);
+    await repository.update('r1', 'v1', note: 'المدّ ست حركات');
 
     final marker = (await repository.watch('r1').first).single;
     expect(marker.kind, FeedbackKind.voice);
     expect(marker.note, 'المدّ ست حركات');
-    expect(marker.rating, 3);
     expect(marker.endSecond, 91);
     expect(marker.updatedAt, isNotNull);
     final recording = await db.doc('recordings/r1').get();
     expect(recording.data()!['unreadFeedback'], isTrue);
+  });
 
-    await repository.update('r1', 'v1', note: 'المدّ ست حركات');
-    expect((await repository.watch('r1').first).single.rating, isNull);
+  test('update leaves the rating of an old note alone (rules: note and '
+      'updatedAt only)', () async {
+    await db.doc('recordings/r1/feedback/f1').set({
+      'teacherId': 't1',
+      'note': 'أحسنت',
+      'kind': 'text',
+      'atSecond': null,
+      'rating': 5,
+      'createdAt': Timestamp.fromDate(DateTime(2026, 10, 1)),
+    });
+
+    await repository.update('r1', 'f1', note: 'أحسنت جداً');
+
+    final data = (await db.doc('recordings/r1/feedback/f1').get()).data()!;
+    expect(data['note'], 'أحسنت جداً');
+    expect(data['rating'], 5);
+    expect((await repository.watch('r1').first).single.note, 'أحسنت جداً');
   });
 
   // Atomicity itself is a server guarantee (the fake's batches are not
